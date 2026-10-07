@@ -2,6 +2,22 @@
 
 ## Current direction: runtime governance (2026-10-07)
 
+Latest steering: the user requested a plan and confirmed that no participating
+team is available. Build independent mini projects to test GovernLoom instead.
+The detailed plan is docs/PILOT_PLAN.md: real digit classification, historical
+NOAA forecasting and model-backed RAG over actual project documentation. These
+projects are planned, not implemented. First executable implementation step:
+examples/vision/ with a trained model, held-out inputs, public HTTP hook and a
+persisted review/withhold action; then forecasting, RAG and the isolated launcher.
+Reliability and incident work follow the sequence and acceptance gates in that
+plan. A customer pilot is a later milestone, not an input blocking development.
+
+Primary data sources, attribution and official local subscription execution docs
+were checked. Optional scikit-learn 1.9.1/NumPy 2.5.3 and dependencies were installed
+locally for feasibility preparation; core dependency files were not changed.
+No new model inference, dataset download or service was started during planning.
+Existing runtime code is unchanged; earlier v0.2 validation still applies to it.
+
 This section supersedes the earlier claim-evaluation roadmap below. The user
 clarified the product: a developer connects an existing AI system through a hook;
 GovernLoom monitors production signals, flags risks and supports mitigation.

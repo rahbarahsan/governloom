@@ -22,18 +22,26 @@ have not been established.
 See [integration](RUNTIME_MONITORING.md), [research](PRODUCT_RESEARCH.md) and
 [progress](PROGRESS.md) for capabilities, limitations and validation.
 
-## Recommended next milestone: a dependable customer pilot
+## Next milestone: a three-system testbed and dependable delivery
+
+No participating team is available. First build three independent mini projects
+with actual models: digit recognition, chronological forecasting on public NOAA
+observations, and RAG over real project documentation. Connect them through the
+normal hook/HTTP boundary and measure natural model errors separately from
+deliberate fault scenarios. See the [delivery plan](PILOT_PLAN.md) for datasets,
+attribution, stages, acceptance gates and operational design.
 
 | Priority | Work | Acceptance evidence |
 | --- | --- | --- |
-| 1 | Connect a team's actual deployed system | Agreed task metrics; real traffic; p50/p95/p99 added latency, errors, coverage and operator feedback |
+| 1 | Build and connect the three mini applications | Actual trained/generated outputs; split/provenance records; real HTTP hooks; p50/p95/p99 added latency, errors, coverage and executed mitigation |
 | 2 | Reliable delivery and coverage | Bounded async buffering, backoff/idempotent retry, overflow visibility, heartbeat/missing-signal alerts; outage tests |
 | 3 | Incident operations | Group repeated alerts, cooldowns, controlled webhook destinations, retry audit, ownership and mitigation verification |
 | 4 | Task-specific quality | Actual labels/outcomes for vision/forecasting; validated drift tests; calibrated RAG grounding; measured misses/false positives |
 | 5 | Private deployment operations | Retention, capacity/restore tests, TLS setup, authenticated operator identities and scoped permissions before broader access |
 
-The strongest next investment is dependable telemetry and incident response around
-one real deployment. Add detectors based on measured needs, rather than an
+The next investment is dependable telemetry and incident response exercised
+against these actual model services. A customer pilot follows when a team is
+available. Add detectors based on measured needs, rather than an
 unvalidated universal risk score. Existing observability outputs can supply
 numeric metrics. Later adapters should complement existing tracing stacks.
 OpenTelemetry ingestion, native async/JavaScript SDKs and batch uploads remain
