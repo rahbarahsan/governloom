@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "source": "Scripted real Chromium workflow against isolated local API and worker",
+  "demo": "Fictional Northstar; scripted fixture acceptance, not human validation",
+  "size": [
+    1280,
+    900
+  ],
+  "frames": 11,
+  "duration_ms": 23200,
+  "bytes": 489817,
+  "scenes": [
+    {
+      "caption": "Load fictional sources and 40 unreviewed fixtures",
+      "duration_ms": 1800
+    },
+    {
+      "caption": "Inspect current source content and its immutable hash",
+      "duration_ms": 1800
+    },
+    {
+      "caption": "Review a candidate against its quoted policy passage",
+      "duration_ms": 2400
+    },
+    {
+      "caption": "Record an attributed approval and a new case revision",
+      "duration_ms": 1600
+    },
+    {
+      "caption": "Freeze 40 approved cases with a dataset checksum",
+      "duration_ms": 2000
+    },
+    {
+      "caption": "Select a held-out sample and a bounded local target",
+      "duration_ms": 1600
+    },
+    {
+      "caption": "Clean run: separate metric scores, skips and unavailable checks",
+      "duration_ms": 2200
+    },
+    {
+      "caption": "Faulty run: 10 citation-consistency failures",
+      "duration_ms": 2000
+    },
+    {
+      "caption": "Compare the same 20 held-out cases with compatible evaluators",
+      "duration_ms": 2600
+    },
+    {
+      "caption": "Inspect the observed answer, invalid citation and expected behavior",
+      "duration_ms": 2400
+    },
+    {
+      "caption": "Follow a failed check back to frozen source evidence",
+      "duration_ms": 2800
+    }
+  ]
+}

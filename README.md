@@ -10,6 +10,13 @@ traces, review candidates, freeze a dataset, evaluate in a separate durable
 worker, inspect source passages, and compare matched runs. It reports separate
 measurements and coverage. It does not certify compliance.
 
+![Recorded GovernLoom workflow: inspect sources, review cases, freeze a dataset, compare clean and faulty runs, and inspect highlighted evidence.](docs/media/demo.gif)
+
+23-second capture of the real no-key demo. Approvals shown are scripted fixture
+acceptance, not independent human validation.
+[Still preview](docs/media/demo-poster.png) · [Capture instructions](docs/media/README.md)
+· [Proposed v0.2 scope](docs/ROADMAP.md)
+
 ## Run locally
 
 Requirements: Python 3.11+, Node 22.14+ and npm. Launch commands from the

@@ -22,8 +22,13 @@ dependency license comments in the built dashboard.
 | pytest / httpx | Backend tests | pytest-dev/pytest; encode/httpx |
 | Playwright | Browser tests | microsoft/playwright |
 | Prettier | Formatting | prettier/prettier |
+| Pillow | Optional documentation GIF encoding | python-pillow/Pillow |
 
 `requirements.lock` and `web/package-lock.json` record verified versions. Consult
 each distribution's own license for its exact terms. No upstream endorsement
 is implied. A public dataset would require a separate redistribution review;
 none is shipped here.
+
+The README GIF and still preview are original captures of this application's
+fictional no-key demo. Pillow is pinned separately in
+`scripts/requirements-media.txt`; its installed license remains intact.

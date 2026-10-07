@@ -1,0 +1,2 @@
+# Optional documentation capture dependency; not needed to run the workbench.
+Pillow==12.3.0
