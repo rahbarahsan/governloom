@@ -1,5 +1,7 @@
 # GovernLoom
 
+[![checks](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml/badge.svg)](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml)
+
 Choose meaningful AI metrics, review evidence-backed evaluation datasets, and
 inspect failures in a local RAG governance workbench.
 
@@ -115,8 +117,9 @@ See [measurement rules](docs/MEASUREMENT.md), [schemas/imports](docs/SCHEMAS.md)
 ## Verification
 
 Local checks use Python 3.13.1, Node 22.14.0 and Chromium on Windows. Exact
-commands and results are in [release evidence](docs/VALIDATION.md). CI definitions
-are included; no remote CI execution or deployment is claimed.
+commands and results are in [release evidence](docs/VALIDATION.md).
+[GitHub Actions passed](https://github.com/rahbarahsan/governloom/actions/runs/37562245561)
+on Ubuntu with Python 3.11/3.13 and the Chromium workflow. No deployment occurred.
 
 **27 backend tests and 3 browser workflows pass**, as do the production build,
 fresh Python install, wheel packaging and bundled six-run demo.

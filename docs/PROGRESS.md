@@ -21,7 +21,8 @@ Apache-2.0 license and untracked brief are preserved. No deployment or paid call
 - Git checkpoint `8477c71`: review/recovery hardening, fixed fixtures and provider tests.
 - Git checkpoint `0806e5a`: dashboard implementation.
 - Git checkpoint `0257121`: real browser workflows and screenshots.
-- Git checkpoint `d08086e`: Python and browser CI definitions (not remotely run yet).
+- Git checkpoint `d08086e`: Python and browser CI definitions.
+- Git checkpoint `ab79300`: release documentation and measured delivery evidence.
 - React/TypeScript dashboard implemented: applications/imports, review/edit/audit,
   publication, bounded jobs, per-dimension coverage, evidence and comparison.
 - Fixed 40-case JSONL suite shipped separately from runtime generation.
@@ -58,6 +59,11 @@ Apache-2.0 license and untracked brief are preserved. No deployment or paid call
 - `.\.venv\Scripts\python.exe scripts\verify_demo.py`: six runs passed;
   per-fault results and denominators saved in `docs/release-evidence.json`.
 - `.\.venv\Scripts\python.exe -m compileall -q src scripts` and `git diff --check`: passed.
+- First GitHub Actions run **passed** on Ubuntu: Python 3.11 core, Python 3.13
+  core, Chromium browser workflow and artifact upload. Verified commit `ab79300`;
+  run https://github.com/rahbarahsan/governloom/actions/runs/37562245561.
+- Six focused delivery commits pushed to `origin/main`, followed by a documentation
+  checkpoint for the passing remote CI and README badge. No history rewritten.
 - `.\.venv\Scripts\python.exe -m governloom.cli --db sqlite:///data/vertical-slice.db demo`:
   six completed runs, 20 cases each. Findings: clean 0, irrelevant retrieval 20,
   outdated source 20, unsupported statement 0 (documented blind spot), invalid
@@ -82,5 +88,5 @@ untracked user file and is deliberately excluded from delivery commits.
 ## Blockers
 
 None for the first release. No paid provider, independent human label validation,
-real-model quality study, remote CI run or deployment is claimed. The unsupported
+real-model quality study or deployment is claimed. The unsupported
 extra-claim blind spot is visible in the dashboard and measured in release evidence.

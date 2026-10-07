@@ -1,8 +1,13 @@
 # Release 0.1 verification
 
 Local execution on 2026-10-06: Windows, Python 3.13.1, Node 22.14.0, npm 11.6.2,
-Playwright Chromium. These are actual local results. The included GitHub Actions
-matrix has not been executed remotely; Linux/Python 3.11 is not claimed as tested.
+Playwright Chromium. These are actual local results.
+
+The first [GitHub Actions run](https://github.com/rahbarahsan/governloom/actions/runs/37562245561)
+also completed successfully on Ubuntu: Python 3.11 core, Python 3.13 core, and the
+Chromium/browser build and workflow job, including evidence artifact upload.
+It verified code commit `ab793004bf854dd6d1cf9e969ec7b8cc560cab61`; subsequent
+changes only record that result and add the README status badge.
 
 ## Checks executed
 
