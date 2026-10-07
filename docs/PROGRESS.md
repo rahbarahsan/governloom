@@ -59,6 +59,14 @@ Apache-2.0 license and untracked brief are preserved. No deployment or paid call
 - `.\.venv\Scripts\python.exe scripts\verify_demo.py`: six runs passed;
   per-fault results and denominators saved in `docs/release-evidence.json`.
 - `.\.venv\Scripts\python.exe -m compileall -q src scripts` and `git diff --check`: passed.
+- Post-release GIF capture: `node web/scripts/capture-demo.mjs` passed against an
+  isolated real API/worker/browser. Eleven states encoded into a looping 1280 × 900
+  GIF: 23.2 seconds, 489,817 bytes. Source review, approvals, publication, both runs,
+  comparison and highlighted evidence assertions passed; no browser errors.
+- Optional media setup `pip install -r scripts/requirements-media.txt`,
+  `node --check web/scripts/capture-demo.mjs`, encoder compilation, decoded-frame/
+  timing/size validation and `git diff --check` passed. Media dependency is separate
+  from runtime requirements. Review/evidence capture frames inspected visually.
 - First GitHub Actions run **passed** on Ubuntu: Python 3.11 core, Python 3.13
   core, Chromium browser workflow and artifact upload. Verified commit `ab79300`;
   run https://github.com/rahbarahsan/governloom/actions/runs/37562245561.
@@ -70,6 +78,17 @@ Apache-2.0 license and untracked brief are preserved. No deployment or paid call
   citation 10, timeout 20. Compatible comparison on 20 matched cases passed.
 
 ## Next executable step
+
+Post-release presentation: a real 23.2-second demo GIF (11 frames, 489,817 bytes)
+is added to the README with a still preview and reproducible capture scripts.
+Capture verifies the review/publish/clean/faulty/compare/evidence workflow and
+decoded animation frames. It uses an isolated database and no paid provider.
+
+The recommended v0.2 scope is now recorded in `docs/ROADMAP.md`: claim-level
+grounding, independently reviewed calibration, a second application/corpus,
+and a local launcher/finding filters. This is a proposal, not implemented scope.
+Begin with blinded label export/import and a calibration report when v0.2 work
+is requested; no real-model quality claim without actual independent labels.
 
 First-release delivery is complete. Follow README setup to run it. If changing
 code, run the backend suite, web build, and browser suite before updating evidence:

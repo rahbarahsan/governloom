@@ -109,3 +109,18 @@ and concurrent publication assigns unique dataset versions.
 The backend emits one upstream Starlette/httpx deprecation warning. Playwright
 emits environment color warnings. Neither failed the recorded checks; no passing
 claim hides an unresolved application or test failure.
+
+## Post-release README GIF
+
+`node web/scripts/capture-demo.mjs` launched an isolated API, worker and Chromium,
+exercised review/publication, clean and invalid-citation runs, comparison and
+highlighted evidence, then encoded eleven real viewport captures. All workflow
+assertions passed and no browser errors were observed. The resulting GIF is
+1280 × 900, loops for 23.2 seconds, and is 489,817 bytes. The encoder decoded all
+frames to verify compositing, timing and agreement with captured content.
+
+The review and evidence frames were inspected visually. Node syntax, Python
+compilation, optional Pillow installation, dependency consistency and Git whitespace
+checks passed. Runtime code was unchanged, so the backend/browser suites were not
+repeated solely for this documentation media update. Reproduction details and a
+static alternative are in [media instructions](media/README.md).
