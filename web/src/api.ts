@@ -1,11 +1,34 @@
+let adminToken = "";
+export function setAdminToken(value: string) {
+  adminToken = value;
+}
+export async function downloadEvidence(path: string) {
+  const response = await fetch(path, {
+    headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},
+  });
+  if (!response.ok)
+    throw new Error("Evidence download failed; check collector access.");
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download =
+    response.headers
+      .get("Content-Disposition")
+      ?.match(/filename="([^"]+)"/)?.[1] ?? "governloom-evidence.json";
+  link.click();
+  URL.revokeObjectURL(url);
+}
 export async function api<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(
     `/api${path}`,
     body === undefined
-      ? undefined
+      ? { headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {} }
       : {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
+          },
           body: JSON.stringify(body),
         },
   );

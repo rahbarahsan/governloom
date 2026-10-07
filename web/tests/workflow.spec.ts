@@ -97,6 +97,7 @@ test("manual case and trace imports preserve unavailable telemetry", async ({
   };
   await page.goto("/");
   await page.getByLabel("Active application").selectOption(application.id);
+  await page.getByRole("button", { name: /01.*applications/i }).click();
   await page.getByLabel("Import cases JSONL").setInputFiles({
     name: "cases.jsonl",
     mimeType: "application/x-ndjson",
@@ -175,6 +176,7 @@ test("review, freeze, run clean/faulty targets, inspect evidence, compare and re
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto("/");
+  await page.getByRole("button", { name: /01.*applications/i }).click();
   await page.getByRole("button", { name: "Load no-key demo" }).click();
   await expect(
     page.getByRole("heading", { name: "Northstar support · demo" }),
@@ -277,6 +279,7 @@ test("review, freeze, run clean/faulty targets, inspect evidence, compare and re
     fullPage: true,
   });
   await page.reload();
+  await page.getByRole("button", { name: /01.*applications/i }).click();
   await expect(
     page.getByRole("heading", { name: "Northstar support · demo" }),
   ).toBeVisible();
@@ -291,6 +294,7 @@ test("create application, UTF-8 source import and responsive empty states", asyn
   page,
 }) => {
   await page.goto("/");
+  await page.getByRole("button", { name: /01.*applications/i }).click();
   await page.getByText("Create an application", { exact: true }).click();
   await page.getByLabel("name", { exact: true }).fill("Browser import app");
   await page
@@ -335,4 +339,109 @@ test("create application, UTF-8 source import and responsive empty states", asyn
     path: "../docs/screenshots/mobile.png",
     fullPage: true,
   });
+});
+
+test("connect vision system, activate policy, observe risk and record mitigation", async ({
+  page,
+  request,
+}) => {
+  const app = await (
+    await request.post("http://127.0.0.1:8000/api/applications", {
+      data: {
+        name: "Vision serving system",
+        purpose: "Classify user images",
+        owner: "Serving team",
+        expected_behavior: "Review uncertainty",
+      },
+    })
+  ).json();
+  await page.goto("/");
+  await page.getByLabel("Active application").selectOption(app.id);
+  await expect(
+    page.getByRole("heading", { name: "Connect your AI system" }),
+  ).toBeVisible();
+  await page.getByLabel("Monitoring operator").fill("Browser operator");
+  await page
+    .getByText("Configure and activate a new policy", { exact: true })
+    .click();
+  await page
+    .getByLabel("Runtime policy name")
+    .fill("Vision uncertainty policy");
+  await page
+    .getByLabel("Policy rationale")
+    .fill("Uncertain predictions require serving-team review.");
+  await page.getByLabel("Rule template").selectOption("vision");
+  await page.getByRole("button", { name: "Add runtime rule" }).click();
+  await page.getByRole("button", { name: "Activate runtime policy" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "New runtime policy activated",
+  );
+  await page.getByLabel("Connection key name").fill("vision-serving");
+  await page.getByRole("button", { name: "Create ingestion key" }).click();
+  await expect(page.getByLabel("New ingestion key")).toBeVisible();
+  const key = await page.getByLabel("New ingestion key").inputValue();
+  await page.getByRole("button", { name: "Hide key" }).click();
+  const response = await request.post(
+    "http://127.0.0.1:8000/api/runtime/events",
+    {
+      headers: { Authorization: `Bearer ${key}` },
+      data: {
+        event_id: "browser-vision-output",
+        trace_id: "browser-vision-trace",
+        phase: "output",
+        task_type: "vision",
+        model_version: "vision-2",
+        application_version: "serving-1",
+        metrics: { confidence: 0.25 },
+        labels: ["uncertain"],
+      },
+    },
+  );
+  expect(response.ok()).toBeTruthy();
+  expect((await response.json()).action).toBe("review");
+  const alert = page.locator(".runtime-alert");
+  await expect(alert).toHaveCount(1);
+  await alert.getByText("Risk evidence", { exact: true }).click();
+  await expect(alert.locator("pre")).toContainText('"value": 0.25');
+  await alert.getByLabel("Alert owner").fill("Serving team");
+  await alert.getByLabel("Alert disposition").selectOption("mitigated");
+  await alert
+    .getByLabel("Disposition rationale")
+    .fill("Routed this prediction to the manual review queue.");
+  await alert.getByRole("button", { name: "Save alert disposition" }).click();
+  await expect(page.getByRole("status")).toContainText(
+    "Alert ownership and disposition recorded",
+  );
+  await expect(alert).toHaveCount(0);
+  await page.getByLabel("Alert status").selectOption("mitigated");
+  await expect(alert).toHaveCount(1);
+  await expect(alert.getByLabel("Alert owner")).toHaveValue("Serving team");
+  await page.reload();
+  await page.getByLabel("Alert status").selectOption("mitigated");
+  await expect(alert.getByLabel("Disposition rationale")).toHaveValue(
+    "Routed this prediction to the manual review queue.",
+  );
+  await page.getByLabel("Monitoring operator").fill("Browser operator");
+  await page.getByRole("button", { name: "Revoke vision-serving" }).click();
+  await expect(page.getByRole("status")).toContainText("Key revoked");
+  const rejected = await request.post(
+    "http://127.0.0.1:8000/api/runtime/events",
+    {
+      headers: { Authorization: `Bearer ${key}` },
+      data: {
+        trace_id: "revoked-trace",
+        phase: "output",
+        task_type: "vision",
+        model_version: "v1",
+        application_version: "v1",
+      },
+    },
+  );
+  expect(rejected.status()).toBe(401);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBeTruthy();
 });

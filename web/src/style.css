@@ -7,6 +7,38 @@
   line-height: 1.5;
   font-size: 14px;
 }
+.runtime-alert,
+.runtime-event,
+.gate-check {
+  border: 1px solid #dce5de;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+}
+.runtime-alert {
+  border-left: 4px solid #ad6846;
+}
+.issued-key {
+  margin: 16px 0;
+  padding: 16px;
+  background: #edf2ee;
+}
+.monitoring > section {
+  margin-bottom: 20px;
+}
+.collector-access {
+  margin-bottom: 20px;
+}
+.badge.triggered,
+.badge.high,
+.badge.critical {
+  background: #fff0e9;
+  color: #963d23;
+}
+.badge.clear {
+  background: #e7f1e9;
+  color: #286342;
+}
 * {
   box-sizing: border-box;
 }

@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, date, number, title } from "./api";
+import {
+  api,
+  date,
+  number,
+  title,
+  setAdminToken,
+  downloadEvidence,
+} from "./api";
+import Monitoring from "./Monitoring";
 import {
   ApplicationForm,
   Badge,
@@ -19,7 +27,7 @@ import type {
   TraceBatch,
 } from "./types";
 
-type View = "applications" | "datasets" | "runs" | "findings";
+type View = "monitoring" | "applications" | "datasets" | "runs" | "findings";
 const targets = [
   "clean",
   "irrelevant_retrieval",
@@ -31,7 +39,8 @@ const targets = [
 ];
 
 export default function App() {
-  const [view, setView] = useState<View>("applications");
+  const [view, setView] = useState<View>("monitoring");
+  const [accessToken, setAccessToken] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
   const [appId, setAppId] = useState(
     localStorage.getItem("governloom-app") ?? "",
@@ -159,7 +168,22 @@ export default function App() {
     datasets.find((d) => d.id === datasetId) ?? datasets[0];
 
   return (
-    <div className="shell">
+    <div
+      className="shell"
+      onClick={(event) => {
+        const link = (event.target as HTMLElement).closest("a");
+        if (
+          link &&
+          link.origin === window.location.origin &&
+          link.pathname.startsWith("/api/")
+        ) {
+          event.preventDefault();
+          void downloadEvidence(link.pathname + link.search).catch(
+            (error: Error) => setError(error.message),
+          );
+        }
+      }}
+    >
       <aside className="sidebar">
         <a
           className="brand"
@@ -171,30 +195,36 @@ export default function App() {
         >
           <span className="brand-mark">G</span> GovernLoom
         </a>
-        <div className="sidebar-sub">EVIDENCE WORKBENCH</div>
+        <div className="sidebar-sub">RUNTIME GOVERNANCE</div>
         <nav aria-label="Main navigation">
-          {(["applications", "datasets", "runs", "findings"] as View[]).map(
-            (tab, i) => (
-              <button
-                key={tab}
-                className={view === tab ? "nav active" : "nav"}
-                onClick={() => setView(tab)}
-                aria-current={view === tab ? "page" : undefined}
-              >
-                <span>0{i + 1}</span>
-                {title(tab)}
-              </button>
-            ),
-          )}
+          {(
+            [
+              "monitoring",
+              "applications",
+              "datasets",
+              "runs",
+              "findings",
+            ] as View[]
+          ).map((tab, i) => (
+            <button
+              key={tab}
+              className={view === tab ? "nav active" : "nav"}
+              onClick={() => setView(tab)}
+              aria-current={view === tab ? "page" : undefined}
+            >
+              <span>0{i}</span>
+              {title(tab)}
+            </button>
+          ))}
         </nav>
         <div className="sidebar-foot">
           <span className="dot" /> Local workspace
           <p>
-            Single user · SQLite
+            Self-hosted · SQLite
             <br />
-            No provider configured
+            Hooks · policies · risk alerts
           </p>
-          <span className="version">Release 0.1</span>
+          <span className="version">Release 0.2 · runtime foundation</span>
         </div>
       </aside>
       <main>
@@ -225,25 +255,31 @@ export default function App() {
               <div className="eyebrow">
                 {application?.demo
                   ? "FICTIONAL DEMO WORKSPACE"
-                  : "LOCAL EVALUATION"}
+                  : view === "monitoring"
+                    ? "RUNTIME AI GOVERNANCE"
+                    : "LOCAL EVALUATION"}
               </div>
               <h1>
-                {view === "applications"
-                  ? "Start with evidence."
-                  : view === "datasets"
-                    ? "Make the labels reviewable."
-                    : view === "runs"
-                      ? "Measure what you can prove."
-                      : "Follow the evidence."}
+                {view === "monitoring"
+                  ? "Monitor your AI in operation."
+                  : view === "applications"
+                    ? "Start with evidence."
+                    : view === "datasets"
+                      ? "Make the labels reviewable."
+                      : view === "runs"
+                        ? "Measure what you can prove."
+                        : "Follow the evidence."}
               </h1>
               <p className="muted">
-                {view === "applications"
-                  ? "Define your application, import sources, and choose useful measurements."
-                  : view === "datasets"
-                    ? "Review candidates before freezing a version for evaluation."
-                    : view === "runs"
-                      ? "Run a bounded sample against an immutable dataset, then compare results."
-                      : "Inspect individual failures, unavailable checks, and source passages."}
+                {view === "monitoring"
+                  ? "Connect your system, flag policy risks, and track mitigation as events arrive."
+                  : view === "applications"
+                    ? "Define your application, import sources, and choose useful measurements."
+                    : view === "datasets"
+                      ? "Review candidates before freezing a version for evaluation."
+                      : view === "runs"
+                        ? "Run a bounded sample against an immutable dataset, then compare results."
+                        : "Inspect individual failures, unavailable checks, and source passages."}
               </p>
             </div>
             <button
@@ -267,14 +303,40 @@ export default function App() {
               {notice}
             </div>
           )}
+          <details className="panel collector-access">
+            <summary>Collector access</summary>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                setAdminToken(accessToken);
+                void perform(refresh, "Collector access updated.");
+              }}
+            >
+              <label>
+                Admin access token
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={accessToken}
+                  onChange={(event) => setAccessToken(event.target.value)}
+                />
+              </label>
+              <p className="small muted">
+                Required for a privately hosted collector configured with an
+                admin token. Kept only in this page's memory.
+              </p>
+              <button className="secondary">Connect to collector</button>
+            </form>
+          </details>
           {!application && (
             <section className="welcome panel">
-              <div className="eyebrow">A COMPLETE NO-KEY WORKFLOW</div>
-              <h2>From policy passages to concrete findings.</h2>
+              <div className="eyebrow">CONNECT YOUR EXISTING SYSTEM</div>
+              <h2>Flag risks while your AI is running.</h2>
               <p>
-                Load an original fictional support corpus with 40 unreviewed
-                scenario fixtures. Review the labels, publish a dataset, and
-                compare clean outputs with deliberate faults.
+                Create an application connection below, configure a runtime
+                policy, and install a hook in your inference or tool-call path.
+                Vision, forecasting, RAG and custom tasks share the same event
+                API.
               </p>
               <button
                 disabled={busy}
@@ -293,7 +355,11 @@ export default function App() {
               </p>
             </section>
           )}
-          {view === "applications" && (
+          {view === "monitoring" && application && (
+            <Monitoring key={application.id} application={application} />
+          )}
+          {(view === "applications" ||
+            (view === "monitoring" && !application)) && (
             <>
               <ApplicationForm
                 create={(body) =>
