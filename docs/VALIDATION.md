@@ -1,4 +1,4 @@
-# Release 0.1 verification
+# Release verification
 
 ## Runtime foundation v0.2 (2026-10-07)
 
@@ -23,6 +23,12 @@
 - These checks establish software integration behavior using test callables and
   fixtures, not real-world model quality, detector precision/recall, production
   availability or a customer deployment. No paid inference was performed.
+- [GitHub Actions run 37629734622](https://github.com/rahbarahsan/governloom/actions/runs/37629734622)
+  passed for commit `59351beaf984ce96f820e5d13ad366139b9531e9`: Ubuntu Python
+  3.11/3.13 suites and dependency checks, TypeScript/Vite build, all Chromium
+  workflows and artifact upload. Local server/listener audit found zero remaining
+  project servers and no listeners on 8000/5173. Only the original untracked
+  user brief remains outside the delivered commits.
 
 ## Original v0.1 verification
 

@@ -183,7 +183,7 @@ See [measurement rules](docs/MEASUREMENT.md), [schemas/imports](docs/SCHEMAS.md)
 
 Local checks use Python 3.13.1, Node 22.14.0 and Chromium on Windows. Exact
 commands and results are in [release evidence](docs/VALIDATION.md).
-[GitHub Actions passed](https://github.com/rahbarahsan/governloom/actions/runs/37562245561)
+[GitHub Actions passed for the v0.2 runtime foundation](https://github.com/rahbarahsan/governloom/actions/runs/37629734622)
 on Ubuntu with Python 3.11/3.13 and the Chromium workflow. No deployment occurred.
 
 **49 backend tests and 4 browser workflows pass** for v0.2, along with the

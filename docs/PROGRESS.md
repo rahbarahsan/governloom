@@ -27,9 +27,17 @@ dependency check pass. The v0.2 wheel builds and public hook/schema/version
 imports pass from its installation in the separate clean environment. Research,
 runtime integration docs and roadmap now reflect the user's actual product scope.
 Checkpoint `4f9fd5a` contains the runtime engine/hook; `cd70907` contains the
-dashboard and browser integration. Local validation and packaging review are
-complete. Next executable steps: commit docs, push these focused checkpoints,
-verify remote CI and confirm no test servers remain.
+dashboard/browser integration; `59351be` contains product research, integration
+docs and the revised roadmap. All three are pushed to origin/main. Local
+validation and packaging review are complete. Process/listener checks confirm
+zero project servers and no listeners on ports 8000/5173. The original brief is
+the only untracked file. Remote Python 3.11/3.13 and Chromium checks all passed
+for `59351beaf984ce96f820e5d13ad366139b9531e9` in
+https://github.com/rahbarahsan/governloom/actions/runs/37629734622.
+The v0.2 runtime foundation is delivered. A final documentation checkpoint records
+the successful remote result without changing runtime code. Next executable
+work: the real-system pilot/reliability milestone in docs/ROADMAP.md; choose
+metrics with a consenting team and measure latency, coverage and useful alerts.
 Do not claim production scale, risk-detection accuracy, comprehensive PII detection
 or compliance certification. Once shipped, follow docs/ROADMAP.md: connect a real
 customer system and improve reliable telemetry/incident operations.
