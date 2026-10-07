@@ -93,6 +93,42 @@ the same core with all five faults:
 Repeat CLI calls create a new frozen version and new runs. Repeated UI demo
 loads preserve existing decisions and edits.
 
+## Real-model capture using your ChatGPT subscription
+
+An optional local experiment uses the installed Codex CLI's ChatGPT login to
+capture actual model answers, import their traces, and evaluate them through
+the existing worker. It also records exploratory claim judgments alongside
+the deterministic results. You do not need to share an API key.
+
+First confirm `codex login status` says **Logged in using ChatGPT**. Then run
+from the repository root, choosing a model available to your account:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/run_subscription_eval.py --allow-subscription --model gpt-6.1-sol --max-requests 8 --output data/my-subscription-capture
+```
+
+This explicitly consumes your ChatGPT/Codex allowance: four answer turns and
+four judge turns. It rejects API-key authentication, removes API-key overrides
+from the child environment, uses a read-only inference workspace, and rejects
+captures with tool activity. Each invocation has a 180-second deadline; the
+script never retries failed captures. Codex may retry network transport internally.
+Normal demo, API, worker, and CI tests make no subscription calls.
+
+The fresh output directory contains `report.json`, per-request prompts, schemas,
+responses and usage, and an isolated `workbench.db`. To inspect the two imported
+runs in the dashboard, set `GOVERNLOOM_DB` to that database's absolute SQLite URL
+before starting the API and worker. No server is started by the capture script.
+
+The target sees only four natural-language questions and two supplied policy
+documents. It never sees reference answers or expected case labels. The second
+run adds an explicitly synthetic unsupported sentence to two captured answers;
+the report distinguishes those controls from observed model outputs.
+Claim judgments are uncalibrated estimates in the report, not enabled dashboard
+semantic scores. The corpus is fictional, fixture approvals are scripted, and
+the sample is exploratory. This demonstrates real inference and exposes the
+limits of literal checking; it does not establish production evaluation quality.
+See [capture evidence and interpretation](docs/SUBSCRIPTION_EVAL.md).
+
 ## Architecture and evidence
 
 ```mermaid
@@ -128,7 +164,7 @@ commands and results are in [release evidence](docs/VALIDATION.md).
 [GitHub Actions passed](https://github.com/rahbarahsan/governloom/actions/runs/37562245561)
 on Ubuntu with Python 3.11/3.13 and the Chromium workflow. No deployment occurred.
 
-**27 backend tests and 3 browser workflows pass**, as do the production build,
+**34 backend tests and 3 browser workflows pass**, as do the production build,
 fresh Python install, wheel packaging and bundled six-run demo.
 
 ```powershell
@@ -162,7 +198,9 @@ screenshots under `docs/screenshots/`.
   not estimates of general RAG performance.
 - Provider protocols and a budgeted integration seam are tested with a fake.
   No paid generation/judge adapter or configuration route is shipped. Semantic
-  grounding stays unavailable. Future adapters require explicit caps,
+  grounding stays unavailable in dashboard metrics. The opt-in local subscription
+  capture above records actual answers and separate uncalibrated claim estimates.
+  Future integrated adapters require explicit caps,
   server-side credentials, pinned rubrics/models and independent calibration.
 - A second independent application, a licensed public dataset, real-model
   calibration and broader generalization studies are planned.

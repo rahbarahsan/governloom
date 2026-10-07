@@ -1,7 +1,9 @@
 # Proposed v0.2: claim grounding and human calibration
 
-Status: recommended scope, not implemented or a promised release date. v0.1
-remains the shipped release. This proposal authorizes no paid usage or deployment.
+Status: v0.1 remains the shipped release. The first real-inference experiment
+is implemented and recorded; the release scope below remains incomplete with
+no promised date. The user authorized local ChatGPT-subscription usage; no
+paid API usage or deployment is authorized.
 
 ## Outcome
 
@@ -13,6 +15,14 @@ The current release misses all ten unsupported additions in its held-out fault
 run. Exact reference substrings and valid document IDs do not establish claim
 support. Closing that measured gap is the strongest next product improvement;
 the evidence is in `release-evidence.json`, not a general model benchmark.
+
+The [subscription-backed experiment](SUBSCRIPTION_EVAL.md) now captures actual
+answers without sharing an API key. On four exploratory cases, the existing
+literal check rejected both paraphrases. Separate real-model claim judgments
+marked both original answer claims supported and both synthetic additions
+unsupported. Eight model turns and exact source evidence are recorded. These
+are uncalibrated estimates; dashboard semantic scoring and independent review
+are still pending. This is the initial real-model vertical slice, not completed v0.2.
 
 ## Recommended scope
 
@@ -59,9 +69,12 @@ No adapter should activate just because credentials exist in the environment.
 3. Exercise the frozen rubric on the second application and held-out groups.
 4. Ship the launcher and finding filters alongside documented results and misses.
 
-The human review/provider steps depend on resources that are not configured
-today. Until they are available, launcher/filter improvements and the label
-workflow are useful implementation work; semantic reliability remains unclaimed.
+Local subscription-backed inference is available through an explicit CLI
+experiment. Independent human reviewers and an integrated calibrated judge
+are still missing. Next, build blinded label export/import and adjudication,
+then connect claim evidence to dashboard results while keeping uncalibrated
+estimates visibly separate. Exercise a larger independently sourced application
+before interpreting judge agreement as evidence of general reliability.
 
 Enterprise authentication, multi-tenancy, distributed workers, PDF/OCR, remote
 connectors, autonomous paid work and compliance certification stay outside v0.2.

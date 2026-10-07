@@ -4,7 +4,8 @@
 
 The supplied specification is `governloom-build-brief.md` (no BUILD_BRIEF.md exists).
 No repository or ancestor AGENTS.md was found. The README is expanded; the existing
-Apache-2.0 license and untracked brief are preserved. No deployment or paid calls authorized.
+Apache-2.0 license and untracked brief are preserved. Local ChatGPT-subscription
+inference is now explicitly authorized; no deployment or paid API calls are authorized.
 
 ## Completed
 
@@ -79,6 +80,54 @@ Apache-2.0 license and untracked brief are preserved. No deployment or paid call
 
 ## Next executable step
 
+2026-10-07: after the user challenged the synthetic demo's realism, they authorized
+using their existing OpenAI subscription instead of sharing an API key. The
+installed Codex CLI reports ChatGPT authentication. Added an opt-in local
+subscription transport and `scripts/run_subscription_eval.py`: four natural
+questions using two existing policies, observed trace import/worker evaluation,
+two explicitly synthetic unsupported additions, and four separate claim judgments.
+The answer prompt excludes reference answers and expected labels. Captures keep
+model selector, CLI version, prompt/rubric versions, source/dataset hashes,
+exact responses, evidence and usage. No auth token file is read/copied/published.
+
+The first attempt rejected unsupported built-in provider retry configuration
+before inference. Removed that configuration and preserved the failed capture
+in ignored `data/subscription-2026-10-07/`. A fresh invocation completed all
+eight real turns in `data/subscription-2026-10-07-b/`; the isolated database is
+`workbench.db`. Published the non-secret report in
+`docs/experiments/subscription-2026-10-07.json`. Reproduce with:
+
+`.\.venv\Scripts\python.exe scripts/run_subscription_eval.py --allow-subscription --model gpt-6.1-sol --max-requests 8 --timeout-seconds 180 --output data/new-subscription-capture`
+
+Results: 4/4 response behaviors match authored fixtures; both paraphrased answers
+fail literal agreement while citation checks pass. Separate real judge turns
+mark both original factual claims supported and both appended claims unsupported,
+with exact source passage validation. Existing deterministic checks do not
+distinguish the additions. Comparison is compatible on four matched cases.
+Human calibration, immutable backend model snapshot and subscription monetary
+cost remain unavailable. Fictional corpus and four exploratory cases do not
+establish real-world evaluation reliability. Dashboard semantic metric stays
+unavailable; estimates remain in the report. See `docs/SUBSCRIPTION_EVAL.md`.
+
+New tests cover API-key rejection/removal, request limits, durable errors,
+deadline termination, attempted tool use, forged judge quotes, and real-workflow
+trace import with a no-network fake. **34 backend tests pass** (23.19 seconds);
+web production build, compilation, pip check and diff check pass. **3 browser
+workflows pass** (29.3 seconds). Script starts no servers; normal API/worker/tests make no
+subscription calls. Transport reservations count CLI invocations, not internal
+HTTP retries; the CLI can retry transport within the fixed deadline.
+
+Checkpoint `67ae6b9` commits capture transport, experiment script and tests.
+The recorded report was independently re-read to verify eight completed turns,
+both completed four-case runs, frozen dataset checksum and exact judge evidence.
+Test-created screenshot changes were discarded. Process and listener checks
+confirm no remaining capture, API, worker or dashboard server. Documentation
+and the non-secret recorded experiment form a separate delivery checkpoint.
+
+Next work: blinded independent label export/import and adjudication, then
+dashboard claim-evidence integration with explicit uncalibrated states and
+a larger second application. Do not treat model estimates as human labels.
+
 Post-release presentation: a real 23.2-second demo GIF (11 frames, 489,817 bytes)
 is added to the README with a still preview and reproducible capture scripts.
 Capture verifies the review/publish/clean/faulty/compare/evidence workflow and
@@ -86,9 +135,10 @@ decoded animation frames. It uses an isolated database and no paid provider.
 
 The recommended v0.2 scope is now recorded in `docs/ROADMAP.md`: claim-level
 grounding, independently reviewed calibration, a second application/corpus,
-and a local launcher/finding filters. This is a proposal, not implemented scope.
-Begin with blinded label export/import and a calibration report when v0.2 work
-is requested; no real-model quality claim without actual independent labels.
+and a local launcher/finding filters. The subscription experiment above is
+the first implemented slice; the remaining scope is proposed. Continue with
+blinded label export/import and a calibration report; no real-model quality
+claim without actual independent labels.
 
 First-release delivery is complete. Follow README setup to run it. If changing
 code, run the backend suite, web build, and browser suite before updating evidence:
@@ -101,11 +151,15 @@ configuration and spending authorization. No automatic restart is configured.
 
 The user authorized pushing the focused delivery commits to `origin/main`.
 Use `git status -sb` to inspect remote synchronization if resuming. No force-push,
-deployment, or paid provider work is authorized. The supplied brief remains an
+deployment, or paid API provider work is authorized. Local subscription inference
+is authorized as described above. The supplied brief remains an
 untracked user file and is deliberately excluded from delivery commits.
 
 ## Blockers
 
-None for the first release. No paid provider, independent human label validation,
-real-model quality study or deployment is claimed. The unsupported
-extra-claim blind spot is visible in the dashboard and measured in release evidence.
+None for the first release or the local real-inference experiment. Independent
+human reviewers, dashboard claim-evidence integration, and a larger second
+application are outstanding. No paid API usage, human calibration, real-model
+quality study or deployment is claimed. The unsupported extra-claim blind spot
+remains visible in the dashboard and measured in release evidence; the new
+report records separate uncalibrated judge estimates.

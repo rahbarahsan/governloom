@@ -6,8 +6,33 @@ Playwright Chromium. These are actual local results.
 The first [GitHub Actions run](https://github.com/rahbarahsan/governloom/actions/runs/37562245561)
 also completed successfully on Ubuntu: Python 3.11 core, Python 3.13 core, and the
 Chromium/browser build and workflow job, including evidence artifact upload.
-It verified code commit `ab793004bf854dd6d1cf9e969ec7b8cc560cab61`; subsequent
-changes only record that result and add the README status badge.
+It verified code commit `ab793004bf854dd6d1cf9e969ec7b8cc560cab61`. That remote
+result applies to that commit; later local checks are recorded separately below.
+
+## Post-release real-model slice (2026-10-07)
+
+- `.\.venv\Scripts\python.exe -m pytest -q`: **34 passed**, 23.19 seconds.
+  Seven new checks cover subscription-only auth, bounded capture, failure/deadline
+  handling, rejected tool use, forged evidence and imported real-model workflow
+  integration using a no-network fake. The existing upstream deprecation remains.
+- `npm --prefix web run build`: TypeScript and Vite build passed.
+- `npm --prefix web run test:e2e`: **3 passed**, 29.3 seconds. Generated screenshot
+  changes were discarded; the committed presentation images remain the v0.1 capture.
+- `.\.venv\Scripts\python.exe -m compileall -q src scripts`,
+  `.\.venv\Scripts\python.exe -m pip check`, `git diff --check`: passed.
+- Live local command:
+  `.\.venv\Scripts\python.exe scripts/run_subscription_eval.py --allow-subscription --model gpt-6.1-sol --max-requests 8 --timeout-seconds 180 --output data/subscription-2026-10-07-b`:
+  **8 real model turns completed**, two imported four-case runs completed,
+  comparison compatible on four matched cases, judge quotes/source positions valid.
+  No API key supplied; installed CLI authenticated with ChatGPT.
+- The first capture failed before inference because the CLI rejected built-in
+  provider override settings. Removed those settings and used a fresh output
+  directory; no failed result was relabeled as successful.
+- Model-selector and CLI provenance, exact prompts/responses, observed usage,
+  dataset and source hashes, limitations and findings are recorded in
+  [the real-model experiment](SUBSCRIPTION_EVAL.md). Human calibration remains
+  unavailable; this is an exploratory integration result, not a quality benchmark.
+- No capture/browser API, worker or dashboard servers remain running after checks.
 
 ## Checks executed
 
