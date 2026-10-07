@@ -12,3 +12,12 @@
 - The reference target uses lexical retrieval and literal answers. Literal
   agreement and citation checks have narrow interpretations; no overall score
   or semantic grounding claim is produced.
+- The fixed 40-case JSONL suite is separate from runtime candidate generation.
+  Its hashes/passages are validated rather than regenerated when sources change.
+  It has repository-authored template provenance, not independent human labels.
+- SQLite write transactions serialize dataset version assignment. Worker state
+  changes fence the lease owner before reading or finalizing a case. Hard process
+  termination is tested in addition to simulated lease recovery.
+- No API route enables paid work. Provider interfaces reserve a bounded request
+  before a trusted adapter is called; failed requests retain reservations. Only a
+  no-network fake exercises this seam. Judge calibration remains unavailable.
