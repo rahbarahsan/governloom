@@ -1,8 +1,12 @@
 import json
+import os
+import hmac
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import Field
@@ -10,9 +14,11 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .demo import seed, seed_gold
 from .metrics import recommend
+from .monitoring import Monitor, MonitorPolicy, RuntimeEvent, AlertReview, IngestConflict, IngestRateLimit, IngestUnauthorized
 from .schemas import Application, Record, Review, RunRequest
 from .service import Workbench
 from .storage import Store
+from . import __version__
 
 
 class SourceImport(Record):
@@ -34,32 +40,107 @@ class RunCreate(RunRequest):
     trace_batch_id: str | None = None
 
 
+class KeyCreate(Record):
+    name: str = Field(min_length=1, max_length=200)
+    actor: str = Field(min_length=1, max_length=200)
+
+
 def create_app(store=None):
-    api = FastAPI(title="GovernLoom", version="0.1.0")
+    api = FastAPI(title="GovernLoom", version=__version__)
     workbench = Workbench(store or Store())
+    monitor = Monitor(workbench)
     api.state.workbench = workbench
-    api.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
-    api.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-                       allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+    admin_token = os.environ.get("GOVERNLOOM_ADMIN_TOKEN")
+    if admin_token and len(admin_token) < 32:
+        raise ValueError("GOVERNLOOM_ADMIN_TOKEN must contain at least 32 characters")
+    allowed_hosts = os.environ.get("GOVERNLOOM_ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
+    allowed_origins = os.environ.get("GOVERNLOOM_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,http://127.0.0.1:8000").split(",")
+    api.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
+    api.add_middleware(CORSMiddleware, allow_origins=allowed_origins,
+                       allow_methods=["GET", "POST"], allow_headers=["Content-Type", "Authorization"])
 
     @api.middleware("http")
     async def local_mutations(request: Request, call_next):
-        # Block cross-origin browser writes even though there is no account/auth layer.
+        # Collector keys authorize only ingestion. Administration has a separate
+        # shared token for private hosting, or is restricted to local clients.
+        if request.url.path.startswith("/api/") and request.url.path not in ("/api/runtime/events", "/api/health") and request.method != "OPTIONS":
+            if admin_token:
+                supplied = request.headers.get("authorization", "").removeprefix("Bearer ")
+                if not hmac.compare_digest(supplied.encode(), admin_token.encode()):
+                    return JSONResponse({"detail": "Collector administration requires an admin access token"}, status_code=401)
+            elif request.client is None or request.client.host not in ("127.0.0.1", "::1", "localhost", "testclient", "testserver"):
+                return JSONResponse({"detail": "Remote administration requires GOVERNLOOM_ADMIN_TOKEN"}, status_code=403)
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             origin = request.headers.get("origin")
-            if origin and origin not in ("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8000", "http://127.0.0.1:8000"):
-                return JSONResponse({"detail": "Only local dashboard origins may write"}, status_code=403)
-            if int(request.headers.get("content-length", "0")) > 6_000_000:
+            if origin and origin not in allowed_origins:
+                return JSONResponse({"detail": "Dashboard origin is not allowed"}, status_code=403)
+            try:
+                content_length = int(request.headers.get("content-length", "0"))
+            except ValueError:
+                return JSONResponse({"detail": "Invalid Content-Length"}, status_code=400)
+            if content_length < 0:
+                return JSONResponse({"detail": "Invalid Content-Length"}, status_code=400)
+            if content_length > 6_000_000:
                 return JSONResponse({"detail": "Request exceeds 6 MB local import limit"}, status_code=413)
         return await call_next(request)
 
+    @api.exception_handler(RequestValidationError)
+    async def safe_validation_error(request: Request, exc):
+        if request.url.path == "/api/runtime/events":
+            return JSONResponse({"detail": [{"loc": error["loc"], "msg": error["msg"]} for error in exc.errors()]}, status_code=422)
+        return await request_validation_exception_handler(request, exc)
+
     @api.exception_handler(ValueError)
     async def validation_error(_, exc):
-        return JSONResponse({"detail": str(exc)}, status_code=400)
+        status = 401 if isinstance(exc, IngestUnauthorized) else 409 if isinstance(exc, IngestConflict) else 429 if isinstance(exc, IngestRateLimit) else 400
+        return JSONResponse({"detail": str(exc)}, status_code=status)
+
+    @api.post("/api/runtime/events")
+    def ingest_runtime_event(body: RuntimeEvent, authorization: str = Header(default="")):
+        if not authorization.startswith("Bearer "):
+            raise IngestUnauthorized("Ingestion credentials are required")
+        return monitor.ingest(authorization.removeprefix("Bearer "), body)
+
+    @api.get("/api/applications/{application_id}/monitor-policy")
+    def monitor_policy(application_id: str):
+        return monitor.active_policy(application_id)
+
+    @api.get("/api/monitor-policies/{policy_id}")
+    def historical_monitor_policy(policy_id: str):
+        return workbench.store.get("monitor_policy", policy_id)
+
+    @api.post("/api/applications/{application_id}/monitor-policy", status_code=201)
+    def activate_monitor_policy(application_id: str, body: MonitorPolicy):
+        return monitor.policy(application_id, body)
+
+    @api.get("/api/applications/{application_id}/ingest-keys")
+    def ingest_keys(application_id: str):
+        return monitor.keys(application_id)
+
+    @api.post("/api/applications/{application_id}/ingest-keys", status_code=201)
+    def create_ingest_key(application_id: str, body: KeyCreate):
+        return monitor.issue_key(application_id, body.name, body.actor)
+
+    @api.post("/api/ingest-keys/{key_id}/revoke")
+    def revoke_ingest_key(key_id: str, body: Publish):
+        return monitor.revoke_key(key_id, body.actor)
+
+    @api.get("/api/applications/{application_id}/runtime-events")
+    def runtime_events(application_id: str, after: int = Query(default=0, ge=0), limit: int = Query(default=100, ge=1, le=500)):
+        return monitor.events(application_id, after, limit)
+
+    @api.get("/api/applications/{application_id}/runtime-alerts")
+    def runtime_alerts(application_id: str, status: str | None = None, limit: int = Query(default=100, ge=1, le=500)):
+        return monitor.alerts(application_id, status, limit)
+
+    @api.post("/api/runtime-alerts/{alert_id}/review")
+    def review_runtime_alert(alert_id: str, body: AlertReview):
+        return monitor.review_alert(alert_id, body)
 
     @api.get("/api/health")
     def health():
-        return {"status": "ok", "version": "0.1.0", "scope": "single-user local-only", "provider_available": False}
+        return {"status": "ok", "version": __version__, "scope": "private collector", "provider_available": False,
+                "runtime_monitoring": True}
 
     @api.get("/api/applications")
     def applications():

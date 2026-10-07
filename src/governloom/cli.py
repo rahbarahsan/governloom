@@ -10,7 +10,7 @@ from .worker import Worker
 
 
 def main():
-    parser = argparse.ArgumentParser(description="GovernLoom local evaluation workbench")
+    parser = argparse.ArgumentParser(description="GovernLoom runtime governance and evaluation utilities")
     parser.add_argument("--db", help="SQLAlchemy SQLite URL; default sqlite:///data/governloom.db")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("demo", help="Accept repository fixtures, freeze dataset, evaluate clean and five faulty targets")

@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "governloom"
-version = "0.1.0"
-description = "Local evidence-backed RAG evaluation workbench"
+version = "0.2.0"
+description = "Provider-independent runtime AI monitoring and governance"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 dependencies = ["fastapi>=0.115,<1", "pydantic>=2.10,<3", "sqlalchemy>=2.0,<3", "uvicorn>=0.34,<1"]

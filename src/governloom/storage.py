@@ -42,6 +42,18 @@ class Result(Base):
     __table_args__ = (UniqueConstraint("run_id", "case_id"),)
 
 
+class RuntimeObservation(Base):
+    __tablename__ = "runtime_observations"
+    cursor = Column(Integer, primary_key=True, autoincrement=True)
+    application_id = Column(String, nullable=False, index=True)
+    event_id = Column(String, nullable=False)
+    trace_id = Column(String, nullable=False, index=True)
+    received_at = Column(String, nullable=False)
+    payload_hash = Column(String, nullable=False)
+    payload = Column(JSON, nullable=False)
+    __table_args__ = (UniqueConstraint("application_id", "event_id"),)
+
+
 class Store:
     def __init__(self, url: str | None = None):
         self.url = url or os.environ.get("GOVERNLOOM_DB", "sqlite:///data/governloom.db")
