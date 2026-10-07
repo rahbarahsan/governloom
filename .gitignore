@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+build/
+dist/
 *.egg-info/
 data/
 .env
@@ -9,6 +11,7 @@ web/node_modules/
 web/dist/
 web/test-results/
 web/playwright-report/
+web/*.tsbuildinfo
 *.db
 *.db-wal
 *.db-shm

@@ -14,7 +14,7 @@ def now() -> str:
 
 
 class Record(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     schema_version: Literal[1] = 1
 
 
@@ -27,8 +27,8 @@ class Application(Record):
     application_version: str = "1"
     model_version: str = "lexical-demo-v1"
     prompt_version: str = "literal-v1"
-    supported_fields: list[str] = Field(default_factory=lambda: [
-        "answer", "citations", "retrieved_ids", "latency_ms", "error"
+    supported_fields: list[Literal["answer", "behavior", "citations", "retrieved_ids", "latency_ms", "error", "input_tokens", "output_tokens"]] = Field(default_factory=lambda: [
+        "answer", "behavior", "citations", "retrieved_ids", "latency_ms", "error"
     ])
     demo: bool = False
 

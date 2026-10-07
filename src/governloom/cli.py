@@ -24,6 +24,7 @@ def main():
     workbench = Workbench(Store(args.db))
     if args.command == "worker":
         worker = Worker(workbench.store)
+        print("GovernLoom worker ready", flush=True)
         worker.run_once() if args.once else worker.serve()
     elif args.command == "export":
         rows = workbench.runs(args.application_id) if args.kind == "run" else workbench.store.list(args.kind, args.application_id)
@@ -50,7 +51,9 @@ def main():
             print(f"{target}: {run['status']}; {failed}/{run['total']} cases with deterministic findings; {run['id']}")
             if run["status"] != "completed":
                 raise RuntimeError(run["error"] or "Run did not complete")
-        print(json.dumps({"comparison": workbench.compare(run_ids[0], run_ids[4])}, ensure_ascii=False))
+        comparison = workbench.compare(run_ids[0], run_ids[4])
+        print(json.dumps({"comparison": {"compatible": comparison["compatible"], "matched_cases": comparison["matched_cases"],
+              "measurement_changes": len(comparison["changes"]), "reasons": comparison["reasons"]}}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import signal
 import time
 
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import case as sql_case, func, or_, select, update
 
 from .demo import LexicalTarget
 from .metrics import evaluate
@@ -41,6 +41,10 @@ class Worker:
                     self.release(run_id)
                     return True
                 with self.store.session() as session:
+                    locked = session.execute(update(Job).where(Job.id == run_id, Job.owner == self.owner,
+                        Job.status == "running", Job.lease_until >= time.time()).values(updated_at=now()))
+                    if locked.rowcount != 1:
+                        return True
                     job = session.get(Job, run_id)
                     if job.owner != self.owner or job.lease_until < time.time():
                         return True
@@ -81,6 +85,10 @@ class Worker:
                     job.lease_until = time.time() + self.lease_seconds
                 processed += 1
             with self.store.session() as session:
+                locked = session.execute(update(Job).where(Job.id == run_id, Job.owner == self.owner,
+                    Job.status == "running", Job.lease_until >= time.time()).values(updated_at=now()))
+                if locked.rowcount != 1:
+                    return True
                 job = session.get(Job, run_id)
                 if job.owner == self.owner:
                     job.status = "cancelled" if job.cancel_requested else "completed"
@@ -96,7 +104,7 @@ class Worker:
     def release(self, run_id):
         with self.store.session() as session:
             session.execute(update(Job).where(Job.id == run_id, Job.owner == self.owner).values(
-                status="queued", owner=None, lease_until=0, updated_at=now()))
+                status=sql_case((Job.cancel_requested == 1, "cancelled"), else_="queued"), owner=None, lease_until=0, updated_at=now()))
 
     def serve(self):
         def stop(*_):

@@ -1,3 +1,4 @@
+import json
 import re
 import time
 from pathlib import Path
@@ -106,11 +107,25 @@ def seed(workbench):
 
 def seed_gold(workbench, application_id):
     """Repository fixtures, explicitly not independent human labels."""
-    generated = generate_candidates(application_id, workbench.store.list("source", application_id))
-    for case in generated:
-        case.split = "calibration" if case.group_id in {"refund", "delivery", "warranty", "cancellation"} else "held_out"
-        case.provenance = "repository-authored scenario fixture v1; passage-verified by tests; no independent human review"
-    return workbench.import_cases(application_id, "\n".join(c.model_dump_json() for c in generated))
+    from .service import checksum
+    sources = {f"{s['document_id']}-{s['version']}": s for s in workbench.store.list("source", application_id)}
+    imported = {c["id"] for c in workbench.store.list("case", application_id)}
+    records = []
+    for line in (Path(__file__).parent / "demo" / "gold_cases.jsonl").read_text(encoding="utf-8").splitlines():
+        case = Case.model_validate(json.loads(line))
+        case.id = checksum([application_id, case.id])[:32]
+        if case.id in imported:
+            continue
+        case.application_id = application_id
+        for ref in case.references:
+            source = sources[ref.source_id]
+            ref.source_id = source["id"]
+            # The fixed passage/hash must still match; never regenerate labels from changed sources.
+        case.relevant_source_ids = [sources[source_id]["id"] for source_id in case.relevant_source_ids or []]
+        records.append(case)
+    if not records:
+        return []
+    return workbench.import_cases(application_id, "\n".join(c.model_dump_json() for c in records))
 
 
 def approve_fixtures(workbench, application_id):

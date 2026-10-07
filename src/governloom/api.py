@@ -144,6 +144,13 @@ def create_app(store=None):
     def cancel(run_id: str):
         return workbench.cancel(run_id)
 
+    @api.get("/api/runs/{run_id}/traces")
+    def export_traces(run_id: str):
+        run = workbench.run(run_id)
+        return Response("".join(json.dumps(result["trace"], ensure_ascii=False) + "\n"
+                                for result in run["results"] if result["trace"] is not None),
+                        media_type="application/x-ndjson", headers={"Content-Disposition": f'attachment; filename="{run_id}-traces-v1.jsonl"'})
+
     @api.get("/api/compare")
     def compare(left: str, right: str):
         return workbench.compare(left, right)

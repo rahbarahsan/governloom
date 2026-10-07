@@ -56,14 +56,16 @@ class Workbench:
         return self.store.put("source", source.model_dump(), application_id)
 
     def validate_case(self, case: Case, sources: list[dict]):
+        if not case.question.strip():
+            raise ValueError("Case question cannot be blank")
         by_id = {source["id"]: source for source in sources}
         for ref in case.references:
             source = by_id.get(ref.source_id)
-            if not source or source["content_hash"] != ref.content_hash or source["content"][ref.start:ref.end] != ref.quote:
+            if not source or source["content_hash"] != ref.content_hash or ref.end > len(source["content"]) or source["content"][ref.start:ref.end] != ref.quote:
                 raise ValueError("Invalid source reference: ID, hash, or passage range does not match")
         if case.relevant_source_ids is not None and not set(case.relevant_source_ids) <= by_id.keys():
             raise ValueError("Relevance judgment refers to unknown sources")
-        if case.expected_behavior == "answer" and not case.reference_answer:
+        if case.expected_behavior == "answer" and not (case.reference_answer or "").strip():
             raise ValueError("Answer cases require a reference answer")
         if case.review_status == "approved" and not case.references:
             raise ValueError("Approved cases require source evidence, including boundary scenarios")
@@ -118,16 +120,18 @@ class Workbench:
 
     @staticmethod
     def audit(session, application_id, object_id, revision, action, actor, value):
-        event = {"id": uid(), "object_id": object_id, "revision": revision, "action": action,
+        event = {"schema_version": 1, "id": uid(), "object_id": object_id, "revision": revision, "action": action,
                  "actor": actor, "created_at": now(), "value": value}
         session.add(Entity(id=event["id"], kind="review_event", application_id=application_id, payload=event))
 
     def review(self, case_id, review: Review):
+        if not review.actor.strip():
+            raise ValueError("Reviewer actor is required")
         old = self.store.get("case", case_id)
         if old["revision"] != review.expected_revision:
             raise ValueError("Stale case revision; reload before reviewing")
-        edits = review.model_dump(exclude_none=True)
-        revised = {**old, **{k: edits[k] for k in ("question", "reference_answer", "expected_behavior") if k in edits},
+        edits = review.model_dump()
+        revised = {**old, **{k: edits[k] for k in ("question", "reference_answer", "expected_behavior") if k in review.model_fields_set},
                    "review_status": review.decision, "revision": old["revision"] + 1}
         case = Case.model_validate(revised)
         self.validate_case(case, self.store.list("source", case.application_id))
@@ -155,8 +159,12 @@ class Workbench:
         # Keep all imported source versions so outdated retrieval remains inspectable.
         snapshot = {"schema_version": 1, "application_id": application_id, "cases": cases, "sources": sources}
         dataset = {**snapshot, "id": uid(), "checksum": checksum(snapshot), "created_at": now(), "actor": actor,
-                   "version": len(self.store.list("dataset", application_id)) + 1}
+                   "version": 0}
         with self.store.session() as session:
+            # Serialize version assignment even if two browser requests publish together.
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            dataset["version"] = len(list(session.scalars(select(Entity.id).where(
+                Entity.kind == "dataset", Entity.application_id == application_id)))) + 1
             session.add(Entity(id=dataset["id"], kind="dataset", application_id=application_id, payload=dataset))
             self.audit(session, application_id, dataset["id"], dataset["version"], "publish", actor, {"checksum": dataset["checksum"]})
         return dataset
@@ -217,7 +225,7 @@ class Workbench:
             if not job:
                 raise ValueError("Unknown run")
             results = [r.payload for r in session.scalars(select(Result).where(Result.run_id == run_id).order_by(Result.case_id))]
-            data = {"id": job.id, "status": job.status, "completed": job.completed, "total": job.total,
+            data = {"schema_version": 1, "id": job.id, "status": job.status, "completed": job.completed, "total": job.total,
                     "cancel_requested": bool(job.cancel_requested), "created_at": job.created_at, "updated_at": job.updated_at,
                     "error": job.error, "request": job.payload["request"], "application_id": job.application_id,
                     "dataset_checksum": job.payload["dataset"]["checksum"], "results": results,
