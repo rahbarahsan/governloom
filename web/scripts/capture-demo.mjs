@@ -130,6 +130,7 @@ try {
   }
 
   await page.goto("http://127.0.0.1:5173");
+  await page.getByRole("button", { name: /01.*applications/i }).click();
   await page.getByRole("button", { name: "Load no-key demo" }).click();
   await expect(
     page.getByRole("heading", { name: "Northstar support · demo" }),

@@ -2,7 +2,8 @@
 
 - SQLite + SQLAlchemy stores versioned JSON domain records, with separate run
   and result tables for atomic leases and unique (run, case) finalization.
-  Single user and one local worker are the supported deployment scope.
+  The legacy evaluation path supports one local worker. The runtime collector
+  uses serialized SQLite ingestion for controlled private pilots.
 - Frozen datasets embed cases and sources; runs also snapshot application,
   target, traces, evaluator settings and limits. Later review cannot change
   published evidence. All timestamps use UTC.
@@ -21,3 +22,14 @@
 - No API route enables paid work. Provider interfaces reserve a bounded request
   before a trusted adapter is called; failed requests retain reservations. Only a
   no-network fake exercises this seam. Judge calibration remains unavailable.
+
+- Runtime integrations wrap existing customer callables or emit HTTP events,
+  independent of provider and model modality. Mappers select telemetry; binary
+  artifacts are not auto-uploaded. Main event text is scanned transiently.
+- Runtime decisions and alerts commit atomically with the event. Stable event IDs
+  make exact replays idempotent; different payloads with the same ID are rejected.
+  Policies are immutable and retained; scoped key hashes authorize ingestion,
+  while a separate admin token protects private remote administration.
+- Observe/enforce and collector-outage behavior are explicit application choices.
+  Tool checks happen before the side effect. Requested actions and operator
+  dispositions are not evidence of verified enforcement or completed mitigation.

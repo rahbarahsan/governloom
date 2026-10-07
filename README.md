@@ -2,20 +2,29 @@
 
 [![checks](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml/badge.svg)](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml)
 
-Choose meaningful AI metrics, review evidence-backed evaluation datasets, and
-inspect failures in a local RAG governance workbench.
+Connect your existing AI system, monitor production signals, flag risks, and
+record mitigation decisions. Vision, RAG, forecasting, classification and custom
+systems share a provider-independent hook and HTTP event contract.
 
-Release 0.1 includes a complete no-key workflow: import versioned sources and
-traces, review candidates, freeze a dataset, evaluate in a separate durable
-worker, inspect source passages, and compare matched runs. It reports separate
-measurements and coverage. It does not certify compliance.
+Release 0.2 adds scoped ingestion keys, versioned policies, live alerts, operator
+ownership/disposition and optional application-side enforcement. Your own model
+performs inference; GovernLoom evaluates selected signals without its provider key.
+This foundation supports controlled integrations and pilots, with task-specific
+checks and explicit gaps.
+
+[Connect a real system](docs/RUNTIME_MONITORING.md) ·
+[Product research](docs/PRODUCT_RESEARCH.md) · [Roadmap](docs/ROADMAP.md)
+
+The earlier RAG workbench remains available for source/dataset review, durable
+evaluation jobs and evidence comparison. It does not certify compliance.
 
 ![Recorded GovernLoom workflow: inspect sources, review cases, freeze a dataset, compare clean and faulty runs, and inspect highlighted evidence.](docs/media/demo.gif)
 
-23-second capture of the real no-key demo. Approvals shown are scripted fixture
-acceptance, not independent human validation.
+23-second capture of the v0.1 evaluation workflow, using fictional fixture data.
+This GIF does not demonstrate the new runtime hook. Approvals shown are scripted
+fixture acceptance, not independent human validation.
 [Still preview](docs/media/demo-poster.png) · [Capture instructions](docs/media/README.md)
-· [Proposed v0.2 scope](docs/ROADMAP.md)
+· [Runtime roadmap](docs/ROADMAP.md)
 
 ## Run locally
 
@@ -31,7 +40,19 @@ python -m venv .venv
 npm --prefix web ci
 ```
 
-Start these in three terminals, all at the repository root:
+For monitoring, build the dashboard and start the collector from the root:
+
+```powershell
+npm --prefix web run build
+.\.venv\Scripts\python.exe -m uvicorn governloom.api:app --host 127.0.0.1 --port 8000
+```
+
+Open **http://127.0.0.1:8000**, create an application connection, then use
+**Monitoring** to activate a policy and issue a scoped key. Follow the
+[integration guide](docs/RUNTIME_MONITORING.md) to wrap your actual callable or
+send HTTP events. Monitoring does not require the separate evaluation worker.
+
+For dashboard development and legacy evaluation, use three terminals:
 
 ```powershell
 # API
@@ -49,19 +70,20 @@ npm --prefix web run dev
 ```
 
 Open **http://127.0.0.1:5173**. API schemas are at
-**http://127.0.0.1:8000/docs**. No credentials or provider calls are needed.
+**http://127.0.0.1:8000/docs**. Local console/demo need no provider key;
+runtime ingestion uses the scoped key you create in Monitoring.
 
 On macOS/Linux, create the same venv and replace
 `.\.venv\Scripts\python.exe` with `.venv/bin/python` in those commands.
 
 For a built dashboard, run `npm --prefix web run build` before starting the API;
-the API serves it at http://127.0.0.1:8000. Keep the separate worker running.
+the API serves it at http://127.0.0.1:8000. Evaluation jobs need the separate worker.
 The dashboard is served from the source checkout; Python wheels contain the
-evaluation core and demo fixtures, not the web build.
+hook, collector, evaluation core and fixtures, not the web build.
 
-## One demo
+## Legacy evaluation demo
 
-1. Click **Load no-key demo** to import fictional Northstar policies and 40
+1. Open **Applications**, then **Load no-key demo** to import fictional Northstar policies and 40
    unreviewed, source-verified repository fixtures. Inspect metric explanations
    and unavailable prerequisites.
 2. Open **Datasets**, enter a reviewer name, inspect evidence, and edit, approve
@@ -164,8 +186,10 @@ commands and results are in [release evidence](docs/VALIDATION.md).
 [GitHub Actions passed](https://github.com/rahbarahsan/governloom/actions/runs/37562245561)
 on Ubuntu with Python 3.11/3.13 and the Chromium workflow. No deployment occurred.
 
-**34 backend tests and 3 browser workflows pass**, as do the production build,
-fresh Python install, wheel packaging and bundled six-run demo.
+**49 backend tests and 4 browser workflows pass** for v0.2, along with the
+production build, compilation and dependency check. Backend checks include a
+real TCP collector/hook integration and enforcement before tool execution.
+The earlier fresh-install, wheel and six-run demo evidence is recorded separately.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
@@ -181,8 +205,15 @@ screenshots under `docs/screenshots/`.
 
 ## Scope and limitations
 
-- Single user, local machine only. Bind to loopback. No accounts, multi-tenancy,
-  remote connectors, production instrumentation or regulatory mapping.
+- Runtime monitoring supports any system that sends the selected telemetry.
+  Detector coverage depends on task-specific signals; confidence is not accuracy,
+  source IDs are not grounding, and text patterns are not comprehensive security.
+  Missing evidence remains visible. No universal safety or compliance claim.
+- Default loopback binding; private remote hosting needs a separate admin token,
+  explicit hosts/origins and TLS. No accounts, tenant isolation, SSO or RBAC.
+  SQLite ingestion is serialized; throughput/availability have not been established.
+  Automatic retention, reliable retry buffering and external escalation are future work.
+  See [runtime pilot boundaries](docs/RUNTIME_MONITORING.md).
 - UTF-8 Markdown/text and version 1 JSONL cases/traces. PDF/OCR is deferred.
   Automatic generation requires structured facts; arbitrary prose supports
   manual cases. The target uses lexical retrieval and literal answers, not a
@@ -202,8 +233,8 @@ screenshots under `docs/screenshots/`.
   capture above records actual answers and separate uncalibrated claim estimates.
   Future integrated adapters require explicit caps,
   server-side credentials, pinned rubrics/models and independent calibration.
-- A second independent application, a licensed public dataset, real-model
-  calibration and broader generalization studies are planned.
+- Next priority is a real connected-system pilot, reliable telemetry and incident
+  response. See the [updated roadmap](docs/ROADMAP.md).
 
 Original code and fictional policy material use [Apache-2.0](LICENSE).
 See [third-party attribution](docs/THIRD_PARTY.md) for dependencies.

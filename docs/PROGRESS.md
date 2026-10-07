@@ -1,5 +1,42 @@
 # Release progress
 
+## Current direction: runtime governance (2026-10-07)
+
+This section supersedes the earlier claim-evaluation roadmap below. The user
+clarified the product: a developer connects an existing AI system through a hook;
+GovernLoom monitors production signals, flags risks and supports mitigation.
+There is no organization-wide inventory requirement. Vision, RAG, forecasting,
+classification and custom systems must share a provider-independent contract.
+
+Implemented: authenticated HTTP event ingestion, Python callable/tool hooks,
+immutable configurable runtime policies, transient text scanning, scoped revocable
+keys, delayed forecast outcome linkage, rolling numeric signals, durable alerts,
+operator ownership/disposition audit, and a live dashboard. The legacy evaluation
+workbench remains available. No model provider is needed to monitor a customer's
+own running model, and no synthetic target is used in the monitoring product flow.
+
+Current checks: 49 backend tests pass (20.08 seconds), including 15 runtime checks
+and a real TCP collector process. Coverage includes
+vision output withholding, tool blocking before execution, delayed forecast
+error, idempotent concurrent replays, privacy, auth, rate limits, and collector
+redirect rejection. All four real-browser workflows pass (26.3 seconds), including
+policy/key setup, live vision risk evidence, operator mitigation, reload and key
+revocation. Earlier navigation assumptions and a missing operator after reload
+were fixed in the browser tests. TypeScript/production bundle, compilation and
+dependency check pass. The v0.2 wheel builds and public hook/schema/version
+imports pass from its installation in the separate clean environment. Research,
+runtime integration docs and roadmap now reflect the user's actual product scope.
+Checkpoint `4f9fd5a` contains the runtime engine/hook; `cd70907` contains the
+dashboard and browser integration. Local validation and packaging review are
+complete. Next executable steps: commit docs, push these focused checkpoints,
+verify remote CI and confirm no test servers remain.
+Do not claim production scale, risk-detection accuracy, comprehensive PII detection
+or compliance certification. Once shipped, follow docs/ROADMAP.md: connect a real
+customer system and improve reliable telemetry/incident operations.
+
+Original untracked `governloom-build-brief.md` remains untouched. No deployment
+or paid inference is authorized. No manual server should remain after delivery.
+
 ## Specification and state
 
 The supplied specification is `governloom-build-brief.md` (no BUILD_BRIEF.md exists).

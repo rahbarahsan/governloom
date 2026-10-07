@@ -1,5 +1,31 @@
 # Release 0.1 verification
 
+## Runtime foundation v0.2 (2026-10-07)
+
+- Complete backend suite: **49 passed**, 20.08 seconds, Python 3.13.1 on Windows.
+  Fifteen new runtime checks cover scoped/revoked credentials, private admin auth,
+  transient text privacy, bad payloads, duplicate/concurrent replays, rate limits,
+  preserved policy versions, missing evidence, numeric boundaries, classification,
+  vision, RAG signals, delayed forecast outcomes, mean-window warmup/model isolation,
+  target errors, collector outages and input/tool/output enforcement.
+- The HTTP integration starts an actual Uvicorn subprocess on an isolated port
+  and database, calls the public Python hook, verifies output withholding/tool
+  denial before execution, links forecast outcomes, and records disposition.
+  A separate HTTP server verifies that collector redirects are rejected.
+- **4 browser workflows passed**, 26.3 seconds. New workflow configures a vision
+  policy and key, sends an event, inspects evidence, records mitigation, reloads
+  and revokes the key. The three earlier evaluation workflows still pass.
+- TypeScript/Vite production build, compileall and pip check pass.
+- v0.2 wheel built and installed in the separate clean environment; public hook,
+  event schema and version imports pass from the installed package. A first
+  no-build-isolation attempt found no local setuptools; normal isolated build
+  succeeded. No runtime dependency was added for the hook.
+- These checks establish software integration behavior using test callables and
+  fixtures, not real-world model quality, detector precision/recall, production
+  availability or a customer deployment. No paid inference was performed.
+
+## Original v0.1 verification
+
 Local execution on 2026-10-06: Windows, Python 3.13.1, Node 22.14.0, npm 11.6.2,
 Playwright Chromium. These are actual local results.
 

@@ -1,5 +1,9 @@
 # Schemas and imports
 
+For runtime events, policies, credentials and alert review, see the
+[runtime HTTP contract](RUNTIME_MONITORING.md). The formats below describe the
+legacy evaluation workbench's source/case/trace imports.
+
 Importable cases/traces have `schema_version: 1`. Unknown fields/versions and
 nonfinite measurements are rejected. JSONL batches validate before writing;
 limits are 2,000 records and 5 MB of text. Blank lines are ignored. The UI
