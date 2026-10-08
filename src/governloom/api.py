@@ -19,6 +19,7 @@ from .schemas import Application, Record, Review, RunRequest
 from .service import Workbench
 from .storage import Store
 from . import __version__
+from .auth import Operators, UserCreate, Login, PasswordChange, AccessDenied, LoginRequired, public_user
 
 
 class SourceImport(Record):
@@ -56,6 +57,13 @@ def create_app(store=None):
     workbench = Workbench(store or Store())
     monitor = Monitor(workbench)
     api.state.workbench = workbench
+    operators = Operators(workbench)
+    has_operators = bool(workbench.store.list("operator_user"))
+    auth_mode = os.environ.get("GOVERNLOOM_AUTH_MODE", "operators" if has_operators else "local")
+    if auth_mode not in ("local", "operators"):
+        raise ValueError("GOVERNLOOM_AUTH_MODE must be local or operators")
+    if has_operators and auth_mode == "local":
+        raise ValueError("A collector with named accounts cannot start in unauthenticated local mode")
     admin_token = os.environ.get("GOVERNLOOM_ADMIN_TOKEN")
     if admin_token and len(admin_token) < 32:
         raise ValueError("GOVERNLOOM_ADMIN_TOKEN must contain at least 32 characters")
@@ -67,10 +75,43 @@ def create_app(store=None):
 
     @api.middleware("http")
     async def local_mutations(request: Request, call_next):
+        if request.url.path.startswith("/api/") and request.method == "POST":
+            chunks, length = [], 0
+            async for chunk in request.stream():
+                length += len(chunk)
+                if length > 6_000_000:
+                    return JSONResponse({"detail": "Request exceeds 6 MB limit"}, status_code=413)
+                chunks.append(chunk)
+            request._body = b"".join(chunks)
         # Collector keys authorize only ingestion. Administration has a separate
         # shared token for private hosting, or is restricted to local clients.
-        if request.url.path.startswith("/api/") and request.url.path not in ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions", "/api/health") and request.method != "OPTIONS":
-            if admin_token:
+        public_paths = ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions", "/api/health", "/api/auth/config", "/api/auth/login")
+        if request.url.path.startswith("/api/") and request.url.path not in public_paths and request.method != "OPTIONS":
+            if auth_mode == "operators":
+                try:
+                    user, session_id = operators.authenticate(request.headers.get("authorization", "").removeprefix("Bearer "))
+                    request.state.user, request.state.operator_session = user, session_id
+                    body = {}
+                    if request.method == "POST":
+                        raw = await request.body()
+                        if len(raw) > 6_000_000:
+                            return JSONResponse({"detail": "Request exceeds 6 MB limit"}, status_code=413)
+                        if raw:
+                            body = json.loads(raw)
+                        if not isinstance(body, dict):
+                            raise ValueError("Request body must be an object")
+                        if "actor" in body:
+                            body["actor"] = user["username"]
+                            request._body = json.dumps(body).encode()
+                    if not request.url.path.startswith("/api/auth/"):
+                        operators.authorize(user, request.method, request.url.path, request.query_params, body)
+                except LoginRequired as exc:
+                    return JSONResponse({"detail": str(exc)}, status_code=401)
+                except AccessDenied as exc:
+                    return JSONResponse({"detail": str(exc)}, status_code=403)
+                except ValueError:
+                    return JSONResponse({"detail": "Invalid request or unknown record"}, status_code=400)
+            elif admin_token:
                 supplied = request.headers.get("authorization", "").removeprefix("Bearer ")
                 if not hmac.compare_digest(supplied.encode(), admin_token.encode()):
                     return JSONResponse({"detail": "Collector administration requires an admin access token"}, status_code=401)
@@ -88,18 +129,75 @@ def create_app(store=None):
                 return JSONResponse({"detail": "Invalid Content-Length"}, status_code=400)
             if content_length > 6_000_000:
                 return JSONResponse({"detail": "Request exceeds 6 MB local import limit"}, status_code=413)
-        return await call_next(request)
+        response = await call_next(request)
+        if auth_mode == "operators" and request.method == "POST" and hasattr(request.state, "user") and 200 <= response.status_code < 300:
+            user = request.state.user
+            with workbench.store.session() as session:
+                workbench.audit(session, None, user["id"], user["revision"], "operator_request", user["username"], {"method": "POST", "path": request.url.path})
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
 
     @api.exception_handler(RequestValidationError)
     async def safe_validation_error(request: Request, exc):
-        if request.url.path in ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions"):
+        if request.url.path in ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions") or request.url.path.startswith("/api/auth/"):
             return JSONResponse({"detail": [{"loc": error["loc"], "msg": error["msg"]} for error in exc.errors()]}, status_code=422)
         return await request_validation_exception_handler(request, exc)
 
     @api.exception_handler(ValueError)
     async def validation_error(_, exc):
-        status = 401 if isinstance(exc, IngestUnauthorized) else 409 if isinstance(exc, IngestConflict) else 429 if isinstance(exc, IngestRateLimit) else 400
+        status = 401 if isinstance(exc, (IngestUnauthorized, LoginRequired)) else 403 if isinstance(exc, AccessDenied) else 409 if isinstance(exc, IngestConflict) else 429 if isinstance(exc, IngestRateLimit) else 400
         return JSONResponse({"detail": str(exc)}, status_code=status)
+
+    @api.get("/api/auth/config")
+    def auth_config():
+        return {"mode": auth_mode, "named_identity": auth_mode == "operators"}
+
+    @api.post("/api/auth/login")
+    def operator_login(body: Login, request: Request):
+        if auth_mode != "operators":
+            raise AccessDenied("Named accounts require operator authentication mode")
+        return operators.login(body, request.client.host if request.client else "unknown")
+
+    @api.get("/api/auth/me")
+    def operator_me(request: Request):
+        if auth_mode != "operators":
+            raise AccessDenied("Named accounts require operator authentication mode")
+        return request.state.user
+
+    @api.post("/api/auth/logout")
+    def operator_logout(request: Request):
+        if auth_mode != "operators":
+            raise AccessDenied("Named accounts require operator authentication mode")
+        return operators.logout(request.state.operator_session, request.state.user)
+
+    @api.post("/api/auth/password")
+    def operator_password(body: PasswordChange, request: Request):
+        if auth_mode != "operators":
+            raise AccessDenied("Named accounts require operator authentication mode")
+        return operators.change_password(request.state.user, body)
+
+    def require_operator_admin(request):
+        if auth_mode != "operators" or request.state.user["role"] != "admin":
+            raise AccessDenied("Named administrator account required")
+
+    @api.get("/api/auth/users")
+    def operator_users(request: Request):
+        require_operator_admin(request)
+        return [public_user(row) for row in workbench.store.list("operator_user")]
+
+    @api.post("/api/auth/users", status_code=201)
+    def create_operator(body: UserCreate, request: Request):
+        require_operator_admin(request)
+        return operators.create(body, request.state.user["username"])
+
+    @api.post("/api/auth/users/{identifier}/revoke")
+    def revoke_operator(identifier: str, request: Request):
+        require_operator_admin(request)
+        return operators.revoke(identifier, request.state.user["username"])
 
     @api.post("/api/runtime/events")
     def ingest_runtime_event(body: RuntimeEvent, authorization: str = Header(default="")):
@@ -199,8 +297,11 @@ def create_app(store=None):
                 "runtime_monitoring": True}
 
     @api.get("/api/applications")
-    def applications():
-        return workbench.store.list("application")
+    def applications(request: Request):
+        rows = workbench.store.list("application")
+        if auth_mode == "operators" and request.state.user["role"] != "admin":
+            rows = [row for row in rows if row["id"] in request.state.user["application_ids"]]
+        return rows
 
     @api.post("/api/applications", status_code=201)
     def create_application(application: Application):
@@ -270,8 +371,11 @@ def create_app(store=None):
         return workbench.queue(RunRequest.model_validate(body.model_dump(exclude={"trace_batch_id"})), body.trace_batch_id)
 
     @api.get("/api/runs")
-    def runs(application_id: str | None = None):
-        return workbench.runs(application_id)
+    def runs(request: Request, application_id: str | None = None):
+        rows = workbench.runs(application_id)
+        if auth_mode == "operators" and request.state.user["role"] != "admin":
+            rows = [row for row in rows if row["application_id"] in request.state.user["application_ids"]]
+        return rows
 
     @api.get("/api/runs/{run_id}")
     def run(run_id: str):

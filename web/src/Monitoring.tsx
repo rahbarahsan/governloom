@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useContext } from "react";
+import { AuthContext } from "./AuthContext";
 import { api, date, title } from "./api";
 import { Badge } from "./components";
 import type { Application } from "./types";
@@ -242,11 +243,12 @@ export default function Monitoring({
 }: {
   application: Application;
 }) {
+  const identity = useContext(AuthContext);
   const [policy, setPolicy] = useState<Policy | null>(null);
   const [keys, setKeys] = useState<Key[]>([]);
   const [newKey, setNewKey] = useState("");
   const [keyName, setKeyName] = useState("");
-  const [actor, setActor] = useState("");
+  const [actor, setActor] = useState(identity?.username ?? "");
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -255,6 +257,8 @@ export default function Monitoring({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const canConfigure = !identity || ["admin", "operator"].includes(identity.role);
+  const canReview = !identity || identity.role !== "viewer";
   const [status, setStatus] = useState("open");
   const cursor = useRef(0);
   const fetching = useRef(false);
@@ -367,6 +371,7 @@ export default function Monitoring({
           Monitoring operator
           <input
             value={actor}
+            readOnly={!!identity}
             onChange={(event) => setActor(event.target.value)}
           />
         </label>
@@ -391,7 +396,7 @@ export default function Monitoring({
               placeholder="production-service"
             />
           </label>
-          <button disabled={busy || !actor.trim()}>Create ingestion key</button>
+          <button disabled={busy || !actor.trim() || !canConfigure}>Create ingestion key</button>
         </form>
         {newKey && (
           <div className="issued-key">
@@ -421,7 +426,7 @@ export default function Monitoring({
             </span>
             <button
               className="secondary"
-              disabled={busy || !key.active || !actor.trim()}
+              disabled={busy || !key.active || !actor.trim() || !canConfigure}
               onClick={() =>
                 void action(async () => {
                   await api(`/ingest-keys/${key.id}/revoke`, { actor });
@@ -461,7 +466,7 @@ export default function Monitoring({
           <p>No active policy. Configure one before sending events.</p>
         )}
         <PolicyForm
-          busy={busy}
+          busy={busy || !canConfigure}
           actor={actor}
           save={(body) =>
             action(async () => {
@@ -505,7 +510,7 @@ export default function Monitoring({
           <IncidentCard
             key={`${incident.id}-${incident.revision}`}
             incident={incident}
-            busy={busy}
+            busy={busy || !canReview}
             actor={actor}
             save={(body) =>
               action(async () => {
@@ -572,7 +577,7 @@ export default function Monitoring({
             key={`${alert.id}-${alert.revision}`}
             alert={alert}
             actor={actor}
-            busy={busy}
+            busy={busy || !canReview}
             save={(body) =>
               action(async () => {
                 await api(`/runtime-alerts/${alert.id}/review`, body);

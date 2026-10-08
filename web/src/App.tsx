@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useContext } from "react";
+import { AuthContext } from "./AuthContext";
 import {
   api,
   date,
@@ -39,6 +40,7 @@ const targets = [
 ];
 
 export default function App() {
+  const identity = useContext(AuthContext);
   const [view, setView] = useState<View>("monitoring");
   const [accessToken, setAccessToken] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
@@ -56,7 +58,7 @@ export default function App() {
   const [selectedCase, setSelectedCase] = useState("");
   const [caseFilter, setCaseFilter] = useState("all");
   const [actor, setActor] = useState(
-    localStorage.getItem("governloom-reviewer") ?? "",
+    identity?.username ?? localStorage.getItem("governloom-reviewer") ?? "",
   );
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -80,8 +82,8 @@ export default function App() {
   const refresh = useCallback(async () => {
     const apps = await api<Application[]>("/applications");
     setApplications(apps);
-    if (!appId && apps.length) {
-      setAppId(apps[0].id);
+    if (appId && !apps.some(app => app.id === appId) || !appId && apps.length) {
+      setAppId(apps[0]?.id ?? "");
       return;
     }
     if (!appId) return;
@@ -303,7 +305,7 @@ export default function App() {
               {notice}
             </div>
           )}
-          <details className="panel collector-access">
+          {!identity && <details className="panel collector-access">
             <summary>Collector access</summary>
             <form
               onSubmit={(event) => {
@@ -327,7 +329,7 @@ export default function App() {
               </p>
               <button className="secondary">Connect to collector</button>
             </form>
-          </details>
+          </details>}
           {!application && (
             <section className="welcome panel">
               <div className="eyebrow">CONNECT YOUR EXISTING SYSTEM</div>

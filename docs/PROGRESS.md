@@ -19,6 +19,15 @@ Three outbox checks pass (9.83 s), including hard producer death after real HTTP
 collector commit, replay with one alert, concurrent admission, expiry and auth failure.
 Logical bounds do not constitute a disk quota. Next: server-side named identities.
 
+Named access is implemented: private bootstrap, salted password hashes, revocable
+eight-hour sessions, scoped viewer/reviewer/operator/admin roles, server-bound
+actors, list/export/object-route scope checks, login throttling and password change.
+Existing-account databases cannot fall back to local mode. Four auth/API checks
+pass (14.13 s), the outbox/auth/API combination passes seven checks (31.13 s), and
+the new Chromium role workflow passes (13.3 s). Dashboard production build passes.
+An audit-action test label and a collapsed-details browser selector were corrected;
+the role checks themselves held. Next: immutable detector profiles and calibration.
+
 ## Delivered runtime checkpoint (2026-10-08 UTC)
 
 Latest steering: the user approved implementation of the plan. No participating

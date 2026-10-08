@@ -14,6 +14,9 @@ def main():
     parser.add_argument("--db", help="SQLAlchemy SQLite URL; default sqlite:///data/governloom.db")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("demo", help="Accept repository fixtures, freeze dataset, evaluate clean and five faulty targets")
+    bootstrap = commands.add_parser("bootstrap-admin", help="Create the first named administrator (password prompted privately)")
+    bootstrap.add_argument("username")
+    bootstrap.add_argument("--password-stdin", action="store_true", help="Read one password line from stdin for automation")
     worker_parser = commands.add_parser("worker", help="Run the durable background worker")
     worker_parser.add_argument("--once", action="store_true")
     export = commands.add_parser("export", help="Export versioned records as UTF-8 JSONL")
@@ -22,7 +25,14 @@ def main():
     export.add_argument("--application-id")
     args = parser.parse_args()
     workbench = Workbench(Store(args.db))
-    if args.command == "worker":
+    if args.command == "bootstrap-admin":
+        import getpass
+        import sys
+        from .auth import Operators, UserCreate
+        password = sys.stdin.readline().rstrip("\r\n") if args.password_stdin else getpass.getpass("New administrator password (15+ characters): ")
+        record = Operators(workbench).create(UserCreate(username=args.username, password=password, role="admin"), "local-bootstrap", bootstrap=True)
+        print(f"Created administrator {record['username']}. Start with GOVERNLOOM_AUTH_MODE=operators.")
+    elif args.command == "worker":
         worker = Worker(workbench.store)
         print("GovernLoom worker ready", flush=True)
         worker.run_once() if args.once else worker.serve()

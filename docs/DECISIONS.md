@@ -1,5 +1,13 @@
 # Decisions
 
+- Durable observation freezes metadata in a separate SQLite outbox and preserves
+  pending work on shutdown; text checks remain transient. Exact collector replay
+  handles producer death after remote commit. Logical limits are not disk quotas.
+- Named operator mode uses local accounts, hashed revocable sessions and explicit
+  application grants. Authentication supplies audit actors, not request claims.
+  Existing account databases refuse unauthenticated startup. Local development
+  and ingestion credentials remain separate access paths.
+
 - SQLite + SQLAlchemy stores versioned JSON domain records, with separate run
   and result tables for atomic leases and unique (run, case) finalization.
   The legacy evaluation path supports one local worker. The runtime collector
