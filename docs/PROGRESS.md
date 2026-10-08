@@ -24,9 +24,17 @@ digit classifier and connects through HTTP. Its 360 held-out cases produce
 confident error missed, at a calibration-selected confidence threshold 0.59375.
 Two actual-model tests pass (12.86 seconds), including result withholding,
 persisted review resolution, label feedback and actual service restart.
-Forecasting is being implemented against a downloaded NOAA snapshot with SHA-256
+Forecasting now serves predictions and linked outcomes through the same HTTP
+boundary, records investigations and supports an explicitly configured fallback.
+Four example tests pass (20.21 seconds); CI uses a labeled synthetic forecast
+fixture and never fetches remote data. The separate actual NOAA snapshot has SHA-256
 c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3.
-Next: forecasting HTTP/outcome checks, RAG service, then isolated launcher and
+Direct model evaluation on its 48 observed 2021-2024 outcomes measures MAE
+0.75654 ppm and RMSE 0.95067 ppm, versus seasonal-naive MAE 2.59771 ppm.
+The frozen 2019-2020 calibration tolerance is 0.97433 ppm; 15 held-out errors
+exceed it. These are revised-snapshot historical results, not live forecasting
+or a historical data-vintage simulation. Raw snapshot and provenance stay in
+ignored data/miniapps/. Next: RAG service, then isolated launcher and
 measured evidence. No new inference-quality claim is implied by software tests.
 
 This section supersedes the earlier claim-evaluation roadmap below. The user

@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.request import Request, build_opener
 
@@ -39,8 +40,14 @@ class State:
         with self.connect() as connection:
             connection.execute("CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, kind TEXT NOT NULL, payload TEXT NOT NULL)")
 
+    @contextmanager
     def connect(self):
-        return sqlite3.connect(self.path, timeout=10)
+        connection = sqlite3.connect(self.path, timeout=10)
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def put(self, identifier, kind, payload):
         with self.connect() as connection:

@@ -10,6 +10,7 @@ pytest.importorskip("sklearn", reason="Install examples/requirements.txt for act
 from examples.common import State, http
 from examples.processes import Processes
 from examples.vision.model import DigitModel
+from examples.forecasting.model import ForecastModel, parse
 
 
 @pytest.fixture(scope="module")
@@ -78,3 +79,50 @@ def test_actual_vision_http_hook_withholding_review_and_restart(collector, digit
     restarted = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint,
         "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path)}, factory=True)
     assert any(item["id"] == review["id"] and item["status"] == "resolved" for item in http(restarted, "/reviews"))
+
+
+@pytest.fixture
+def series(tmp_path):
+    # Deliberately synthetic CI fixture, not NOAA measurements or accuracy evidence.
+    path = tmp_path / "synthetic-monthly.txt"
+    rows = ["# Synthetic integration fixture"]
+    for year in range(2005, 2025):
+        for month in range(1, 13):
+            value = 380 + 2 * (year - 2005) + month / 12
+            days = -1 if (year, month) == (2022, 2) else 28
+            rows.append(f"{year} {month} 0 {value} 0 {days} 0.2 0.1")
+    path.write_text("\n".join(rows), encoding="utf-8")
+    return path
+
+
+def test_forecast_uses_only_prior_data_and_preserves_missing_ground_truth(series):
+    model = ForecastModel(series)
+    forecast = model.predict("2021-01")
+    assert forecast["training_cutoff"] < forecast["date"]
+    old_prediction = forecast["prediction"]
+    text = series.read_text().replace("2024 12 0 419.0", "2024 12 0 999.0")
+    series.write_text(text)
+    assert ForecastModel(series).predict("2021-01")["prediction"] == old_prediction
+    assert model.actual("2022-02") is None
+    assert model.evaluate()["missing_actuals"] == 1
+    assert model.manifest["source_url"] is None
+    with pytest.raises(ValueError, match="Duplicate"):
+        parse("2005 1 0 400 0 20 0.1 0.1\n2005 1 0 400 0 20 0.1 0.1")
+
+
+def test_forecast_http_outcome_fault_and_subsequent_fallback(collector, series, tmp_path):
+    processes, endpoint, call = collector
+    app, _, key = connect(call, "Forecast fixture", [{"id": "error", "name": "Error tolerance", "detector": "metric_threshold",
+        "phase": "outcome", "metric": "absolute_error", "threshold": 5, "action": "flag", "mitigation": "Investigate forecast"}])
+    service = processes.start("examples.forecasting.app:create_app", {"NOAA_SNAPSHOT": str(series),
+        "GOVERNLOOM_ENDPOINT": endpoint, "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(tmp_path / "forecast.db")}, factory=True)
+    prediction = http(service, "/predict", {"date": "2021-01", "scenario": "offset_fault"})
+    outcome = http(service, "/outcomes", {"event_id": prediction["receipt"]["event_id"]})
+    assert outcome["receipt"]["action"] == "flag"
+    assert len(http(service, "/investigations")) == 1
+    http(service, "/fallback", {"enabled": True, "actor": "Test operator", "rationale": "Explicit fallback test"})
+    following = http(service, "/predict", {"date": "2021-02"})
+    assert following["result"]["fallback"] and following["result"]["model_version"].startswith("seasonal-naive-")
+    missing = http(service, "/predict", {"date": "2022-02"})
+    assert http(service, "/outcomes", {"event_id": missing["receipt"]["event_id"]})["status"] == "unavailable"
+    assert len(call(f"/applications/{app['id']}/runtime-alerts")) == 1
