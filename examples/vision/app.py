@@ -103,4 +103,10 @@ def create_app(model=None, state=None, hook_factory=hook):
         return {"status": "withheld" if blocked else "queued_for_review" if needs_review else "returned",
                 "result": output, "receipt": receipt, "scenario": body.corruption}
 
+    @api.post("/baseline")
+    def baseline(body: Prediction):
+        """Explicitly unmonitored local benchmark; never a governance path."""
+        pixels = body.pixels if body.pixels is not None else model.sample(body.sample_id, body.corruption)
+        return model.predict(pixels)
+
     return api

@@ -43,6 +43,36 @@ workspace basetemp; it was not an application failure. Real RAG model capture
 is next through the isolated launcher, followed by reliability/incident work and
 measured evidence. No new inference-quality claim is implied by software tests.
 
+Working continuation: the isolated launcher completed all 360 vision cases and
+48 NOAA forecast/outcome pairs in data/testbed-2026-10-08-b/. Exactly 15 natural
+forecast outcomes were flagged; deliberate offset and fallback passed. RAG
+stopped before inference because the sandboxed CLI could not find its home/login
+configuration. All owned services stopped; failed-run reports are retained.
+A fresh authorized elevated run completed in data/testbed-2026-10-08-c/ with
+exactly three completed local subscription requests. All 1,246 events were
+accepted (vision 1,138; forecasting 99; RAG 9) and all owned services stopped.
+Natural RAG responses: one answer about tool enforcement, one cautious partial
+abstention about text retention, and one refusal to invent a medical approval.
+Both post-generation faults were withheld; the unauthorized write was denied
+before its marker file existed. Citation membership passed natural answers, but
+does not establish claim support. The partial abstention exposes retrieval
+coverage limits. An earlier launcher attribute mismatch was
+fixed after vision completed; that capture is data/testbed-2026-10-08/.
+Three focused application commits 007c99f, e6e6347, cc8fc12 are pushed. All GitHub
+Actions jobs passed for cc8fc12 at
+https://github.com/rahbarahsan/governloom/actions/runs/37714232976.
+Background observation implementation is also underway: bounded RAM queue,
+exact-body retry, separate synchronous enforcement, loss counters and scoped
+heartbeats. Six delivery tests pass (5.28 seconds), including a real collector
+outage/restart, receipt loss without duplicate alerts and quiet batch cadence.
+Launcher and reviewed actual-model evidence are ready. Six example tests pass
+(51.15 seconds), including a bounded launcher run with no subscription calls or
+remote downloads and clean process shutdown. Next: delivery/incident docs and
+checkpoint, dashboard coverage, then backup/retention/capacity checks. Incident
+grouping, action acknowledgment/operator verification and local test-sink retry
+checks pass; two initially incorrect audit-kind assertions were corrected to
+the existing review_event audit store. No messages to real recipients were sent.
+
 This section supersedes the earlier claim-evaluation roadmap below. The user
 clarified the product: a developer connects an existing AI system through a hook;
 GovernLoom monitors production signals, flags risks and supports mitigation.

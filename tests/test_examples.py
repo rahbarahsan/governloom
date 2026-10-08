@@ -160,3 +160,20 @@ def test_rag_retrieval_http_monitoring_faults_and_tool_side_effect(collector, tm
     assert len(client.get("/reviews").json()) == 2
     events = call(f"/applications/{app['id']}/runtime-events")["events"]
     assert "Integration fixture" not in json.dumps(events) and "sk-test" not in json.dumps(events)
+
+
+def test_launcher_completes_and_cleans_up_without_inference_or_download(series, tmp_path):
+    from types import SimpleNamespace
+    from examples.testbed import run
+    directory = tmp_path / "testbed"
+    run(SimpleNamespace(output=str(directory), noaa_snapshot=str(series), allow_subscription=False,
+                        model="never-called", vision_cases=4))
+    report = json.loads((directory / "report.json").read_text())
+    assert report["status"] == "completed" and report["processes_stopped"]
+    assert report["vision"]["natural"]["cases"] == 4
+    assert report["forecasting"]["missing_outcomes"] == 1
+    assert report["forecasting"]["manifest"]["source_url"] is None
+    assert report["rag"]["status"] == "not_run" and report["code_sha256"]
+    assert not (directory / "subscription").exists()
+    with pytest.raises(FileExistsError):
+        run(SimpleNamespace(output=str(directory)))
