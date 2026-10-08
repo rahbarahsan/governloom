@@ -34,7 +34,13 @@ Direct model evaluation on its 48 observed 2021-2024 outcomes measures MAE
 The frozen 2019-2020 calibration tolerance is 0.97433 ppm; 15 held-out errors
 exceed it. These are revised-snapshot historical results, not live forecasting
 or a historical data-vintage simulation. Raw snapshot and provenance stay in
-ignored data/miniapps/. Next: RAG service, then isolated launcher and
+ignored data/miniapps/. The RAG service now retrieves actual documentation and
+uses the bounded opt-in subscription generator, with explicit post-generation
+faults and tool denial before a write. Five example tests pass (24.79 seconds),
+including an explicitly fake CI generator with real collector HTTP. A sandbox
+temporary-directory permission failure was resolved by using a fresh ignored
+workspace basetemp; it was not an application failure. Real RAG model capture
+is next through the isolated launcher, followed by reliability/incident work and
 measured evidence. No new inference-quality claim is implied by software tests.
 
 This section supersedes the earlier claim-evaluation roadmap below. The user

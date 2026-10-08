@@ -126,3 +126,37 @@ def test_forecast_http_outcome_fault_and_subsequent_fallback(collector, series, 
     missing = http(service, "/predict", {"date": "2022-02"})
     assert http(service, "/outcomes", {"event_id": missing["receipt"]["event_id"]})["status"] == "unavailable"
     assert len(call(f"/applications/{app['id']}/runtime-alerts")) == 1
+
+
+def test_rag_retrieval_http_monitoring_faults_and_tool_side_effect(collector, tmp_path):
+    from fastapi.testclient import TestClient
+    from examples.rag.app import create_app
+    from examples.rag.model import Retriever
+    from governloom.hook import RuntimeHook
+
+    class ExplicitFakeGenerator:
+        model = "ci-fake-no-quality-evidence"
+        def generate(self, question, sources):
+            return {"output": {"answer": "Integration fixture", "behavior": "answer", "citations": [sources[0]["id"]]},
+                    "usage": None}
+
+    _, endpoint, call = collector
+    app, _, key = connect(call, "RAG fixture", [
+        {"id": "citations", "name": "Citation membership", "detector": "citation_integrity", "phase": "output", "action": "block", "mitigation": "Withhold response"},
+        {"id": "secrets", "name": "Credential pattern", "detector": "secrets", "phase": "output", "action": "block", "mitigation": "Withhold response"},
+        {"id": "tools", "name": "Approved tools", "detector": "tool_allowlist", "phase": "tool", "allowed": ["search"], "action": "block", "mitigation": "Deny write"}])
+    retriever = Retriever()
+    sources = retriever.retrieve("Does the collector retain raw prompt text?")
+    assert sources and all(source["content_hash"] and source["line_start"] <= source["line_end"] for source in sources)
+    client = TestClient(create_app(retriever, ExplicitFakeGenerator(), State("rag", tmp_path / "rag.db"),
+                                  lambda mode: RuntimeHook(endpoint, key, mode=mode)))
+    original = client.post("/answer", json={"question": "Does the collector retain raw prompt text?"}).json()
+    assert original["status"] == "returned"
+    for mutation in ("invalid_citation", "credential"):
+        result = client.post("/faults", json={"event_id": original["receipt"]["event_id"], "mutation": mutation}).json()
+        assert result["status"] == "withheld" and result["answer"] is None
+    tool = client.post("/tools/write").json()
+    assert tool["blocked"] and not tool["side_effect_occurred"]
+    assert len(client.get("/reviews").json()) == 2
+    events = call(f"/applications/{app['id']}/runtime-events")["events"]
+    assert "Integration fixture" not in json.dumps(events) and "sk-test" not in json.dumps(events)
