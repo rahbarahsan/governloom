@@ -86,7 +86,7 @@ def run(directory, forecast_path, subscription=False):
                 key = call(prefix + "/ingest-keys", {"name": "benchmark", "actor": "engineering-runner"})["key"]
                 return app, profiles, key
             for name, task, version, metric, baseline, size, rows, fingerprint, cal_groups, assumption in specs:
-                body = dict(name=name, actor="engineering-runner", kind="distribution_shift", task_type=task, environment="validation-replay", model_version=version, application_version="detector-benchmark-v1", metric=metric, reference=baseline, window_size=size, alpha=.05, minimum_effect=.2, sampling_assumption=assumption,
+                body = dict(name=name, actor="engineering-runner", kind="distribution_shift", task_type=task, phase="outcome" if task == "forecasting" else "output", environment="validation-replay", model_version=version, application_version="detector-benchmark-v1", metric=metric, reference=baseline, window_size=size, alpha=.05, minimum_effect=.2, sampling_assumption=assumption,
                     calibration=calibration(rows, fingerprint, cal_groups, description="Baseline and rule frozen before held-out windows; declared perturbations are detection controls, not labels of individual prediction correctness"))
                 app, profiles, key = provision(name, [body])
                 for row in rows:

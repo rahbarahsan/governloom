@@ -8,8 +8,9 @@ They cannot certify an AI system or establish every kind of risk.
 
 An operator posts a profile to `POST /api/applications/{id}/detector-profiles`
 or imports its JSON under **Detector evidence**. Every profile includes an exact
-task/environment/model/application version, immutable calibration dataset and
-label hashes, disjoint calibration/held-out topic groups and held-out confusion
+task/environment/model/application version and event phase (default output;
+choose outcome for forecast residuals), immutable calibration dataset and label
+hashes, disjoint calibration/held-out topic groups and held-out confusion
 counts (captured risks, misses, false positives, clear controls, unavailable).
 Engineering, observed-outcome and independent-human provenance are distinct.
 The operator is responsible for the submitted evidence; a hash alone does not

@@ -44,6 +44,7 @@ def test_window_approval_scope_restart_and_duplicate_do_not_spend_twice(workbenc
     event = RuntimeEvent(**FIELDS, metrics={"confidence": .5})
     assert monitor.ingest(key, event)["checks"][0]["status"] == "insufficient_evidence"
     profiles.approve(profile["id"], ProfileApproval(actor="reviewer", expected_checksum=profile["checksum"], rationale="Accept engineering controls"))
+    assert monitor.ingest(key, RuntimeEvent(**{**FIELDS, "phase": "input"}, metrics={"confidence": 1}))["checks"][0]["status"] == "insufficient_evidence"
     for _ in range(19):
         assert monitor.ingest(key, RuntimeEvent(**FIELDS, metrics={"confidence": .5}))["checks"][0]["status"] == "insufficient_evidence"
     # Reconstruction and exact replay preserve the 19-sample window.

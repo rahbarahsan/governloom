@@ -41,6 +41,7 @@ class DetectorProfile(Record):
     actor: str = Field(min_length=1, max_length=200)
     kind: Literal["claim_support", "distribution_shift"]
     task_type: Literal["vision", "rag", "forecasting", "classification", "generative", "custom"]
+    phase: Literal["input", "output", "tool", "error", "outcome"] = "output"
     environment: str = Field(min_length=1, max_length=64)
     model_version: str = Field(min_length=1, max_length=200)
     application_version: str = Field(min_length=1, max_length=200)
@@ -163,6 +164,9 @@ class Profiles:
             return True, False, {**evidence, "reason": "Profile has not been approved"}
         if any(profile[field] != getattr(event, field) for field in ("task_type", "environment", "model_version", "application_version")) or profile["kind"] != rule["detector"]:
             return True, False, {**evidence, "reason": "Event outside the calibrated deployment scope"}
+        phase = profile.get("phase", "outcome" if profile["task_type"] == "forecasting" else "output")
+        if phase != event.phase:
+            return True, False, {**evidence, "reason": "Event outside the calibrated phase"}
         if rule["detector"] == "claim_support":
             return Profiles.grounding(profile, event, evidence)
         if profile["metric"] not in metrics:
