@@ -113,3 +113,40 @@ At most five attempts, bounded backoff and Retry-After; hints over one day fail
 explicitly. Invoke again for due retries; no automatic dispatcher runs.
 `SINK_LOSE_FIRST_ACK=1` commits then returns 503 to prove deduplication. No
 messages to real recipients, Slack or email are part of this checkpoint.
+# Restart-safe metadata delivery
+
+`DurableObservationHook` in `governloom.outbox` is an opt-in SQLite outbox:
+
+```python
+from governloom.outbox import DurableObservationHook
+
+with DurableObservationHook(collector_url, ingestion_key,
+                            outbox="private/telemetry.db") as hook:
+    hook.emit(trace_id="prediction-42", phase="output", task_type="vision",
+              model_version="classifier-v3", application_version="service-v2",
+              metrics={"confidence": 0.4})
+```
+
+Admission commits the frozen body before returning. Delivery resumes on reopening
+the same file with the same endpoint, key and bounds. A process killed after remote
+commit replays the exact ID/body; collector deduplication prevents duplicate alerts.
+Leases fence competing workers; recovery waits up to the HTTP timeout plus five
+seconds for a dead worker's claim. Attempts, retry dates, deadlines and cumulative
+counters survive restarts. Shutdown preserves pending records. Background delivery
+cannot withhold a response; synchronous `RuntimeHook(mode="enforce")` does that.
+
+Defaults: 256 pending records, 1 MB pending serialized bodies, one-hour maximum
+age, ten attempts. Bounds include leased records. Terminal bodies are removed;
+the most recent 1,000 terminal IDs/statuses are retained via `terminal_records()`.
+These are logical record/body limits, not a filesystem quota: SQLite pages/WAL and
+filesystem overhead need additional disk space. Disk errors raise to the caller;
+do not catch them and claim successful admission. Monitor disk space and `stats`.
+
+Text is rejected, including empty strings. Known email/credential patterns in
+auxiliary metadata are rejected too; callers must select opaque, non-sensitive
+metadata. This is not a comprehensive PII detector. No key is persisted, only its
+digest binding. Key rotation requires draining the old outbox and using a new file;
+do not edit its binding. Store the file under restricted OS permissions. Text rules
+receive no text and report insufficient evidence; `stats.text_coverage` explicitly
+says unavailable. Use the transient hook for those checks. Accepted delivery says
+nothing about whether all applicable policy checks had enough evidence.

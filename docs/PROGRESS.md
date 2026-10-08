@@ -1,5 +1,24 @@
 # Release progress
 
+## Active follow-through (2026-10-08)
+
+User approved all four next steps: replace the GIF with actual runtime capture,
+restart-safe metadata delivery, named authenticated operator roles, and stronger
+grounding/drift checks with measured misses and false positives. Work is active;
+the previous delivered checkpoint below remains the baseline. Implement and test
+each boundary, keep focused commits, then regenerate the GIF against the final UI,
+run the full checks, push and stop owned servers. Raw text/credentials must never
+enter the durable outbox. Engineering calibration is not independent human review.
+Research: OWASP password/session guidance and the DKW–Massart concentration bound
+were checked against primary sources. No customer participation is required.
+
+First slice complete: `governloom.outbox.DurableObservationHook` freezes metadata
+in SQLite, resumes pending deliveries, persists counters/deadlines/attempts, fences
+leases, bounds pending bodies/terminal IDs, and rejects text/known sensitive metadata.
+Three outbox checks pass (9.83 s), including hard producer death after real HTTP
+collector commit, replay with one alert, concurrent admission, expiry and auth failure.
+Logical bounds do not constitute a disk quota. Next: server-side named identities.
+
 ## Delivered runtime checkpoint (2026-10-08 UTC)
 
 Latest steering: the user approved implementation of the plan. No participating
