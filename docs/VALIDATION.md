@@ -1,5 +1,31 @@
 # Release verification
 
+## Actual-model/private-pilot checkpoint (2026-10-08 UTC)
+
+67 backend/example tests pass (86.34 seconds), including actual-model services,
+bounded launcher cleanup, background delivery/heartbeat, real outage/restart,
+lost receipts, incident/actions, local sink retry and live-WAL backup/restore.
+Four Chromium workflows pass (26.9 seconds), including incident ownership,
+delivery coverage, action acknowledgment and reload. Production bundle,
+compilation, dependency and diff checks pass. The rebuilt wheel's installed SDK,
+operations and API import without optional model dependencies; CI also checks it.
+
+Three real subscription requests, 360 held-out digit cases and 48 observed
+historical forecast outcomes completed through HTTP: 1,246 events accepted,
+with faults/warmups outside independent quality denominators. See
+[actual-model evidence](TESTBED_EVIDENCE.md) and the
+[reviewed report](experiments/testbed-2026-10-08.json). Model misses and retrieval
+limitations are preserved; no independent human calibration is claimed.
+[Delivery stress evidence](experiments/capacity-2026-10-08.json) records the preset
+enqueue gate, bounded saturation and explicit losses. [Operations](PILOT_OPERATIONS.md)
+records actual restore counts/checksum and conservative retention limits.
+
+Sandbox home/temp/Vite access failures were rerun with appropriate access or
+workspace paths. Application failures (launcher field mismatch and ambiguous
+browser selector) were corrected before passing validation. CI uses no remote
+dataset fetch, subscription inference or secrets. No deployment or external
+recipient notifications occurred. Earlier validation below is historical.
+
 ## Runtime foundation v0.2 (2026-10-07)
 
 - Complete backend suite: **49 passed**, 20.08 seconds, Python 3.13.1 on Windows.

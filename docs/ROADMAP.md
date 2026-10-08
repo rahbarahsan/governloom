@@ -24,26 +24,29 @@ See [integration](RUNTIME_MONITORING.md), [research](PRODUCT_RESEARCH.md) and
 
 ## Next milestone: a three-system testbed and dependable delivery
 
-No participating team is available. First build three independent mini projects
-with actual models: digit recognition, chronological forecasting on public NOAA
-observations, and RAG over real project documentation. Connect them through the
-normal hook/HTTP boundary and measure natural model errors separately from
-deliberate fault scenarios. See the [delivery plan](PILOT_PLAN.md) for datasets,
-attribution, stages, acceptance gates and operational design.
+Completed 2026-10-08 UTC: three independent mini projects run actual digit,
+NOAA forecast and documentation RAG models through normal HTTP hooks. The
+isolated launcher saves evidence and stops its services, with optional bounded
+dashboard exploration. Natural errors and deliberate faults are separated.
+Bounded background sending, exact-body retry, heartbeats, incident grouping,
+operator/app action records, local test-sink escalation, backup/restore and
+conservative explicit retention are implemented. See the
+[delivery plan](PILOT_PLAN.md), [measured evidence](TESTBED_EVIDENCE.md) and
+[private pilot operations](PILOT_OPERATIONS.md).
 
 | Priority | Work | Acceptance evidence |
 | --- | --- | --- |
-| 1 | Build and connect the three mini applications | Actual trained/generated outputs; split/provenance records; real HTTP hooks; p50/p95/p99 added latency, errors, coverage and executed mitigation |
-| 2 | Reliable delivery and coverage | Bounded async buffering, backoff/idempotent retry, overflow visibility, heartbeat/missing-signal alerts; outage tests |
-| 3 | Incident operations | Group repeated alerts, cooldowns, controlled webhook destinations, retry audit, ownership and mitigation verification |
+| Done | Connect three mini applications | Actual trained/generated outputs; split/provenance records; HTTP hooks; latency, errors, coverage and executed actions |
+| Done | Bounded delivery and coverage | RAM buffering, exact retry, visible overflow, stale heartbeat status and real outage/restart tests; persistent outbox remains future work |
+| Done | Private incident operations | Grouping, cooldowns, local test-sink retry audit, ownership and explicit operator attestation; external destinations remain future work |
 | 4 | Task-specific quality | Actual labels/outcomes for vision/forecasting; validated drift tests; calibrated RAG grounding; measured misses/false positives |
 | 5 | Private deployment operations | Retention, capacity/restore tests, TLS setup, authenticated operator identities and scoped permissions before broader access |
 
-The next investment is dependable telemetry and incident response exercised
-against these actual model services. A customer pilot follows when a team is
-available. Add detectors based on measured needs, rather than an
-unvalidated universal risk score. Existing observability outputs can supply
-numeric metrics. Later adapters should complement existing tracing stacks.
+The next investment is a metadata-only persistent outbox, authenticated
+operator roles and domain-calibrated checks. Keep text replay coverage explicit;
+do not introduce raw-prompt retention accidentally. A customer pilot follows
+when a team is available. Add detectors based on measured needs, not a universal
+risk score. Existing observability outputs can supply numeric metrics.
 OpenTelemetry ingestion, native async/JavaScript SDKs and batch uploads remain
 future work; direct HTTP already supports other languages.
 
@@ -52,7 +55,8 @@ future work; direct HTTP already supports other languages.
 No inventory/discovery, tenant isolation, SSO, RBAC or compliance certification.
 No universal hallucination/injection detector, full image/audio understanding,
 demographic fairness computation or automatic retraining. No automatic rollback,
-fallback model or human-review queue: applications implement those actions.
+fallback model or human-review queue in the collector: mini applications now
+demonstrate persisted review and explicitly selected subsequent fallback.
 No deployment, paid model calls or external notifications have been performed.
 
 The earlier RAG workbench and subscription experiment remain available; four

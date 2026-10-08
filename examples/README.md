@@ -20,6 +20,12 @@ three CLI invocations with 180-second deadlines. It does not export credentials
 or use an API key. Omit `--allow-subscription` to run vision/forecasting only;
 RAG is then explicitly recorded as **not run**.
 
+For optional dashboard exploration, first set your own `GOVERNLOOM_ADMIN_TOKEN`
+of at least 32 characters and build the web bundle. Add `--explore-seconds 60`
+(maximum 600). The runner prints the local URL, never the token, and keeps its
+services ready for that bounded interval before shutdown. Enter the token in
+the dashboard. Ctrl+C also stops owned processes. The default leaves no servers.
+
 See [vision](vision/README.md), [forecasting](forecasting/README.md), and
 [RAG](rag/README.md) for independent serving and model limitations. Vision's
 `/baseline` is deliberately unmonitored for paired HTTP overhead measurements;

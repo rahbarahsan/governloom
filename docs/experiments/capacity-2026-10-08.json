@@ -1,0 +1,111 @@
+{
+  "scope": "Local delivery capacity using controlled custom telemetry; no independent model accuracy cases",
+  "targets": {
+    "enqueue_p95_ms": 5,
+    "attempted_steady_rate_per_second": 100,
+    "steady_events": 100,
+    "burst_events": 1000,
+    "burst_queue_bound": 16
+  },
+  "processes_stopped": true,
+  "steady": {
+    "enqueue": {
+      "samples": 100,
+      "p50_ms": 0.1590000174473971,
+      "p95_ms": 0.4493349726544692,
+      "p99_ms": 0.5682359577622267
+    },
+    "emission_seconds": 0.9904902999987826,
+    "delivery": {
+      "emitted": 100,
+      "queued": 100,
+      "accepted": 100,
+      "dropped": 0,
+      "failed": 0,
+      "retries": 0,
+      "expired": 0,
+      "auth_failed": 0,
+      "rate_limited": 0,
+      "invalid": 0,
+      "pending": 0,
+      "bytes_pending": 0,
+      "worker_alive": false,
+      "closed": true
+    }
+  },
+  "burst": {
+    "delivery": {
+      "emitted": 1000,
+      "queued": 16,
+      "accepted": 16,
+      "dropped": 984,
+      "failed": 0,
+      "retries": 0,
+      "expired": 0,
+      "auth_failed": 0,
+      "rate_limited": 0,
+      "invalid": 0,
+      "pending": 0,
+      "bytes_pending": 0,
+      "worker_alive": false,
+      "closed": true
+    },
+    "peak_pending": 16,
+    "peak_bytes": 7936
+  },
+  "policy_sha256": "afd9c30765c80be7342837cabfbfcc787368c7f0b37a53d8ba04344d2a550485",
+  "accepted_collector_events": 116,
+  "agents": [
+    {
+      "id": "7516717657e67124b94c2e7521e7f1fb",
+      "application_id": "895f863dedc44b1ea86d26bc5c70ba34",
+      "heartbeat": {
+        "schema_version": 1,
+        "agent_id": "capacity-agent",
+        "boot_id": "capacity-boot-1",
+        "sequence": 1,
+        "occurred_at": "2026-10-08T02:05:03.523531Z",
+        "counters": {
+          "emitted": 1000,
+          "queued": 16,
+          "accepted": 16,
+          "dropped": 984,
+          "failed": 0,
+          "expired": 0,
+          "pending": 0
+        }
+      },
+      "received_at": "2026-10-08T02:05:03.530582+00:00",
+      "heartbeat_timeout_seconds": 120,
+      "status": "reporting",
+      "limitation": "Client-reported delivery counters; quiet inference traffic is not an outage"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "8c13ad68da448a69be78a2e43b699d3b",
+      "application_id": "895f863dedc44b1ea86d26bc5c70ba34",
+      "policy_id": "87eb708405694a07b8eb195ba855ccbf",
+      "rule_id": "signal",
+      "name": "Controlled signal",
+      "environment": "testbed-fault",
+      "model_version": "controlled-telemetry-v1",
+      "application_version": "capacity-v1",
+      "task_type": "custom",
+      "severity": "medium",
+      "requested_action": "flag",
+      "count": 116,
+      "first_seen": "2026-10-08T02:05:00.698862+00:00",
+      "last_seen": "2026-10-08T02:05:03.371385+00:00",
+      "first_alert_id": "ec073b1d788a418b211f03db047f768d",
+      "latest_alert_id": "77b53e676af639a4cfefe5c81cdba271",
+      "window_seconds": 300,
+      "status": "open",
+      "owner": null,
+      "revision": 116,
+      "last_escalation_at": 1791425100.774753,
+      "escalations_queued": 1
+    }
+  ],
+  "status": "passed"
+}

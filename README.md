@@ -15,6 +15,12 @@ checks and explicit gaps.
 [Connect a real system](docs/RUNTIME_MONITORING.md) ·
 [Product research](docs/PRODUCT_RESEARCH.md) · [Roadmap](docs/ROADMAP.md)
 
+Try the [three actual-model mini applications](examples/README.md): trained digit
+recognition, historical NOAA forecasting, and documentation RAG with bounded real
+generation. [Measured evidence](docs/TESTBED_EVIDENCE.md),
+[delivery and incidents](docs/RUNTIME_DELIVERY.md), and
+[private pilot operations](docs/PILOT_OPERATIONS.md) record results and limits.
+
 The earlier RAG workbench remains available for source/dataset review, durable
 evaluation jobs and evidence comparison. It does not certify compliance.
 

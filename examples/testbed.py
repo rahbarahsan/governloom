@@ -3,9 +3,9 @@
 import argparse
 import importlib.metadata
 import json
+import os
 import secrets
 import subprocess
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,7 +14,7 @@ import numpy as np
 
 from examples.common import ROOT, digest, http
 from examples.forecasting.model import ForecastModel
-from examples.processes import Processes
+from examples.processes import Processes, free_port
 from examples.vision.model import DigitModel
 
 
@@ -44,6 +44,15 @@ def event_feed(call, application):
 
 
 def run(args):
+    explore = getattr(args, "explore_seconds", 0)
+    if explore and len(os.environ.get("GOVERNLOOM_ADMIN_TOKEN", "")) < 32:
+        raise ValueError("Exploration requires your own GOVERNLOOM_ADMIN_TOKEN of at least 32 characters; it will not be printed")
+    if args.allow_subscription:
+        from governloom.subscription import codex_command
+        environment = {name: value for name, value in os.environ.items() if name not in ("OPENAI_API_KEY", "CODEX_API_KEY", "CODEX_ACCESS_TOKEN")}
+        status = subprocess.run([codex_command(), "login", "status"], capture_output=True, text=True, timeout=15, env=environment)
+        if status.returncode or "Logged in using ChatGPT" not in status.stdout + status.stderr:
+            raise ValueError("Subscription preflight failed: Codex home/login configuration is unavailable; no model calls were made")
     directory = Path(args.output).resolve()
     directory.mkdir(parents=True, exist_ok=False)
     report = {"schema_version": 1, "started_at": datetime.now(timezone.utc).isoformat(), "status": "running",
@@ -57,10 +66,12 @@ def run(args):
     def save():
         (directory / "report.json").write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
     processes = Processes(directory / "logs")
-    admin = secrets.token_urlsafe(32)
+    admin = os.environ["GOVERNLOOM_ADMIN_TOKEN"] if explore else secrets.token_urlsafe(32)
     try:
+        collector_port = free_port()
         collector = processes.start("governloom.api:app", {"GOVERNLOOM_DB": f"sqlite:///{(directory / 'collector.db').as_posix()}",
-            "GOVERNLOOM_ADMIN_TOKEN": admin}, readiness="/api/health")
+            "GOVERNLOOM_ADMIN_TOKEN": admin, "GOVERNLOOM_ALLOWED_ORIGINS": f"http://127.0.0.1:{collector_port}"},
+            port=collector_port, readiness="/api/health")
         def call(path, body=None):
             return http(collector, "/api" + path, body, admin)
         def start(module, key, **environment):
@@ -179,6 +190,16 @@ def run(args):
         else:
             report["rag"] = {"status": "not_run", "reason": "Real model calls require explicit --allow-subscription"}
         report["status"] = "completed"
+        if explore:
+            print(f"Explore {collector} for {explore} seconds; enter your configured admin token. Ctrl+C stops early.", flush=True)
+            deadline = time.monotonic() + explore
+            while time.monotonic() < deadline:
+                time.sleep(min(1, deadline - time.monotonic()))
+    except KeyboardInterrupt:
+        if report["status"] != "completed":
+            report["status"] = "interrupted"
+            raise
+        report["exploration_stopped_early"] = True
     except BaseException as exc:
         report.update(status="failed", error_type=type(exc).__name__)
         raise
@@ -202,6 +223,8 @@ def main():
             raise argparse.ArgumentTypeError("Vision case count must be 1..360")
         return number
     parser.add_argument("--vision-cases", type=count, default=360, help="Bound ordinary vision traffic; default is all 360 held-out cases")
+    parser.add_argument("--explore-seconds", type=int, default=0, choices=range(601), metavar="0..600",
+                        help="After capture, keep services ready for bounded dashboard exploration, then stop")
     run(parser.parse_args())
 
 

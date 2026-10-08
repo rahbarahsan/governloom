@@ -6,17 +6,17 @@ Latest steering: the user approved implementation of the plan. No participating
 team is available; build independent mini projects to test GovernLoom instead.
 The detailed plan is docs/PILOT_PLAN.md: real digit classification, historical
 NOAA forecasting and model-backed RAG over actual project documentation. These
-projects are now being implemented. First executable implementation step:
-examples/vision/ with a trained model, held-out inputs, public HTTP hook and a
-persisted review/withhold action; then forecasting, RAG and the isolated launcher.
-Reliability and incident work follow the sequence and acceptance gates in that
-plan. A customer pilot is a later milestone, not an input blocking development.
+projects and the six-stage local sequence are implemented. Vision/forecasting/RAG
+have actual-model evidence; launcher, bounded background delivery/heartbeats,
+grouped incidents/actions, local escalation, backup/restore and conservative
+retention have working checks. Final validation/checkpoints/push are in progress.
+A customer pilot is later, not an input blocking development.
 
 Primary data sources, attribution and official local subscription execution docs
 were checked. Optional scikit-learn 1.9.1/NumPy 2.5.3 and dependencies were installed
 locally for feasibility preparation; core dependency files were not changed.
 No new model inference, dataset download or service was started during planning.
-Existing runtime code is unchanged; earlier v0.2 validation still applies to it.
+That was a planning-only checkpoint; runtime code has since advanced below.
 
 Implementation checkpoint: the vision mini service now trains a real 64-tree
 digit classifier and connects through HTTP. Its 360 held-out cases produce
@@ -39,9 +39,8 @@ uses the bounded opt-in subscription generator, with explicit post-generation
 faults and tool denial before a write. Five example tests pass (24.79 seconds),
 including an explicitly fake CI generator with real collector HTTP. A sandbox
 temporary-directory permission failure was resolved by using a fresh ignored
-workspace basetemp; it was not an application failure. Real RAG model capture
-is next through the isolated launcher, followed by reliability/incident work and
-measured evidence. No new inference-quality claim is implied by software tests.
+workspace basetemp; it was not an application failure. The later launcher run
+below records actual RAG generation. Software tests do not establish model quality.
 
 Working continuation: the isolated launcher completed all 360 vision cases and
 48 NOAA forecast/outcome pairs in data/testbed-2026-10-08-b/. Exactly 15 natural
@@ -61,17 +60,41 @@ fixed after vision completed; that capture is data/testbed-2026-10-08/.
 Three focused application commits 007c99f, e6e6347, cc8fc12 are pushed. All GitHub
 Actions jobs passed for cc8fc12 at
 https://github.com/rahbarahsan/governloom/actions/runs/37714232976.
-Background observation implementation is also underway: bounded RAM queue,
+Background observation is implemented: bounded RAM queue,
 exact-body retry, separate synchronous enforcement, loss counters and scoped
 heartbeats. Six delivery tests pass (5.28 seconds), including a real collector
 outage/restart, receipt loss without duplicate alerts and quiet batch cadence.
-Launcher and reviewed actual-model evidence are ready. Six example tests pass
-(51.15 seconds), including a bounded launcher run with no subscription calls or
-remote downloads and clean process shutdown. Next: delivery/incident docs and
-checkpoint, dashboard coverage, then backup/retention/capacity checks. Incident
+Launcher and reviewed actual-model evidence are committed in a3f669c. Six example
+tests include a bounded launcher with no subscription calls/downloads and clean
+shutdown. Delivery/incident docs, dashboard coverage and backup/retention/capacity
+checks are complete. Incident
 grouping, action acknowledgment/operator verification and local test-sink retry
 checks pass; two initially incorrect audit-kind assertions were corrected to
 the existing review_event audit store. No messages to real recipients were sent.
+
+Final local validation: **67 tests pass (86.34 seconds)**, four browser workflows
+pass (26.9 seconds), TypeScript/production bundle, compilation and pip check pass.
+Browser checks cover visible cadence counters, incident ownership, app action
+acknowledgment and reload. A sandbox Vite resolution failure was rerun with
+required access; its own leftover collector was verified/stopped. A selector
+matching both a paragraph and hidden option was corrected before successful rerun.
+Steady local delivery: 100/100 accepted at 100 attempts/second, enqueue p95 0.449 ms.
+Burst: 16 accepted/984 explicitly dropped, max queue 16 and 7,936 serialized bytes;
+all 116 accepted events present, one grouped incident/cooldown escalation.
+Live-WAL backup tests pass; actual testbed restore preserved 1,246 events and 130
+entities, integrity ok. Retention preview on that DB found zero eligible old
+observations and applied no deletion. Tests execute pruning only in disposable DBs.
+Full reports: docs/TESTBED_EVIDENCE.md, docs/experiments/testbed-2026-10-08.json,
+docs/experiments/capacity-2026-10-08.json; integration docs: RUNTIME_DELIVERY.md;
+operations: PILOT_OPERATIONS.md. Raw captures/backups remain ignored in data/.
+The updated 0.2 wheel builds (57,297 bytes), and its installed SDK, operations
+and API import from an isolated target directory without model dependencies.
+An initial non-isolated build lacked setuptools; normal isolated build succeeded.
+Packaging smoke is now part of Python 3.11/3.13 CI. Checkpoints/push are being
+finalized. Next work after delivery:
+metadata-only durable outbox with explicit text coverage gaps, authenticated
+operator roles, domain-calibrated detectors, then a real customer pilot if one
+becomes available. No deployment, paid API calls or external recipients.
 
 This section supersedes the earlier claim-evaluation roadmap below. The user
 clarified the product: a developer connects an existing AI system through a hook;

@@ -1,9 +1,11 @@
 # Plan: test GovernLoom against three independent AI applications
 
-Status: planned, not implemented. Updated 2026-10-07. No participating customer
-team is available. We will build repository-owned mini projects that run actual
-models, then exercise GovernLoom through its public hook and HTTP API. These
-projects will become repeatable integration targets for future releases.
+Status: implemented as a local private-pilot checkpoint, 2026-10-08 UTC.
+No participating customer team is required. Three repository-owned mini projects
+run actual models through the public hook/API. The six stages below now have
+working code and local evidence; deployment/SSO, durable event outbox and customer
+calibration remain later requirements. See [actual-model evidence](TESTBED_EVIDENCE.md),
+[delivery/incident behavior](RUNTIME_DELIVERY.md) and [operations](PILOT_OPERATIONS.md).
 
 ## Outcome and scope
 
@@ -108,9 +110,9 @@ only; real generation evidence comes from bounded local captures.
 | 5 | Incident handling and measured mitigation | Group repeat alerts, ownership, cooldown/escalation rules, audited retry, and application-confirmed action outcomes; prove tool denial before a side effect |
 | 6 | Private pilot operations and release evidence | Explicit retention, backup/restore, capacity tests, TLS deployment guide and operator identity requirements; publish measured limits and unresolved gaps |
 
-First implementation locations: `examples/vision/`, `examples/forecasting/`,
+Implementation locations: `examples/vision/`, `examples/forecasting/`,
 `examples/rag/`, shared testbed tooling under `examples/`, and separate optional
-ML requirements. These paths are proposed. Core installation and existing demo
+ML requirements. Core installation and existing demo
 must continue to work without installing example-model dependencies.
 
 Use one focused checkpoint for the vision vertical slice, one for each additional
