@@ -2,11 +2,11 @@
 
 ## Current direction: runtime governance (2026-10-07)
 
-Latest steering: the user requested a plan and confirmed that no participating
-team is available. Build independent mini projects to test GovernLoom instead.
+Latest steering: the user approved implementation of the plan. No participating
+team is available; build independent mini projects to test GovernLoom instead.
 The detailed plan is docs/PILOT_PLAN.md: real digit classification, historical
 NOAA forecasting and model-backed RAG over actual project documentation. These
-projects are planned, not implemented. First executable implementation step:
+projects are now being implemented. First executable implementation step:
 examples/vision/ with a trained model, held-out inputs, public HTTP hook and a
 persisted review/withhold action; then forecasting, RAG and the isolated launcher.
 Reliability and incident work follow the sequence and acceptance gates in that
@@ -17,6 +17,17 @@ were checked. Optional scikit-learn 1.9.1/NumPy 2.5.3 and dependencies were inst
 locally for feasibility preparation; core dependency files were not changed.
 No new model inference, dataset download or service was started during planning.
 Existing runtime code is unchanged; earlier v0.2 validation still applies to it.
+
+Implementation checkpoint: the vision mini service now trains a real 64-tree
+digit classifier and connects through HTTP. Its 360 held-out cases produce
+342 correct predictions, 18 errors, 69 review flags, 17 captured errors and one
+confident error missed, at a calibration-selected confidence threshold 0.59375.
+Two actual-model tests pass (12.86 seconds), including result withholding,
+persisted review resolution, label feedback and actual service restart.
+Forecasting is being implemented against a downloaded NOAA snapshot with SHA-256
+c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3.
+Next: forecasting HTTP/outcome checks, RAG service, then isolated launcher and
+measured evidence. No new inference-quality claim is implied by software tests.
 
 This section supersedes the earlier claim-evaluation roadmap below. The user
 clarified the product: a developer connects an existing AI system through a hook;
