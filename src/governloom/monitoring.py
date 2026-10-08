@@ -15,6 +15,7 @@ from sqlalchemy import func, select, update
 from .schemas import Record, now, uid
 from .service import checksum
 from .storage import Entity, RuntimeObservation
+from .detectors import Grounding, Profiles
 
 
 class MonitorRecord(Record):
@@ -39,6 +40,7 @@ class RuntimeEvent(MonitorRecord):
     related_event_id: str | None = Field(default=None, max_length=128)
     error_type: str | None = Field(default=None, max_length=200)
     client_mode: Literal["observe", "enforce"] = "observe"
+    grounding: Grounding | None = None
 
     @model_validator(mode="after")
     def valid_payload(self):
@@ -60,7 +62,8 @@ class RuntimeEvent(MonitorRecord):
 class RuntimeRule(MonitorRecord):
     id: str = Field(min_length=1, max_length=64, pattern=r"^[a-zA-Z][a-zA-Z0-9_.-]*$")
     name: str = Field(min_length=1, max_length=200)
-    detector: Literal["metric_threshold", "mean_shift", "label_allowlist", "tool_allowlist", "citation_integrity", "secrets", "email_exposure", "prompt_injection_signal", "target_error"]
+    detector: Literal["metric_threshold", "mean_shift", "label_allowlist", "tool_allowlist", "citation_integrity", "secrets", "email_exposure", "prompt_injection_signal", "target_error", "claim_support", "distribution_shift"]
+    profile_id: str | None = Field(default=None, min_length=1, max_length=128)
     phase: Literal["input", "output", "tool", "error", "outcome", "any"] = "any"
     task_type: Literal["vision", "rag", "forecasting", "classification", "generative", "custom", "any"] = "any"
     environment: str | None = Field(default=None, max_length=64)
@@ -76,6 +79,8 @@ class RuntimeRule(MonitorRecord):
 
     @model_validator(mode="after")
     def validate_detector(self):
+        if self.detector in ("claim_support", "distribution_shift") and (not self.profile_id or self.action == "block"):
+            raise ValueError("Evidence detectors require a profile and flag/review action; experimental signals cannot block")
         if self.detector in ("metric_threshold", "mean_shift") and (not self.metric or self.threshold is None):
             raise ValueError("Numeric rules require a metric and threshold")
         if self.detector == "mean_shift" and (self.baseline is None or self.threshold < 0):
@@ -102,6 +107,9 @@ class MonitorPolicy(MonitorRecord):
     def unique_rules(self):
         if len({rule.id for rule in self.rules}) != len(self.rules):
             raise ValueError("Rule identifiers must be unique")
+        profiles = [rule.profile_id for rule in self.rules if rule.profile_id]
+        if len(profiles) != len(set(profiles)):
+            raise ValueError("A profile can occur once per policy to preserve non-overlapping windows")
         return self
 
 
@@ -268,6 +276,8 @@ class Monitor:
         # Text is scanned transiently. The DB only receives lengths and detector
         # evidence; raw prompt/output text never enters persisted observations.
         incoming = event.model_dump(mode="json")
+        if incoming.get("grounding") is None:
+            incoming.pop("grounding", None)  # Preserve exact replay hashes from 0.2 collectors.
         digest = checksum(incoming)
         with self.store.session() as session:
             session.connection().exec_driver_sql("BEGIN IMMEDIATE")
@@ -317,6 +327,8 @@ class Monitor:
             stored = {key: value for key, value in incoming.items() if key != "text"}
             stored["metrics"] = metrics
             stored["text_supplied"] = event.text is not None
+            stored.pop("grounding", None)
+            stored["grounding_supplied"] = event.grounding is not None
             stored["text_characters"] = len(event.text) if event.text is not None else None
             # Text-like auxiliary identifiers are also bounded and redact known
             # secret/email signatures before storage, not just main content.
@@ -450,7 +462,9 @@ class Monitor:
         detector = rule["detector"]
         evidence, triggered = {}, False
         missing = False
-        if detector == "metric_threshold":
+        if detector in ("claim_support", "distribution_shift"):
+            missing, triggered, evidence = Profiles.evaluate(session, application_id, rule, event, metrics)
+        elif detector == "metric_threshold":
             missing = rule["metric"] not in metrics
             if not missing:
                 value = metrics[rule["metric"]]

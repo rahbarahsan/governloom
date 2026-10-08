@@ -1,5 +1,14 @@
 # Decisions
 
+- Evidence detectors require immutable approved profiles with declared scope,
+  source/reference hashes and grouped calibration results. Upstream judgments
+  remain replaceable/provider independent; quote checks verify provenance, not
+  semantic entailment. Text and explanations never enter collector storage.
+- Distribution checks use finite-sample ECDF distance and conservative DKW/union
+  bounds with non-overlapping windows and lifetime alpha spending per profile.
+  Known dependent forecast replay is labeled empirical, not nominal significance.
+  Experimental grounding/distribution findings can flag/review, not block.
+
 - Durable observation freezes metadata in a separate SQLite outbox and preserves
   pending work on shutdown; text checks remain transient. Exact collector replay
   handles producer death after remote commit. Logical limits are not disk quotas.

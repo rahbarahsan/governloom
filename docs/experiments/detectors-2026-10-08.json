@@ -1,0 +1,1053 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-08T19:52:28.804723+00:00",
+  "status": "completed",
+  "interpretation": "Engineering validation on public mini applications; not independent human/customer calibration",
+  "subscription_requests": 10,
+  "subscription_completed": 10,
+  "owned_services_stopped": true,
+  "vision": {
+    "manifest": {
+      "dataset": "UCI handwritten digits, sklearn bundled original-test subset",
+      "dataset_url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "attribution": "Alpaydin and Kaynak (1998), DOI 10.24432/C50P49, CC BY 4.0",
+      "dataset_hash": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+      "splits": {
+        "train": {
+          "count": 1168,
+          "index_hash": "084b4a3f9bf51db1df2796e7c0dece8014fc160e0765073ae304f928649c9941"
+        },
+        "calibration": {
+          "count": 269,
+          "index_hash": "262c5051938f4f98d4f8362e7fc673bb18f0be0ebe0dbad64a9815a6023c4297"
+        },
+        "held_out": {
+          "count": 360,
+          "index_hash": "e2f7446e922c67e73330417670f3e7b7328a6964a4b171a4098b8762d82c7ce1"
+        }
+      },
+      "algorithm": "RandomForestClassifier",
+      "trees": 64,
+      "model_seed": 43,
+      "sklearn_version": "1.9.1",
+      "numpy_version": "2.5.3",
+      "confidence_threshold": 0.59375,
+      "selection": "20th confidence percentile on calibration only",
+      "model_version": "digits-rf-d3eecd4aa4949282"
+    },
+    "quality": {
+      "cases": 360,
+      "correct": 342,
+      "errors": 18,
+      "review_count": 69,
+      "errors_flagged": 17,
+      "confident_errors_missed": 1
+    },
+    "distribution_controls": {
+      "true_positives": 6,
+      "false_positives": 0,
+      "true_negatives": 3,
+      "false_negatives": 0,
+      "unavailable": 0
+    },
+    "unit": "non-overlapping 120-image windows",
+    "assumption_limit": "Writer dependence/sampling shift are not certified by this benchmark",
+    "windows": [
+      {
+        "scenario": "held-natural",
+        "expected_risk": false,
+        "unavailable": false,
+        "distance": 0.0829615861214374,
+        "critical_distance": 0.2425442958228639,
+        "alpha_spent": 0.025,
+        "window_index": 1,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": false,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-natural",
+        "expected_risk": false,
+        "unavailable": false,
+        "distance": 0.09095415117719952,
+        "critical_distance": 0.2675108457762359,
+        "alpha_spent": 0.008333333333333333,
+        "window_index": 2,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": false,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-natural",
+        "expected_risk": false,
+        "unavailable": false,
+        "distance": 0.15235439900867415,
+        "critical_distance": 0.28212853844119284,
+        "alpha_spent": 0.004166666666666667,
+        "window_index": 3,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": false,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-occlusion",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 0.9814126394052045,
+        "critical_distance": 0.29243397971547613,
+        "alpha_spent": 0.0025,
+        "window_index": 4,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-occlusion",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 0.9814126394052045,
+        "critical_distance": 0.3003622647219405,
+        "alpha_spent": 0.0016666666666666668,
+        "window_index": 5,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-occlusion",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 0.9814126394052045,
+        "critical_distance": 0.3067859714819829,
+        "alpha_spent": 0.0011904761904761906,
+        "window_index": 6,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-noise",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 0.9248760842627014,
+        "critical_distance": 0.3121734042427847,
+        "alpha_spent": 0.0008928571428571429,
+        "window_index": 7,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-noise",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 0.9591078066914498,
+        "critical_distance": 0.3168048121000032,
+        "alpha_spent": 0.0006944444444444445,
+        "window_index": 8,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-noise",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 0.9702602230483272,
+        "critical_distance": 0.32086104039069807,
+        "alpha_spent": 0.0005555555555555556,
+        "window_index": 9,
+        "reference_samples": 269,
+        "samples": 120,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      }
+    ]
+  },
+  "forecasting": {
+    "manifest": {
+      "source_url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt",
+      "provenance": {
+        "url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt",
+        "sha256": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
+        "retrieved_at": "2026-10-08T01:33:34.494881+00:00",
+        "attribution": "NOAA Global Monitoring Laboratory; monthly CO2 data and source-header contributors"
+      },
+      "dataset_hash": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
+      "algorithm": "Quadratic trend plus annual Fourier terms",
+      "fit_window": "last 120 observed months, strictly before forecast date",
+      "first_training_month": "2005-01",
+      "calibration_period": [
+        "2019-01",
+        "2020-12"
+      ],
+      "held_out_period": [
+        "2021-01",
+        "2024-12"
+      ],
+      "calibration_count": 24,
+      "held_out_count": 48,
+      "unit": "ppm",
+      "horizon_months": 1,
+      "absolute_error_threshold": 0.9743297198304673,
+      "selection": "90th calibration absolute-error percentile, frozen",
+      "limitation": "Historical replay; excludes interpolated/missing actuals; source documents a 2022-2023 site change"
+    },
+    "quality": {
+      "cases": 48,
+      "missing_actuals": 0,
+      "mae_ppm": 0.7565399272393165,
+      "rmse_ppm": 0.9506661060536197,
+      "baseline_mae_ppm": 2.5977083333333333,
+      "baseline_cases": 48,
+      "over_tolerance": 15
+    },
+    "distribution_controls": {
+      "true_positives": 2,
+      "false_positives": 0,
+      "true_negatives": 2,
+      "false_negatives": 0,
+      "unavailable": 0
+    },
+    "unit": "24-month historical windows",
+    "nominal_probability_valid": false,
+    "limitation": "Serially dependent revised historical series; reports an empirical replay signal only",
+    "windows": [
+      {
+        "scenario": "held-natural",
+        "expected_risk": false,
+        "unavailable": false,
+        "distance": 0.25,
+        "critical_distance": 0.6503315702543476,
+        "alpha_spent": 0.025,
+        "window_index": 1,
+        "reference_samples": 24,
+        "samples": 24,
+        "minimum_effect": 0.2,
+        "triggered": false,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-natural",
+        "expected_risk": false,
+        "unavailable": false,
+        "distance": 0.33333333333333326,
+        "critical_distance": 0.7172741284370721,
+        "alpha_spent": 0.008333333333333333,
+        "window_index": 2,
+        "reference_samples": 24,
+        "samples": 24,
+        "minimum_effect": 0.2,
+        "triggered": false,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-offset-fault",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 1.0,
+        "critical_distance": 0.7564684001145213,
+        "alpha_spent": 0.004166666666666667,
+        "window_index": 3,
+        "reference_samples": 24,
+        "samples": 24,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      },
+      {
+        "scenario": "held-offset-fault",
+        "expected_risk": true,
+        "unavailable": false,
+        "distance": 1.0,
+        "critical_distance": 0.7841002756996854,
+        "alpha_spent": 0.0025,
+        "window_index": 4,
+        "reference_samples": 24,
+        "samples": 24,
+        "minimum_effect": 0.2,
+        "triggered": true,
+        "can_detect": true,
+        "method": "two one-sample DKW-Massart bounds; triangle/union bound; lifetime alpha spending"
+      }
+    ]
+  },
+  "rag": {
+    "corpus": {
+      "documents": [
+        {
+          "path": "README.md",
+          "sha256": "a8deea9ca5b52e700345fd83cadc5fc6e6e8ca51a702cd43b4b1dcaa8bad1d46"
+        },
+        {
+          "path": "docs/RUNTIME_MONITORING.md",
+          "sha256": "dc3c737de0d58cae53fe2235ad922a08a6dff5ada9f2ac2e711ba926b671eccb"
+        },
+        {
+          "path": "docs/PRODUCT_RESEARCH.md",
+          "sha256": "a08206ecb06f13f63c84114d7890b946a426da42418dad92202624d4445117e9"
+        }
+      ],
+      "corpus_sha256": "6f7acba0df0f190e841c310e9f460401e507164ae404fd104e872c5454457038",
+      "git_revision": "3fb782afef1ec28d51f194a96f0fcd6d7c324001",
+      "retrieval": "TF-IDF word unigrams/bigrams; 20-line passages; top 3 positive matches",
+      "prompt_version": "documentation-rag-v1",
+      "passages": 27
+    },
+    "judge_version": "gpt-6.1-sol@codex-cli 0.160.1",
+    "rubric_version": "claim-support-v1",
+    "calibration_controls": {
+      "true_positives": 2,
+      "false_positives": 0,
+      "true_negatives": 1,
+      "false_negatives": 0,
+      "unavailable": 1
+    },
+    "held_out_controls": {
+      "true_positives": 2,
+      "false_positives": 0,
+      "true_negatives": 2,
+      "false_negatives": 0,
+      "unavailable": 0
+    },
+    "natural_generated_answer": {
+      "status": "returned",
+      "answer": {
+        "answer": "In enforce mode, a block raises PolicyViolation before target invocation. For tools, wrap_tool sends a tool event before invoking the tool; place the wrapper at the actual side-effect boundary so a block prevents the operation. Output blocks only withhold results and cannot undo side effects that already occurred.",
+        "behavior": "answer",
+        "citations": [
+          "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5"
+        ]
+      },
+      "receipt": {
+        "event_id": "d33605ea26b7400d8a52792eaf5c1f91",
+        "trace_id": "01751e6b71e244ee9ef00ab84915de31",
+        "phase": "output",
+        "application_id": "c81143dae8734922893444947b56241d",
+        "policy_id": "938e8f300cbf488f9345c571dddd577d",
+        "engine_version": "runtime-rules-v1",
+        "action": "review",
+        "checks": [
+          {
+            "rule_id": "evidence_0",
+            "name": "Documentation claim support",
+            "severity": "medium",
+            "action": "review",
+            "mitigation": "Inspect outcomes and quoted evidence before mitigation",
+            "status": "not_applicable",
+            "evidence": {}
+          },
+          {
+            "rule_id": "evidence_1",
+            "name": "Documentation claim support",
+            "severity": "medium",
+            "action": "review",
+            "mitigation": "Inspect outcomes and quoted evidence before mitigation",
+            "status": "triggered",
+            "evidence": {
+              "profile_id": "be7c350b03844b5d81046b8e602dbff2",
+              "profile_checksum": "7c62c6f38c81149b09301b214b17613ee8468bd2e94b14c47e4b753e7a49d805",
+              "calibration": {
+                "schema_version": 1,
+                "dataset_sha256": "987a5a533d6f0a1fa5f9f5f5b47a57f57d6eb10edbbc9c2bbaa42632e85642fb",
+                "labels_sha256": "a5db35ec740736305b9580961d0c9ba52748760dccc89b6959b2e24b2ad3e7fc",
+                "label_provenance": "engineering",
+                "description": "Eight authored claims over real repository passages; paired topics grouped, four calibration and four held-out. No independent human labelers. Threshold zero predeclared and checked on calibration only.",
+                "calibration_groups": [
+                  "keys",
+                  "binary-inputs"
+                ],
+                "held_out_groups": [
+                  "citation-support",
+                  "enforcement"
+                ],
+                "true_positives": 2,
+                "false_positives": 0,
+                "true_negatives": 2,
+                "false_negatives": 0,
+                "unavailable": 0
+              },
+              "engine_version": "evidence-detectors-v1",
+              "counts": {
+                "supported": 2,
+                "unsupported": 1,
+                "insufficient_evidence": 0
+              },
+              "claim_positions": [
+                {
+                  "start": 0,
+                  "end": 73,
+                  "verdict": "unsupported",
+                  "evidence": [
+                    {
+                      "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                      "start": 67,
+                      "end": 188,
+                      "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                    }
+                  ]
+                },
+                {
+                  "start": 74,
+                  "end": 227,
+                  "verdict": "supported",
+                  "evidence": [
+                    {
+                      "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                      "start": 285,
+                      "end": 433,
+                      "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                    },
+                    {
+                      "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                      "start": 67,
+                      "end": 188,
+                      "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                    }
+                  ]
+                },
+                {
+                  "start": 228,
+                  "end": 315,
+                  "verdict": "supported",
+                  "evidence": [
+                    {
+                      "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                      "start": 67,
+                      "end": 188,
+                      "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                    },
+                    {
+                      "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                      "start": 382,
+                      "end": 433,
+                      "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                    }
+                  ]
+                }
+              ],
+              "coverage": 1.0,
+              "unsupported_fraction": 0.3333333333333333,
+              "threshold": 0.0,
+              "answer_sha256": "a0c6a53da9ddcc006edaba5f58929943d0ac615fbd250512cc3037784e95a3ad",
+              "content": "not retained",
+              "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+            }
+          }
+        ],
+        "alert_ids": [
+          "ca76d7ffdef58b32ce392fa196a54985"
+        ],
+        "incident_ids": [
+          "d97c233f019bd2cabc7dd1e76b603fe8"
+        ],
+        "received_at": "2026-10-08T19:54:53.492408+00:00",
+        "duplicate": false,
+        "cursor": 1186
+      },
+      "scenario": "natural",
+      "capture": {
+        "output": {
+          "answer": "In enforce mode, a block raises PolicyViolation before target invocation. For tools, wrap_tool sends a tool event before invoking the tool; place the wrapper at the actual side-effect boundary so a block prevents the operation. Output blocks only withhold results and cannot undo side effects that already occurred.",
+          "behavior": "answer",
+          "citations": [
+            "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5"
+          ]
+        },
+        "model_selector": "gpt-6.1-sol",
+        "cli_version": "codex-cli 0.160.1",
+        "usage": {
+          "input_tokens": 14762,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 98,
+          "reasoning_output_tokens": 0
+        },
+        "latency_ms": 6505.878399941139
+      }
+    },
+    "benchmark": [
+      {
+        "scenario": "keys",
+        "expected_risk": false,
+        "triggered": false,
+        "unavailable": true,
+        "source_ids": [
+          "docs/RUNTIME_MONITORING.md:21:dc3c737de0d5"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 0,
+            "unsupported": 0,
+            "insufficient_evidence": 1
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 55,
+              "verdict": "insufficient_evidence",
+              "evidence": [
+                {
+                  "source_id": "docs/RUNTIME_MONITORING.md:21:dc3c737de0d5",
+                  "start": 222,
+                  "end": 372,
+                  "content_hash": "28db27a5f69276f1a22adf0f789c98d5c59785ed32e0eda8453abac40e577e40"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 0.0,
+          "threshold": 0,
+          "answer_sha256": "014fdd2cb8e2dade89b9c34f0effcd718a98bba8d00c5f6d8b58e1d578b88175",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14613,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 180,
+          "reasoning_output_tokens": 46
+        }
+      },
+      {
+        "scenario": "keys",
+        "expected_risk": true,
+        "triggered": true,
+        "unavailable": false,
+        "source_ids": [
+          "docs/RUNTIME_MONITORING.md:21:dc3c737de0d5"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 0,
+            "unsupported": 1,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 54,
+              "verdict": "unsupported",
+              "evidence": [
+                {
+                  "source_id": "docs/RUNTIME_MONITORING.md:21:dc3c737de0d5",
+                  "start": 348,
+                  "end": 372,
+                  "content_hash": "28db27a5f69276f1a22adf0f789c98d5c59785ed32e0eda8453abac40e577e40"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 1.0,
+          "threshold": 0,
+          "answer_sha256": "6bdf211764878b6cc3bd41ba0ce4f4db04ac1dbb8ad3e8e7d33b56f92153d986",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14105,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 86,
+          "reasoning_output_tokens": 0
+        }
+      },
+      {
+        "scenario": "binary-inputs",
+        "expected_risk": false,
+        "triggered": false,
+        "unavailable": false,
+        "source_ids": [
+          "docs/PRODUCT_RESEARCH.md:41:a08206ecb06f"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 1,
+            "unsupported": 0,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 62,
+              "verdict": "supported",
+              "evidence": [
+                {
+                  "source_id": "docs/PRODUCT_RESEARCH.md:41:a08206ecb06f",
+                  "start": 80,
+                  "end": 163,
+                  "content_hash": "db5269c534d5179603a9db9d2e060744c7e9abd201d478aec23231dc001a782f"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 0.0,
+          "threshold": 0,
+          "answer_sha256": "b077b58a89cf34899894cb82a3d5a3be9cddc099ebff26333e0404e67dae896c",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14121,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 94,
+          "reasoning_output_tokens": 0
+        }
+      },
+      {
+        "scenario": "binary-inputs",
+        "expected_risk": true,
+        "triggered": true,
+        "unavailable": false,
+        "source_ids": [
+          "docs/PRODUCT_RESEARCH.md:41:a08206ecb06f"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 0,
+            "unsupported": 1,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 78,
+              "verdict": "unsupported",
+              "evidence": [
+                {
+                  "source_id": "docs/PRODUCT_RESEARCH.md:41:a08206ecb06f",
+                  "start": 80,
+                  "end": 163,
+                  "content_hash": "db5269c534d5179603a9db9d2e060744c7e9abd201d478aec23231dc001a782f"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 1.0,
+          "threshold": 0,
+          "answer_sha256": "c2e85a0688e87cbec6e8fddb99c5e9b8364f3eebf3a4847b9f8287ea6196b45b",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14124,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 100,
+          "reasoning_output_tokens": 0
+        }
+      },
+      {
+        "scenario": "enforcement",
+        "expected_risk": false,
+        "triggered": false,
+        "unavailable": false,
+        "source_ids": [
+          "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 1,
+            "unsupported": 0,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 31,
+              "verdict": "supported",
+              "evidence": [
+                {
+                  "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                  "start": 67,
+                  "end": 188,
+                  "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 0.0,
+          "threshold": 0,
+          "answer_sha256": "f8909305902f4e491134be86e537c6aabac5325c7cafd8620902a3aad40297f7",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14164,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 99,
+          "reasoning_output_tokens": 0
+        }
+      },
+      {
+        "scenario": "enforcement",
+        "expected_risk": true,
+        "triggered": true,
+        "unavailable": false,
+        "source_ids": [
+          "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 0,
+            "unsupported": 1,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 61,
+              "verdict": "unsupported",
+              "evidence": [
+                {
+                  "source_id": "docs/RUNTIME_MONITORING.md:141:dc3c737de0d5",
+                  "start": 67,
+                  "end": 284,
+                  "content_hash": "76d9998d3676aa56f5dfe170b1beeec53decabef8598deb778b911a1337a58fe"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 1.0,
+          "threshold": 0,
+          "answer_sha256": "36332602aff081f76531067f4cad52f69abba19137510b9ae127e1a3450ebc8d",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14169,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 131,
+          "reasoning_output_tokens": 0
+        }
+      },
+      {
+        "scenario": "citation-support",
+        "expected_risk": false,
+        "triggered": false,
+        "unavailable": false,
+        "source_ids": [
+          "docs/RUNTIME_MONITORING.md:61:dc3c737de0d5"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 1,
+            "unsupported": 0,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 54,
+              "verdict": "supported",
+              "evidence": [
+                {
+                  "source_id": "docs/RUNTIME_MONITORING.md:61:dc3c737de0d5",
+                  "start": 570,
+                  "end": 624,
+                  "content_hash": "5ae50753e858e936d187fa4852d8e0dd5f5e0ca238e6b5322cde495f141eb244"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 0.0,
+          "threshold": 0,
+          "answer_sha256": "89bb91fc26525585bc66107d5cb4f15cc7f79352ff6d370130e4a8bfc043cda8",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14094,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 82,
+          "reasoning_output_tokens": 0
+        }
+      },
+      {
+        "scenario": "citation-support",
+        "expected_risk": true,
+        "triggered": true,
+        "unavailable": false,
+        "source_ids": [
+          "docs/RUNTIME_MONITORING.md:61:dc3c737de0d5"
+        ],
+        "evidence": {
+          "counts": {
+            "supported": 0,
+            "unsupported": 1,
+            "insufficient_evidence": 0
+          },
+          "claim_positions": [
+            {
+              "start": 0,
+              "end": 67,
+              "verdict": "unsupported",
+              "evidence": [
+                {
+                  "source_id": "docs/RUNTIME_MONITORING.md:61:dc3c737de0d5",
+                  "start": 570,
+                  "end": 624,
+                  "content_hash": "5ae50753e858e936d187fa4852d8e0dd5f5e0ca238e6b5322cde495f141eb244"
+                }
+              ]
+            }
+          ],
+          "coverage": 1.0,
+          "unsupported_fraction": 1.0,
+          "threshold": 0,
+          "answer_sha256": "d581d96e596e3ea1994a1dc0dc347461682943790bc51766e41fd402fa4002e2",
+          "content": "not retained",
+          "limitation": "Upstream model judgment; exact quotes verify provenance, not entailment. Coverage gaps never clear."
+        },
+        "usage": {
+          "input_tokens": 14096,
+          "cached_input_tokens": 0,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 85,
+          "reasoning_output_tokens": 0
+        }
+      }
+    ],
+    "limitation": "Small engineering-authored calibration; quote provenance and source coverage do not prove semantic reliability"
+  },
+  "capture_provenance": {
+    "git_revision": "3fb782afef1ec28d51f194a96f0fcd6d7c324001",
+    "end_of_capture_code_sha256": "d009644207a56af186ba8ace4f1f71201969c00857eba02d1e86bdcd8d4b6a04",
+    "note": "Development working-tree capture; code advanced beyond the recorded git revision. Frozen model, corpus, profile and source hashes identify the measured evidence."
+  },
+  "profile_summaries": [
+    {
+      "application": "Vision confidence distribution",
+      "record": {
+        "schema_version": 1,
+        "name": "Vision confidence distribution",
+        "actor": "engineering-runner",
+        "kind": "distribution_shift",
+        "task_type": "vision",
+        "environment": "validation-replay",
+        "model_version": "digits-rf-d3eecd4aa4949282",
+        "application_version": "detector-benchmark-v1",
+        "calibration": {
+          "schema_version": 1,
+          "dataset_sha256": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+          "labels_sha256": "650aee428de38492e321942cf6c6b42fe3559c539e83b7d02fb78507dab7d707",
+          "label_provenance": "observed_outcomes",
+          "description": "Baseline and rule frozen before held-out windows; declared perturbations are detection controls, not labels of individual prediction correctness",
+          "calibration_groups": [
+            "train",
+            "calibration"
+          ],
+          "held_out_groups": [
+            "held-natural",
+            "held-noise",
+            "held-occlusion"
+          ],
+          "true_positives": 6,
+          "false_positives": 0,
+          "true_negatives": 3,
+          "false_negatives": 0,
+          "unavailable": 0
+        },
+        "metric": "confidence",
+        "window_size": 120,
+        "alpha": 0.05,
+        "minimum_effect": 0.2,
+        "sampling_assumption": "independent_samples",
+        "corpus_sha256": null,
+        "judge_version": null,
+        "rubric_version": null,
+        "unsupported_fraction_threshold": 0.0,
+        "id": "71bec9fa700249c28d2a6531d111e1ea",
+        "application_id": "8270d6c8cf38404580be9cee76e40f38",
+        "created_at": "2026-10-08T19:52:36.885297+00:00",
+        "checksum": "3d771412204f53b6a46b5b1562fd24317203aca50d66b9d3071b1deb643a7d6e",
+        "reference_sha256": "45cfaf43845c4fbb8460e801af0392906050b0cc0576ad02ab38f3a7cb0f5bb5",
+        "engine_version": "evidence-detectors-v1"
+      }
+    },
+    {
+      "application": "Forecast residual replay",
+      "record": {
+        "schema_version": 1,
+        "name": "Forecast residual replay",
+        "actor": "engineering-runner",
+        "kind": "distribution_shift",
+        "task_type": "forecasting",
+        "environment": "validation-replay",
+        "model_version": "rolling-residual-replay-490edc8b7fe5",
+        "application_version": "detector-benchmark-v1",
+        "calibration": {
+          "schema_version": 1,
+          "dataset_sha256": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
+          "labels_sha256": "a7ec077eafdcf1ff99ea58d2d6e406798a21db18ff1d4f3d715e2cc9d937aadf",
+          "label_provenance": "observed_outcomes",
+          "description": "Baseline and rule frozen before held-out windows; declared perturbations are detection controls, not labels of individual prediction correctness",
+          "calibration_groups": [
+            "2019-2020"
+          ],
+          "held_out_groups": [
+            "held-natural",
+            "held-offset-fault"
+          ],
+          "true_positives": 2,
+          "false_positives": 0,
+          "true_negatives": 2,
+          "false_negatives": 0,
+          "unavailable": 0
+        },
+        "metric": "absolute_error",
+        "window_size": 24,
+        "alpha": 0.05,
+        "minimum_effect": 0.2,
+        "sampling_assumption": "dependent_replay",
+        "corpus_sha256": null,
+        "judge_version": null,
+        "rubric_version": null,
+        "unsupported_fraction_threshold": 0.0,
+        "id": "4896c70d6aa54ab2b68fddb98442748e",
+        "application_id": "7d45154fdfcb4278a290bdb5df0738f4",
+        "created_at": "2026-10-08T19:53:34.088952+00:00",
+        "checksum": "f46959fa087ae106fd5491fc260d0357e55b878bd010261fe20d27dfc2d483e0",
+        "reference_sha256": "e9a09a0480a37d433c5ed8e21937b8ceeef74b0bc36b068baff02669a6c366e1",
+        "engine_version": "evidence-detectors-v1"
+      }
+    },
+    {
+      "application": "Documentation RAG grounding",
+      "record": {
+        "schema_version": 1,
+        "name": "Documentation claim support",
+        "actor": "engineering-runner",
+        "kind": "claim_support",
+        "task_type": "rag",
+        "environment": "validation-authored",
+        "model_version": "gpt-6.1-sol-6f7acba0df0f",
+        "application_version": "documentation-service-v1",
+        "calibration": {
+          "schema_version": 1,
+          "dataset_sha256": "987a5a533d6f0a1fa5f9f5f5b47a57f57d6eb10edbbc9c2bbaa42632e85642fb",
+          "labels_sha256": "a5db35ec740736305b9580961d0c9ba52748760dccc89b6959b2e24b2ad3e7fc",
+          "label_provenance": "engineering",
+          "description": "Eight authored claims over real repository passages; paired topics grouped, four calibration and four held-out. No independent human labelers. Threshold zero predeclared and checked on calibration only.",
+          "calibration_groups": [
+            "keys",
+            "binary-inputs"
+          ],
+          "held_out_groups": [
+            "citation-support",
+            "enforcement"
+          ],
+          "true_positives": 2,
+          "false_positives": 0,
+          "true_negatives": 2,
+          "false_negatives": 0,
+          "unavailable": 0
+        },
+        "metric": null,
+        "window_size": 100,
+        "alpha": 0.05,
+        "minimum_effect": 0.2,
+        "sampling_assumption": "independent_samples",
+        "corpus_sha256": "6f7acba0df0f190e841c310e9f460401e507164ae404fd104e872c5454457038",
+        "judge_version": "gpt-6.1-sol@codex-cli 0.160.1",
+        "rubric_version": "claim-support-v1",
+        "unsupported_fraction_threshold": 0.0,
+        "id": "83cd3da7bfa14320ab261e4399adff84",
+        "application_id": "c81143dae8734922893444947b56241d",
+        "created_at": "2026-10-08T19:54:29.470753+00:00",
+        "checksum": "327f25c868bea8cdec75d10560b7e3f3af938dcf5fa08f7aea5d8e3ad0beac4f",
+        "reference_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "engine_version": "evidence-detectors-v1"
+      }
+    },
+    {
+      "application": "Documentation RAG grounding",
+      "record": {
+        "schema_version": 1,
+        "name": "Documentation claim support",
+        "actor": "engineering-runner",
+        "kind": "claim_support",
+        "task_type": "rag",
+        "environment": "testbed-natural",
+        "model_version": "gpt-6.1-sol-6f7acba0df0f",
+        "application_version": "documentation-service-v1",
+        "calibration": {
+          "schema_version": 1,
+          "dataset_sha256": "987a5a533d6f0a1fa5f9f5f5b47a57f57d6eb10edbbc9c2bbaa42632e85642fb",
+          "labels_sha256": "a5db35ec740736305b9580961d0c9ba52748760dccc89b6959b2e24b2ad3e7fc",
+          "label_provenance": "engineering",
+          "description": "Eight authored claims over real repository passages; paired topics grouped, four calibration and four held-out. No independent human labelers. Threshold zero predeclared and checked on calibration only.",
+          "calibration_groups": [
+            "keys",
+            "binary-inputs"
+          ],
+          "held_out_groups": [
+            "citation-support",
+            "enforcement"
+          ],
+          "true_positives": 2,
+          "false_positives": 0,
+          "true_negatives": 2,
+          "false_negatives": 0,
+          "unavailable": 0
+        },
+        "metric": null,
+        "window_size": 100,
+        "alpha": 0.05,
+        "minimum_effect": 0.2,
+        "sampling_assumption": "independent_samples",
+        "corpus_sha256": "6f7acba0df0f190e841c310e9f460401e507164ae404fd104e872c5454457038",
+        "judge_version": "gpt-6.1-sol@codex-cli 0.160.1",
+        "rubric_version": "claim-support-v1",
+        "unsupported_fraction_threshold": 0.0,
+        "id": "be7c350b03844b5d81046b8e602dbff2",
+        "application_id": "c81143dae8734922893444947b56241d",
+        "created_at": "2026-10-08T19:54:29.550265+00:00",
+        "checksum": "7c62c6f38c81149b09301b214b17613ee8468bd2e94b14c47e4b753e7a49d805",
+        "reference_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "engine_version": "evidence-detectors-v1"
+      }
+    }
+  ]
+}

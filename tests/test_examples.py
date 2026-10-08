@@ -187,3 +187,17 @@ def test_launcher_completes_and_cleans_up_without_inference_or_download(series, 
     assert not (directory / "subscription").exists()
     with pytest.raises(FileExistsError):
         run(args)
+
+
+def test_actual_signal_distance_matches_scipy_and_known_perturbations(digits, series):
+    from examples.detector_validation import windows
+    reference = digits.classifier.predict_proba(digits.images[digits.calibration]).max(axis=1).tolist()
+    natural = [digits.predict(digits.sample(i))["confidence"] for i in digits.held_out[:120]]
+    noise = [digits.predict(digits.sample(i, "noise"))["confidence"] for i in digits.held_out[:120]]
+    measured = windows(reference, [("natural", False, natural), ("noise", True, noise)], 120)
+    assert not measured[0]["triggered"] and measured[1]["triggered"]
+    forecast = ForecastModel(series)
+    baseline = [abs(forecast.predict(date)["prediction"] - forecast.rows[date]["value"]) for date in forecast.calibration]
+    errors = [row["absolute_error"] for row in forecast.evaluate()["rows"][:24]]
+    measured = windows(baseline, [("fixture-natural", False, errors), ("fixture-offset", True, [value+5 for value in errors])], 24)
+    assert not measured[0]["triggered"] and measured[1]["triggered"]

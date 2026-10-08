@@ -2,6 +2,7 @@
 import hashlib
 import json
 import math
+import re
 import sqlite3
 import threading
 import time
@@ -13,6 +14,7 @@ from .monitoring import EMAIL_PATTERN, SECRET_PATTERN, RuntimeEvent
 from .schemas import uid
 
 COUNTERS = ("emitted", "queued", "accepted", "dropped", "failed", "retries", "expired", "auth_failed", "rate_limited", "invalid")
+GOVERNLOOM_CREDENTIAL = re.compile(r"\b(?:gl_|go_)[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+")
 
 
 class DurableObservationHook(RuntimeHook):
@@ -37,6 +39,8 @@ class DurableObservationHook(RuntimeHook):
         if not math.isfinite(backoff_seconds) or not 0 <= backoff_seconds <= 60:
             raise ValueError("Backoff must be 0..60 seconds")
         self.path = Path(outbox).resolve()
+        if SECRET_PATTERN.search(self.endpoint) or EMAIL_PATTERN.search(self.endpoint) or GOVERNLOOM_CREDENTIAL.search(self.endpoint):
+            raise ValueError("Collector endpoint must not contain sensitive metadata")
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.owner = uid()
         self.closed = False
@@ -88,6 +92,7 @@ class DurableObservationHook(RuntimeHook):
     @property
     def stats(self):
         with self._db() as db:
+            db.execute("BEGIN")
             counts = dict(db.execute("SELECT name,value FROM counts"))
             pending, size = db.execute("SELECT COUNT(*),COALESCE(SUM(size),0) FROM events WHERE status='pending'").fetchone()
         return {**counts, "pending": pending, "bytes_pending": size, "worker_alive": self.worker.is_alive(),
@@ -99,11 +104,11 @@ class DurableObservationHook(RuntimeHook):
                     for row in db.execute("SELECT id,status,attempts FROM events WHERE status!='pending' ORDER BY created DESC LIMIT 1000")]
 
     def emit(self, *, enforce=True, **fields):
-        if fields.get("text") is not None:
+        if fields.get("text") is not None or fields.get("grounding") is not None:
             raise ValueError("Durable outbox accepts metadata only; use RuntimeHook for transient text checks")
         event = RuntimeEvent(**{**fields, "client_mode": "observe"}).model_dump(mode="json")
         body = json.dumps(event, ensure_ascii=False, allow_nan=False).encode()
-        if SECRET_PATTERN.search(body.decode()) or EMAIL_PATTERN.search(body.decode()) or self.key in body.decode():
+        if SECRET_PATTERN.search(body.decode()) or EMAIL_PATTERN.search(body.decode()) or GOVERNLOOM_CREDENTIAL.search(body.decode()) or self.key in body.decode():
             raise ValueError("Outbox metadata must not contain personal data or credentials")
         with self._db() as db:
             db.execute("BEGIN IMMEDIATE")

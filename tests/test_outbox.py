@@ -18,7 +18,7 @@ def test_pending_survives_close_bounds_privacy_binding_and_expiry(tmp_path):
     hook = DurableObservationHook("http://127.0.0.1:8000", "gl_test.key", outbox=path, queue_size=1, auto_start=False)
     assert hook.emit(**FIELDS)["action"] == "queued"
     assert hook.emit(**FIELDS)["reason"] == "overflow"
-    for extra in ({"text": "private output"}, {"labels": ["person@example.org"]}, {"labels": ["gl_test.key"]}):
+    for extra in ({"text": "private output"}, {"labels": ["person@example.org"]}, {"labels": ["gl_test.key"]}, {"labels": ["gl_another.key"]}):
         with pytest.raises(ValueError):
             hook.emit(**FIELDS, **extra)
     assert hook.close(0)["pending"] == 1

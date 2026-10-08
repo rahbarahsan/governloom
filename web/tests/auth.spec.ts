@@ -29,6 +29,7 @@ test("named sign-in, scoped viewer, reviewer disposition and logout", async ({pa
       expect((await request.post(endpoint + "/api/auth/users", {headers: adminHeaders, data: {username: role, password, role, application_ids: [application.id]}})).status()).toBe(201);
     }
     const prefix = endpoint + `/api/applications/${application.id}`;
+    expect((await request.post(prefix + "/detector-profiles", {headers: adminHeaders, data: {name: "CI distribution control", actor: "spoofed", kind: "distribution_shift", task_type: "vision", environment: "test", model_version: "test-v1", application_version: "test-v1", metric: "confidence", reference: Array(20).fill(.8), window_size: 20, calibration: {dataset_sha256: "a".repeat(64), labels_sha256: "b".repeat(64), label_provenance: "engineering", description: "Software fixture, not measured model quality", calibration_groups: ["cal"], held_out_groups: ["held"], true_positives: 1, false_positives: 0, true_negatives: 1, false_negatives: 0}}})).status()).toBe(201);
     await request.post(prefix + "/monitor-policy", {headers: adminHeaders, data: {name: "Low confidence", actor: "spoofed", rationale: "Test", rules: [{id: "confidence", name: "Review confidence", detector: "metric_threshold", metric: "confidence", comparator: "lt", threshold: .6, action: "review", mitigation: "Inspect prediction"}]}});
     const key = await (await request.post(prefix + "/ingest-keys", {headers: adminHeaders, data: {name: "service", actor: "spoofed"}})).json();
     await request.post(endpoint + "/api/runtime/events", {headers: {Authorization: "Bearer " + key.key}, data: {trace_id: "browser-auth", phase: "output", task_type: "vision", model_version: "test-v1", application_version: "test-v1", metrics: {confidence: .2}}});
@@ -36,6 +37,8 @@ test("named sign-in, scoped viewer, reviewer disposition and logout", async ({pa
     await page.getByLabel("Username", {exact: true}).fill("viewer"); await page.getByLabel("Password", {exact: true}).fill(password); await page.getByRole("button", {name: "Sign in", exact: true}).click();
     await expect(page.getByText("Signed in as")).toContainText("viewer");
     await expect(page.getByRole("button", {name: "Create ingestion key"})).toBeDisabled();
+    await page.locator(".detector-profiles").getByText("CI distribution control · awaiting review", {exact: true}).click();
+    await expect(page.getByRole("button", {name: "Approve detector evidence"})).toBeDisabled();
     await page.locator(".runtime-incident").getByText("Assign or review incident", {exact: true}).click();
     await expect(page.locator(".runtime-incident").getByRole("button", {name: "Save incident disposition"})).toBeDisabled();
     await expect(page.getByLabel("Monitoring operator")).toHaveValue("viewer");
@@ -43,6 +46,10 @@ test("named sign-in, scoped viewer, reviewer disposition and logout", async ({pa
     await page.getByRole("button", {name: "Sign out", exact: true}).click();
     await expect(page.getByRole("button", {name: "Sign in", exact: true})).toBeVisible();
     await page.getByLabel("Username", {exact: true}).fill("reviewer"); await page.getByLabel("Password", {exact: true}).fill(password); await page.getByRole("button", {name: "Sign in", exact: true}).click();
+    await page.locator(".detector-profiles").getByText("CI distribution control · awaiting review", {exact: true}).click();
+    await page.getByLabel("Detector approval rationale").fill("Reviewed the software fixture and its explicit limitations");
+    await page.getByRole("button", {name: "Approve detector evidence"}).click();
+    await expect(page.locator(".detector-profiles").getByText("CI distribution control · approved", {exact: true})).toBeVisible();
     const incident = page.locator(".runtime-incident");
     await incident.getByText("Assign or review incident", {exact: true}).click();
     await incident.getByLabel("Incident owner").fill("reviewer");

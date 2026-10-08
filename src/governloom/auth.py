@@ -213,5 +213,5 @@ class Operators:
             return
         if user["role"] == "viewer":
             raise AccessDenied("Viewer accounts cannot modify records")
-        if user["role"] == "reviewer" and not (path.endswith("/review") or path.endswith("/verify")):
+        if user["role"] == "reviewer" and not (path.endswith("/review") or path.endswith("/verify") or path.endswith("/approve")):
             raise AccessDenied("Reviewer accounts can review findings and verify actions")

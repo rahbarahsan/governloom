@@ -1,9 +1,11 @@
 from typing import Literal
+import os
+import hashlib
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from examples.common import State, hook, service
-from examples.rag.model import Retriever, SubscriptionGenerator
+from examples.rag.model import Retriever, SubscriptionGenerator, SubscriptionJudge
 from governloom.hook import PolicyViolation
 
 
@@ -19,9 +21,11 @@ class Fault(BaseModel):
     mutation: Literal["invalid_citation", "credential"]
 
 
-def create_app(retriever=None, generator=None, state=None, hook_factory=hook):
+def create_app(retriever=None, generator=None, state=None, hook_factory=hook, judge=None):
     retriever, generator = retriever or Retriever(), generator or SubscriptionGenerator()
     state = state or State("rag")
+    profile_id = os.environ.get("RAG_GROUNDING_PROFILE")
+    judge = judge or (SubscriptionJudge() if profile_id else None)
     version = generator.model + "-" + retriever.manifest["corpus_sha256"][:12]
     api = service("Repository documentation RAG")
 
@@ -35,8 +39,16 @@ def create_app(retriever=None, generator=None, state=None, hook_factory=hook):
         return state.list("review")
 
     def output_fields(output, sources):
-        return {"text": output["answer"], "citations": output["citations"],
-                "source_ids": [source["id"] for source in sources]}
+        fields = {"text": output["answer"], "citations": output["citations"],
+                  "source_ids": [source["id"] for source in sources]}
+        if judge and profile_id:
+            judged = judge.judge(output["answer"], sources)
+            fields["grounding"] = {"profile_id": profile_id, "corpus_sha256": retriever.manifest["corpus_sha256"],
+                "judge_version": judged["judge_version"], "rubric_version": judged["rubric_version"],
+                "answer_sha256": hashlib.sha256(output["answer"].encode()).hexdigest(),
+                "claims": judged["judgment"]["claims"], "sources": [{"id": source["id"], "content": source["content"]} for source in sources]}
+            fields["metrics"] = {"judge_latency_ms": judged["latency_ms"]}
+        return fields
 
     def save(receipt, output, sources, scenario, blocked, capture=None):
         record = {"id": receipt["event_id"], "output": output, "sources": sources,

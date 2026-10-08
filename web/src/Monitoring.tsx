@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useContext } from "react";
 import { AuthContext } from "./AuthContext";
+import DetectorProfiles from "./DetectorProfiles";
 import { api, date, title } from "./api";
 import { Badge } from "./components";
 import type { Application } from "./types";
@@ -19,6 +20,7 @@ type Rule = {
   severity: string;
   action: string;
   mitigation: string;
+  profile_id?: string;
 };
 type Policy = {
   id: string;
@@ -115,6 +117,8 @@ type ActionRecord = {
 };
 
 const presets: Record<string, Omit<Rule, "id">> = {
+  grounding: {name: "Claim support evidence", detector: "claim_support", phase: "output", task_type: "rag", severity: "high", action: "review", profile_id: "", mitigation: "Inspect unsupported claims and source positions before releasing a corrected answer."},
+  distribution: {name: "Calibrated distribution change", detector: "distribution_shift", phase: "output", task_type: "any", severity: "medium", action: "flag", profile_id: "", mitigation: "Investigate the changed distribution; check actual outcomes before choosing mitigation."},
   latency: {
     name: "Slow prediction",
     detector: "metric_threshold",
@@ -475,6 +479,7 @@ export default function Monitoring({
           }
         />
       </section>
+      <DetectorProfiles applicationId={application.id} actor={actor} />
       <section className="panel">
         <h2>Delivery coverage</h2>
         <p className="small muted">
@@ -853,11 +858,12 @@ function PolicyForm({
                     edit(index, { action: event.target.value })
                   }
                 >
-                  {["flag", "review", "block"].map((value) => (
+                  {(rule.profile_id !== undefined ? ["flag", "review"] : ["flag", "review", "block"]).map((value) => (
                     <option key={value}>{value}</option>
                   ))}
                 </select>
               </label>
+              {rule.profile_id !== undefined && <label>Detector profile ID<input required value={rule.profile_id} onChange={event => edit(index, {profile_id: event.target.value})} /></label>}
               {rule.metric !== undefined && (
                 <>
                   <label>

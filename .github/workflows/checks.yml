@@ -18,7 +18,7 @@ jobs:
       - run: .venv/bin/python -m pip check
       - run: .venv/bin/python -m pip wheel . --no-deps --wheel-dir dist
       - run: .venv/bin/python -m pip install --no-deps --target data/wheel-import dist/governloom-*.whl
-      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.operations; assert 'wheel-import' in governloom.delivery.__file__"
+      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations; assert 'wheel-import' in governloom.outbox.__file__"
   browser:
     runs-on: ubuntu-latest
     steps:

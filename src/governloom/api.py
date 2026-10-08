@@ -20,6 +20,7 @@ from .service import Workbench
 from .storage import Store
 from . import __version__
 from .auth import Operators, UserCreate, Login, PasswordChange, AccessDenied, LoginRequired, public_user
+from .detectors import Profiles, DetectorProfile, ProfileApproval
 
 
 class SourceImport(Record):
@@ -56,6 +57,7 @@ def create_app(store=None):
     api = FastAPI(title="GovernLoom", version=__version__)
     workbench = Workbench(store or Store())
     monitor = Monitor(workbench)
+    profiles = Profiles(workbench)
     api.state.workbench = workbench
     operators = Operators(workbench)
     has_operators = bool(workbench.store.list("operator_user"))
@@ -258,6 +260,25 @@ def create_app(store=None):
     @api.get("/api/applications/{application_id}/monitor-policy")
     def monitor_policy(application_id: str):
         return monitor.active_policy(application_id)
+
+    @api.get("/api/applications/{application_id}/detector-profiles")
+    def detector_profiles(application_id: str):
+        workbench.store.get("application", application_id)
+        approvals = workbench.store.list("profile_approval", application_id)
+        approved = {row["profile_id"]: row for row in approvals}
+        return [{**row, "approval": approved.get(row["id"])} for row in workbench.store.list("detector_profile", application_id)]
+
+    @api.post("/api/applications/{application_id}/detector-profiles", status_code=201)
+    def create_detector_profile(application_id: str, body: DetectorProfile):
+        return profiles.create(application_id, body)
+
+    @api.get("/api/detector-profiles/{identifier}")
+    def detector_profile(identifier: str):
+        return workbench.store.get("detector_profile", identifier)
+
+    @api.post("/api/detector-profiles/{identifier}/approve", status_code=201)
+    def approve_detector_profile(identifier: str, body: ProfileApproval):
+        return profiles.approve(identifier, body)
 
     @api.get("/api/monitor-policies/{policy_id}")
     def historical_monitor_policy(policy_id: str):

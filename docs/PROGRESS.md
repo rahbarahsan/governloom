@@ -28,6 +28,22 @@ the new Chromium role workflow passes (13.3 s). Dashboard production build passe
 An audit-action test label and a collapsed-details browser selector were corrected;
 the role checks themselves held. Next: immutable detector profiles and calibration.
 
+Evidence slice implemented: immutable source/reference profiles, separate checksum
+approval, exact deployment scope, transient quote/source/answer validation, explicit
+claim coverage gaps, and non-overlapping ECDF windows with conservative DKW bounds
+and persistent alpha spending. Known dependent forecasting replay explicitly lacks
+a nominal probability guarantee. Sixteen detector/monitoring checks pass (3.00 s);
+twelve detector/auth/actual-example checks pass (60.56 s). Actual validation completed
+in data/detectors-2026-10-08-b/: vision six perturbed windows flagged/three normal
+clear; forecast two offset windows flagged/two normal clear; held-out RAG two risks
+flagged/two supported claims clear. One calibration claim unavailable. Ten bounded
+subscription requests completed, including a new actual RAG answer whose overbroad
+enforcement statement was flagged. First calibration-accessor attempt failed before
+inference and was fixed. All owned validation services stopped. Reviewed report:
+docs/DETECTOR_VALIDATION.md and docs/experiments/detectors-2026-10-08.json. Capture
+was during working-tree development; the Git revision alone is insufficient.
+Remote CI succeeded for 3fb782a (run 37833724599). Next: final runtime GIF and checks.
+
 ## Delivered runtime checkpoint (2026-10-08 UTC)
 
 Latest steering: the user approved implementation of the plan. No participating
