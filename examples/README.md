@@ -36,3 +36,18 @@ reviewed reports, never ingestion keys, authentication files or user data.
 CI tests real digit training and public HTTP integration. It uses an explicitly
 synthetic series and fake generator for forecast/RAG software checks, with no
 remote downloads, login, inference or model-quality claims for those fixtures.
+## Interactive digit service and reviewed detectors
+
+`ENABLE_BROWSER=1` enables local same-origin browser controls at `/` in the digit
+service. It loads original held-out pixels, calls the real `/predict` boundary,
+shows withheld responses and resolves reviews against benchmark labels.
+Cross-origin POSTs and unrecognized hosts are rejected. This is a local engineering
+UI, not an end-user production authentication layer.
+
+`ENABLE_BACKGROUND=1` enables separate observation/heartbeats; also set
+`ENABLE_DURABLE=1` and `VISION_OUTBOX` to use restart-safe metadata delivery.
+Synchronous enforcement stays separate. RAG's optional `RAG_GROUNDING_PROFILE`
+enables its bounded upstream judge; source/profile versions must match exactly.
+See [detector contract](../docs/DETECTOR_EVIDENCE.md) and
+[actual validation](../docs/DETECTOR_VALIDATION.md). The runtime GIF combines live
+digit inference with labeled replay of recorded real RAG evidence.

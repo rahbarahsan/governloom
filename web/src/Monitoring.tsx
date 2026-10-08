@@ -622,6 +622,7 @@ export default function Monitoring({
                     <strong>{check.name}</strong>
                     <Badge value={check.status} />
                   </div>
+                  <EvidenceSummary evidence={check.evidence} />
                   <pre>{JSON.stringify(check.evidence, null, 2)}</pre>
                 </article>
               ))}
@@ -1086,6 +1087,7 @@ function AlertCard({
         {alert.requested_action}
       </p>
       <p>{alert.mitigation}</p>
+      <EvidenceSummary evidence={alert.evidence} />
       <details>
         <summary>Risk evidence</summary>
         <pre>{JSON.stringify(alert.evidence, null, 2)}</pre>
@@ -1143,4 +1145,16 @@ function AlertCard({
       </form>
     </article>
   );
+}
+
+function EvidenceSummary({evidence}: {evidence: Record<string, unknown>}) {
+  const counts = evidence.counts as Record<string, number> | undefined;
+  const positions = evidence.claim_positions as {start: number; end: number; verdict: string; evidence: {source_id: string; start: number; end: number}[]}[] | undefined;
+  if (counts) return <div className="evidence-summary">
+    <p><strong>Unsupported: {counts.unsupported} · Supported: {counts.supported} · Unresolved: {counts.insufficient_evidence}</strong></p>
+    <p>Excerpt coverage: {Math.round(Number(evidence.coverage) * 100)}%. Text is not retained by the collector.</p>
+    {positions?.map((position, i) => <p className="small" key={i}>Answer characters {position.start}–{position.end}: {position.verdict}. {position.evidence.map((quote, j) => <span key={j}>Source {quote.source_id}, characters {quote.start}–{quote.end}. </span>)}</p>)}
+  </div>;
+  if (typeof evidence.distance === "number") return <div className="evidence-summary"><p>Distribution distance {evidence.distance.toFixed(3)} · threshold {Number(evidence.critical_distance).toFixed(3)} · completed window {String(evidence.window_index)}</p><p className="small">{String(evidence.interpretation ?? "")}</p></div>;
+  return null;
 }

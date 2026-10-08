@@ -10,6 +10,7 @@ from urllib.request import Request, build_opener
 
 from fastapi import FastAPI, Request as WebRequest
 from fastapi.responses import JSONResponse
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from governloom.hook import MonitoringUnavailable, NoRedirect, RuntimeHook
 
@@ -76,14 +77,16 @@ class State:
         return revised
 
 
-def service(name):
+def service(name, *, allow_browser=False):
     api = FastAPI(title=name)
+    api.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"])
 
     @api.middleware("http")
     async def private_test_service(request: WebRequest, call_next):
         if request.client is None or request.client.host not in ("127.0.0.1", "::1", "testclient"):
             return JSONResponse({"detail": "Mini applications are local development services"}, status_code=403)
-        if request.method == "POST" and request.headers.get("origin"):
+        origin = request.headers.get("origin")
+        if request.method == "POST" and origin and not (allow_browser and origin == str(request.base_url).rstrip("/")):
             return JSONResponse({"detail": "Use the local CLI/HTTP client"}, status_code=403)
         return await call_next(request)
 

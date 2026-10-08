@@ -37,8 +37,9 @@ def encode(manifest_path: Path, output: Path):
     # A still preview gives readers an alternative to the animation.
     with Image.open(manifest_path.parent / manifest["scenes"][0]["file"]) as poster:
         poster.save(output.with_name("demo-poster.png"))
-    metadata = {"schema_version": 1, "source": "Scripted real Chromium workflow against isolated local API and worker",
-                "demo": "Fictional Northstar; scripted fixture acceptance, not human validation",
+    metadata = {"schema_version": 1, "source": manifest.get("source", "Scripted real Chromium workflow against isolated local API and worker"),
+                "demo": manifest.get("demo", "Fictional Northstar; scripted fixture acceptance, not human validation"),
+                "provenance": manifest.get("provenance"),
                 "size": list(frames[0].size), "frames": len(frames), "duration_ms": sum(durations),
                 "bytes": output.stat().st_size, "scenes": [{"caption": scene["caption"], "duration_ms": scene["duration_ms"]} for scene in manifest["scenes"]]}
     output.with_suffix(".json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")

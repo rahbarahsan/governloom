@@ -3,6 +3,8 @@ import time
 from contextlib import asynccontextmanager
 from typing import Literal
 from uuid import uuid4
+from pathlib import Path
+from fastapi.responses import FileResponse
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -10,6 +12,7 @@ from examples.common import State, hook, service
 from examples.vision.model import DigitModel
 from governloom.hook import PolicyViolation
 from governloom.delivery import HeartbeatReporter, ObservationHook
+from governloom.outbox import DurableObservationHook
 
 
 class Prediction(BaseModel):
@@ -44,11 +47,15 @@ class Outcome(BaseModel):
 def create_app(model=None, state=None, hook_factory=hook):
     model = model or DigitModel()
     state = state or State("vision")
-    api = service("Digit recognition")
+    api = service("Digit recognition", allow_browser=os.environ.get("ENABLE_BROWSER") == "1")
     background = reporter = None
     if os.environ.get("ENABLE_BACKGROUND") == "1":
-        background = ObservationHook(os.environ["GOVERNLOOM_ENDPOINT"], os.environ["GOVERNLOOM_INGEST_KEY"],
-                                     timeout_seconds=0.5, max_age_seconds=15)
+        if os.environ.get("ENABLE_DURABLE") == "1":
+            background = DurableObservationHook(os.environ["GOVERNLOOM_ENDPOINT"], os.environ["GOVERNLOOM_INGEST_KEY"],
+                outbox=os.environ["VISION_OUTBOX"], timeout_seconds=0.5)
+        else:
+            background = ObservationHook(os.environ["GOVERNLOOM_ENDPOINT"], os.environ["GOVERNLOOM_INGEST_KEY"],
+                                         timeout_seconds=0.5, max_age_seconds=15)
         reporter = HeartbeatReporter(background, "digit-service-background", interval_seconds=2)
 
     @asynccontextmanager
@@ -83,6 +90,15 @@ def create_app(model=None, state=None, hook_factory=hook):
     @api.get("/manifest")
     def manifest():
         return model.manifest
+
+    @api.get("/")
+    def dashboard():
+        return FileResponse(Path(__file__).with_name("dashboard.html"))
+
+    @api.get("/samples/{identifier}")
+    def sample(identifier: int):
+        return {"id": identifier, "pixels": model.sample(identifier), "actual_label": int(model.labels[identifier]),
+                "provenance": "Frozen UCI held-out digit; public benchmark label, not customer input"}
 
     @api.get("/samples")
     def samples():

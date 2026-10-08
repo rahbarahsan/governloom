@@ -1,58 +1,91 @@
 {
   "schema_version": 1,
-  "source": "Scripted real Chromium workflow against isolated local API and worker",
-  "demo": "Fictional Northstar; scripted fixture acceptance, not human validation",
+  "source": "Actual UCI digit inference over HTTP; recorded real documentation RAG output/judgment replay",
+  "demo": "Named scripted operator; live model predictions and local mitigation; RAG replay is labeled, not new inference or independent human validation",
+  "provenance": {
+    "vision_manifest": {
+      "dataset": "UCI handwritten digits, sklearn bundled original-test subset",
+      "dataset_url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "attribution": "Alpaydin and Kaynak (1998), DOI 10.24432/C50P49, CC BY 4.0",
+      "dataset_hash": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+      "splits": {
+        "train": {
+          "count": 1168,
+          "index_hash": "084b4a3f9bf51db1df2796e7c0dece8014fc160e0765073ae304f928649c9941"
+        },
+        "calibration": {
+          "count": 269,
+          "index_hash": "262c5051938f4f98d4f8362e7fc673bb18f0be0ebe0dbad64a9815a6023c4297"
+        },
+        "held_out": {
+          "count": 360,
+          "index_hash": "e2f7446e922c67e73330417670f3e7b7328a6964a4b171a4098b8762d82c7ce1"
+        }
+      },
+      "algorithm": "RandomForestClassifier",
+      "trees": 64,
+      "model_seed": 43,
+      "sklearn_version": "1.9.1",
+      "numpy_version": "2.5.3",
+      "confidence_threshold": 0.59375,
+      "selection": "20th confidence percentile on calibration only",
+      "model_version": "digits-rf-d3eecd4aa4949282"
+    },
+    "rag_capture": {
+      "created_at": "2026-10-08T19:52:28.804723+00:00",
+      "corpus_sha256": "6f7acba0df0f190e841c310e9f460401e507164ae404fd104e872c5454457038",
+      "judge_version": "gpt-6.1-sol@codex-cli 0.160.1"
+    },
+    "new_subscription_requests": 0,
+    "scripted_operator": "demo-operator"
+  },
   "size": [
     1280,
     900
   ],
-  "frames": 11,
-  "duration_ms": 23200,
-  "bytes": 489817,
+  "frames": 10,
+  "duration_ms": 24600,
+  "bytes": 426587,
   "scenes": [
     {
-      "caption": "Load fictional sources and 40 unreviewed fixtures",
-      "duration_ms": 1800
-    },
-    {
-      "caption": "Inspect current source content and its immutable hash",
-      "duration_ms": 1800
-    },
-    {
-      "caption": "Review a candidate against its quoted policy passage",
-      "duration_ms": 2400
-    },
-    {
-      "caption": "Record an attributed approval and a new case revision",
-      "duration_ms": 1600
-    },
-    {
-      "caption": "Freeze 40 approved cases with a dataset checksum",
-      "duration_ms": 2000
-    },
-    {
-      "caption": "Select a held-out sample and a bounded local target",
-      "duration_ms": 1600
-    },
-    {
-      "caption": "Clean run: separate metric scores, skips and unavailable checks",
+      "caption": "Named operator monitors an actual hooked digit service",
       "duration_ms": 2200
     },
     {
-      "caption": "Faulty run: 10 citation-consistency failures",
-      "duration_ms": 2000
-    },
-    {
-      "caption": "Compare the same 20 held-out cases with compatible evaluators",
-      "duration_ms": 2600
-    },
-    {
-      "caption": "Inspect the observed answer, invalid citation and expected behavior",
+      "caption": "A real held-out digit prediction passes the frozen confidence gate",
       "duration_ms": 2400
     },
     {
-      "caption": "Follow a failed check back to frozen source evidence",
+      "caption": "A natural low-confidence prediction is withheld and persisted for review",
       "duration_ms": 2800
+    },
+    {
+      "caption": "Authenticated incident ownership records who is investigating",
+      "duration_ms": 2400
+    },
+    {
+      "caption": "The application resolves against the real benchmark label and sends an outcome",
+      "duration_ms": 2400
+    },
+    {
+      "caption": "Mitigation follows application resolution and an audited response inspection",
+      "duration_ms": 2400
+    },
+    {
+      "caption": "Durable metadata delivery reports accepted traffic through a separate heartbeat",
+      "duration_ms": 2200
+    },
+    {
+      "caption": "Replay of a recorded real RAG answer flags its unsupported enforcement claim",
+      "duration_ms": 2800
+    },
+    {
+      "caption": "Frozen engineering calibration exposes captured risks, misses and false positives",
+      "duration_ms": 2400
+    },
+    {
+      "caption": "The receipt retains coverage, source positions and hashes while text stays transient",
+      "duration_ms": 2600
     }
   ]
 }

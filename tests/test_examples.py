@@ -56,9 +56,22 @@ def test_actual_vision_http_hook_withholding_review_and_restart(collector, digit
         "detector": "metric_threshold", "task_type": "vision", "phase": "output", "metric": "confidence",
         "comparator": "lt", "threshold": digits.threshold, "action": "block", "mitigation": "Queue manual review"}])
     state_path = tmp_path / "vision.db"
+    background_environment = {"ENABLE_BACKGROUND": "1", "ENABLE_DURABLE": "1", "VISION_OUTBOX": str(tmp_path / "outbox.db"), "ENABLE_BROWSER": "1"}
     service = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint,
-        "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path), "ENABLE_BACKGROUND": "1"}, factory=True)
+        "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path), **background_environment}, factory=True)
     row = next(row for row in digits.evaluate()["rows"] if row["review"])
+    sample = http(service, f"/samples/{row['sample_id']}")
+    assert sample["pixels"] == digits.sample(row["sample_id"]) and sample["actual_label"] == row["actual"]
+    import urllib.request
+    import urllib.error
+    request = urllib.request.Request(service + "/baseline", data=json.dumps({"sample_id":row["sample_id"]}).encode(), headers={"Content-Type":"application/json", "Origin":"https://untrusted.example"})
+    with pytest.raises(urllib.error.HTTPError) as rejected:
+        urllib.request.urlopen(request)
+    assert rejected.value.code == 403
+    rejected.value.close()
+    request = urllib.request.Request(service + "/baseline", data=json.dumps({"sample_id":row["sample_id"]}).encode(), headers={"Content-Type":"application/json", "Origin":service})
+    with urllib.request.urlopen(request) as response:
+        assert json.load(response)["prediction"] == row["prediction"]
     result = http(service, "/predict", {"sample_id": row["sample_id"], "mode": "enforce"})
     assert result["status"] == "withheld" and result["result"] is None
     assert result["receipt"]["action"] == "block"
@@ -82,12 +95,14 @@ def test_actual_vision_http_hook_withholding_review_and_restart(collector, digit
     while http(service, "/delivery")["accepted"] != 1 and time.monotonic() < deadline:
         time.sleep(0.05)
     assert http(service, "/delivery")["accepted"] == 1
+    assert http(service, "/delivery")["durable"] is True
     assert call(f"/applications/{app['id']}/runtime-agents")[0]["status"] == "reporting"
     assert len(call(f"/applications/{app['id']}/runtime-actions")) == 2
     processes.stop_last()
     restarted = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint,
-        "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path)}, factory=True)
+        "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path), **background_environment}, factory=True)
     assert any(item["id"] == review["id"] and item["status"] == "resolved" for item in http(restarted, "/reviews"))
+    assert http(restarted, "/delivery")["accepted"] == 1
 
 
 @pytest.fixture

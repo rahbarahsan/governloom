@@ -1,0 +1,98 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { chromium, expect } from "@playwright/test";
+
+const config = JSON.parse(await readFile(process.env.CAPTURE_CONFIG, "utf8"));
+const directory = dirname(process.env.CAPTURE_CONFIG);
+const scenes = [];
+const errors = [];
+const browser = await chromium.launch();
+async function api(path, body, token = process.env.CAPTURE_OPERATOR_TOKEN) {
+  const response = await fetch(config.collector + "/api" + path, {redirect: "error", headers: {Authorization: "Bearer " + token, ...(body ? {"Content-Type": "application/json"} : {})}, ...(body ? {method: "POST", body: JSON.stringify(body)} : {})});
+  if (!response.ok) throw new Error(`Capture API rejected ${path}: ${response.status}`);
+  return response.json();
+}
+try {
+  const context = await browser.newContext({viewport: {width: 1280, height: 900}, reducedMotion: "reduce", timezoneId: "UTC"});
+  const consolePage = await context.newPage(); const digitPage = await context.newPage();
+  for (const page of [consolePage, digitPage]) page.on("pageerror", e => errors.push(e.message));
+  async function capture(page, caption, duration, anchor) {
+    await page.bringToFront();
+    if (anchor) await anchor.evaluate(element => window.scrollTo(0, Math.max(0, element.getBoundingClientRect().top + window.scrollY - 90)));
+    else await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => document.fonts.ready);
+    const file = `scene-${String(scenes.length + 1).padStart(2, "0")}.png`;
+    await page.screenshot({path: resolve(directory, file), animations: "disabled"});
+    scenes.push({file, caption, duration_ms: duration});
+    console.log(`Captured ${scenes.length}: ${caption}`);
+  }
+  await consolePage.goto(config.collector);
+  await consolePage.getByLabel("Username", {exact: true}).fill("demo-operator");
+  await consolePage.getByLabel("Password", {exact: true}).fill(process.env.CAPTURE_PASSWORD);
+  await consolePage.getByRole("button", {name: "Sign in", exact: true}).click();
+  await consolePage.getByLabel("Active application").selectOption(config.vision_id);
+  await expect(consolePage.getByRole("heading", {name: "Frozen vision confidence gate"})).toBeVisible();
+  await capture(consolePage, "Named operator monitors an actual hooked digit service", 2200);
+  await digitPage.goto(config.vision_endpoint);
+  await expect(digitPage.locator("#provenance")).toContainText("held-out split");
+  await digitPage.locator("#sample").fill(String(config.vision_good)); await digitPage.getByRole("button", {name: "Load digit", exact: true}).click();
+  await expect(digitPage.locator("#provenance")).toContainText(`Sample ${config.vision_good}`);
+  await digitPage.getByRole("button", {name: "Predict with enforcement", exact: true}).click();
+  await expect(digitPage.locator("#status")).toHaveText("Prediction returned");
+  await capture(digitPage, "A real held-out digit prediction passes the frozen confidence gate", 2400);
+  await digitPage.locator("#sample").fill(String(config.vision_bad)); await digitPage.getByRole("button", {name: "Load digit", exact: true}).click();
+  await expect(digitPage.locator("#provenance")).toContainText(`Sample ${config.vision_bad}`);
+  const withheldResponse = digitPage.waitForResponse(r => r.url().endsWith("/predict") && r.request().method() === "POST");
+  await digitPage.getByRole("button", {name: "Predict with enforcement", exact: true}).click();
+  const withheld = await (await withheldResponse).json();
+  if (withheld.status !== "withheld" || withheld.result !== null) throw new Error("Actual prediction was not withheld");
+  await expect(digitPage.locator("#status")).toHaveText("Response withheld");
+  await capture(digitPage, "A natural low-confidence prediction is withheld and persisted for review", 2800);
+  await consolePage.bringToFront();
+  const incident = consolePage.locator(".runtime-incident").first();
+  await expect(incident).toContainText("Low confidence prediction");
+  await incident.getByText("Assign or review incident", {exact: true}).click();
+  await incident.getByLabel("Incident owner").fill("demo-operator");
+  await incident.getByLabel("Incident disposition").selectOption("acknowledged");
+  await incident.getByLabel("Incident rationale").fill("Inspecting the actual held-out image and application review.");
+  await incident.getByRole("button", {name: "Save incident disposition"}).click();
+  await expect(incident.locator("p").first()).toContainText("· acknowledged ·");
+  await capture(consolePage, "Authenticated incident ownership records who is investigating", 2400, incident);
+  await digitPage.bringToFront();
+  await digitPage.getByRole("button", {name: "Resolve application review", exact: true}).click();
+  await expect(digitPage.locator("#resolution")).toContainText("Resolved");
+  await capture(digitPage, "The application resolves against the real benchmark label and sends an outcome", 2400);
+  const actions = await api(`/applications/${config.vision_id}/runtime-actions`);
+  const acknowledgment = actions.find(a => a.event_id === withheld.receipt.event_id && a.action_type === "withheld");
+  if (!acknowledgment) throw new Error("Missing application withholding acknowledgment");
+  const evidence = JSON.stringify(withheld);
+  await writeFile(resolve(directory, "withheld-response.json"), evidence);
+  await api(`/runtime-actions/${acknowledgment.id}/verify`, {actor: "ignored-client-actor", criterion: "response_withheld", evidence_sha256: createHash("sha256").update(evidence).digest("hex"), rationale: "Scripted operator inspected the captured HTTP response: result=null and status=withheld."});
+  await incident.getByText("Assign or review incident", {exact: true}).click();
+  await incident.getByLabel("Incident disposition").selectOption("mitigated");
+  await incident.getByLabel("Incident rationale").fill("Application review resolved against the benchmark label; the blocked response was withheld.");
+  await incident.getByRole("button", {name: "Save incident disposition"}).click();
+  await expect(incident.locator("p").first()).toContainText("· mitigated ·");
+  await capture(consolePage, "Mitigation follows application resolution and an audited response inspection", 2400, incident);
+  const coverage = consolePage.locator("section").filter({has: consolePage.getByRole("heading", {name: "Delivery coverage", exact: true})});
+  await expect(coverage).toContainText("accepted 1");
+  await coverage.locator("summary").first().click();
+  await capture(consolePage, "Durable metadata delivery reports accepted traffic through a separate heartbeat", 2200, coverage);
+  await api("/runtime/events", config.rag_event, process.env.CAPTURE_RAG_KEY);
+  await consolePage.getByLabel("Active application").selectOption(config.rag_id);
+  const alert = consolePage.locator(".runtime-alert").first();
+  await expect(alert).toContainText("Unsupported RAG claim");
+  await alert.getByText("Risk evidence", {exact: true}).click();
+  await capture(consolePage, "Replay of a recorded real RAG answer flags its unsupported enforcement claim", 2800, alert);
+  const profiles = consolePage.locator(".detector-profiles");
+  await profiles.getByText("Documentation claim support · approved", {exact: true}).click();
+  await capture(consolePage, "Frozen engineering calibration exposes captured risks, misses and false positives", 2400, profiles);
+  const event = consolePage.locator(".runtime-event").first();
+  await event.locator("summary").click();
+  await capture(consolePage, "The receipt retains coverage, source positions and hashes while text stays transient", 2600, event);
+  if (errors.length) throw new Error(errors.join("\n"));
+  await writeFile(resolve(directory, "manifest.json"), JSON.stringify({schema_version: 1, source: config.source, demo: config.demo, provenance: {vision_manifest: config.vision_manifest, rag_capture: config.rag_capture, new_subscription_requests: 0, scripted_operator: "demo-operator"}, scenes}, null, 2));
+} finally {
+  await browser.close();
+}
