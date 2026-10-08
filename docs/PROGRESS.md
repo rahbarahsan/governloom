@@ -35,8 +35,13 @@ replaced by the declared build workflow. Reviewed public media is docs/media/.
 Installed-wheel 0.3.0 SDK/outbox/auth/detector/API imports passed from the fresh
 target directory without importing NumPy or scikit-learn. Whitespace checks pass.
 Process/listener inspection found no owned Python/Node servers or listeners on
-8000/5173. Remote CI already passed for evidence commit e6347f7 (run 37836728832);
-the final release push/CI result is recorded below when complete.
+8000/5173. The final release is pushed to origin/main as 8606bd5, with focused
+commits eac945f (phase scope) and a326546 (actual runtime GIF). All four release CI
+jobs passed: core Python 3.11/3.13, actual mini-application software integration,
+and Chromium workflows. Run:
+https://github.com/rahbarahsan/governloom/actions/runs/37841991399.
+The original untracked governloom-build-brief.md remains untouched. No pending
+release implementation work remains; v0.4 is a recommendation for the next session.
 The next recommended scope is v0.4 in docs/ROADMAP.md: durable signed incident
 delivery, broader domain validation, async/TypeScript integrations and operational
 hardening. This recommendation does not authorize starting another release.
