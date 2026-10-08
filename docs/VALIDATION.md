@@ -26,6 +26,12 @@ browser selector) were corrected before passing validation. CI uses no remote
 dataset fetch, subscription inference or secrets. No deployment or external
 recipient notifications occurred. Earlier validation below is historical.
 
+Remote checks also passed for delivery code
+`70c54049ec68851f972bc8c153599521b3fa94d5`: Python 3.11/3.13, examples and
+Chromium, with wheel build/install/import checks. [GitHub Actions run](https://github.com/rahbarahsan/governloom/actions/runs/37717404315).
+Process/listener checks confirm no remaining project server or listener on
+8000/5173. The user's untracked original brief remains untouched.
+
 ## Runtime foundation v0.2 (2026-10-07)
 
 - Complete backend suite: **49 passed**, 20.08 seconds, Python 3.13.1 on Windows.

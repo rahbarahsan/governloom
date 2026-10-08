@@ -1,6 +1,6 @@
 # Release progress
 
-## Current direction: runtime governance (2026-10-07)
+## Delivered runtime checkpoint (2026-10-08 UTC)
 
 Latest steering: the user approved implementation of the plan. No participating
 team is available; build independent mini projects to test GovernLoom instead.
@@ -9,7 +9,7 @@ NOAA forecasting and model-backed RAG over actual project documentation. These
 projects and the six-stage local sequence are implemented. Vision/forecasting/RAG
 have actual-model evidence; launcher, bounded background delivery/heartbeats,
 grouped incidents/actions, local escalation, backup/restore and conservative
-retention have working checks. Final validation/checkpoints/push are in progress.
+retention have working checks. Final validation and focused commits are pushed.
 A customer pilot is later, not an input blocking development.
 
 Primary data sources, attribution and official local subscription execution docs
@@ -90,11 +90,22 @@ operations: PILOT_OPERATIONS.md. Raw captures/backups remain ignored in data/.
 The updated 0.2 wheel builds (57,297 bytes), and its installed SDK, operations
 and API import from an isolated target directory without model dependencies.
 An initial non-isolated build lacked setuptools; normal isolated build succeeded.
-Packaging smoke is now part of Python 3.11/3.13 CI. Checkpoints/push are being
-finalized. Next work after delivery:
+Packaging smoke is now part of Python 3.11/3.13 CI. Next work after delivery:
 metadata-only durable outbox with explicit text coverage gaps, authenticated
 operator roles, domain-calibrated detectors, then a real customer pilot if one
 becomes available. No deployment, paid API calls or external recipients.
+
+Delivered checkpoints: a3f669c (launcher/actual-model evidence), ba2ec7d
+(bounded delivery/incident integration), 70c5404 (operations/capacity/release docs).
+All are pushed to origin/main. GitHub Actions for code head
+70c54049ec68851f972bc8c153599521b3fa94d5 completed successfully: Python 3.11,
+Python 3.13, optional actual-model integration and Chromium jobs, including
+wheel build/install/import smoke. Run:
+https://github.com/rahbarahsan/governloom/actions/runs/37717404315.
+Process and listener checks confirm no project servers and no listeners on
+8000/5173. The only untracked file remains the user's original
+governloom-build-brief.md; it was not modified or committed. This documentation
+checkpoint records delivery without changing the validated code.
 
 This section supersedes the earlier claim-evaluation roadmap below. The user
 clarified the product: a developer connects an existing AI system through a hook;
@@ -109,7 +120,7 @@ operator ownership/disposition audit, and a live dashboard. The legacy evaluatio
 workbench remains available. No model provider is needed to monitor a customer's
 own running model, and no synthetic target is used in the monitoring product flow.
 
-Current checks: 49 backend tests pass (20.08 seconds), including 15 runtime checks
+Earlier foundation checks: 49 backend tests pass (20.08 seconds), including 15 runtime checks
 and a real TCP collector process. Coverage includes
 vision output withholding, tool blocking before execution, delayed forecast
 error, idempotent concurrent replays, privacy, auth, rate limits, and collector
@@ -294,11 +305,12 @@ deployment, or paid API provider work is authorized. Local subscription inferenc
 is authorized as described above. The supplied brief remains an
 untracked user file and is deliberately excluded from delivery commits.
 
-## Blockers
+## Current blockers and scope limits
 
-None for the first release or the local real-inference experiment. Independent
-human reviewers, dashboard claim-evidence integration, and a larger second
-application are outstanding. No paid API usage, human calibration, real-model
-quality study or deployment is claimed. The unsupported extra-claim blind spot
-remains visible in the dashboard and measured in release evidence; the new
-report records separate uncalibrated judge estimates.
+None for the completed local three-application delivery sequence. No participating
+team is required to reproduce it. Persistent event delivery, authenticated roles,
+customer-specific retention and domain calibration remain future work; the
+current checkpoint establishes measured integration behavior, not a production
+SLA or regulatory certification. Independent human calibration is unavailable.
+The legacy citation-membership/extra-claim blind spot is still explicit. No
+paid API usage, external recipients or deployment occurred.
