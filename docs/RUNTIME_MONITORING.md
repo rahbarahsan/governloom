@@ -20,7 +20,8 @@ table on startup. Back up a stopped database before upgrading; existing cases
 and runs remain intact. There is no automatic downgrade.
 
 1. Under Applications, create/select a connection for your existing system.
-2. Under Monitoring, enter an operator name, configure a policy using templates,
+2. Sign in when named access is configured; the server supplies your audit name.
+   Under Monitoring, configure a policy using templates,
    edit limits/actions/mitigation guidance, and activate it.
 3. Create a scoped ingestion key. Copy it once into your serving environment as
    `GOVERNLOOM_INGEST_KEY`; keep it server-side. Only its hash is stored. Revoke
@@ -77,7 +78,9 @@ answer = hook.wrap(
 
 An input mapper can explicitly supply input text. Source-ID membership does not
 establish claim support. Text checks detect a few secret/email/instruction
-patterns; misses and false positives are possible. No semantic judge is invoked.
+patterns; misses and false positives are possible. An optional approved claim-support
+profile accepts transient upstream judge evidence and frozen passage hashes;
+see [detector evidence](DETECTOR_EVIDENCE.md). The collector does not call a provider.
 
 ## Forecasting: outcomes arrive later
 
@@ -147,8 +150,8 @@ see [delivery coverage](RUNTIME_DELIVERY.md).
 - on_unavailable="raise" is the default: rejection/timeout prevents continuation.
   Explicit "continue" permits operation, increments hook.unavailable_count and
   sets last_receipt.action to unavailable. Export this through your operations
-  monitoring. Background observation has a bounded RAM queue and visible losses;
-  there is no persistent event outbox.
+  monitoring. Background observation has bounded RAM or an opt-in metadata-only
+  SQLite outbox with visible losses and expiry. See [delivery](RUNTIME_DELIVERY.md).
 - Target exceptions are preserved; error telemetry records type, not message.
   Collector failure while reporting the target error does not replace it.
 
@@ -163,12 +166,14 @@ Policies are immutable; activation creates a version. Events retain their policy
 ID. Retrieve historical policy with GET /api/monitor-policies/{id}. Alerts preserve
 rule evidence, severity, mitigation and revision. Review requires actor, owner,
 disposition, rationale and expected_revision; stale/concurrent edits fail.
-Audit records are at the application's review-events endpoint. Operator names
-are assertions, not authenticated identities or digital signatures.
+Audit records are at the application's review-events endpoint. Named access binds
+actors to authenticated accounts; local development actor names remain assertions.
+Owner assignments and mitigation/verification attestations are not independent proof.
 
 Mean shift uses arrival order and a bounded scan of the previous 1,000 events,
 isolated by task/phase/environment/model/application version. It requires a full
-window and is not a statistical drift test. Late events and changed policies
+window and is not a statistical drift test. Approved distribution profiles add
+frozen references, sample assumptions and lifetime alert budgets. Late events and changed policies
 need care when interpreting windows.
 
 Main text is transient and excluded from stored events/alerts. Selected metadata,
@@ -180,16 +185,16 @@ content and have different semantics.
 
 ## Private hosting and pilot limits
 
-Default bind is loopback. Remote administration requires a separate
-GOVERNLOOM_ADMIN_TOKEN (at least 32 characters), explicit GOVERNLOOM_ALLOWED_HOSTS
-and GOVERNLOOM_ALLOWED_ORIGINS. Use a TLS reverse proxy; remote hook URLs require
-HTTPS and redirects are rejected. Enter the admin token under Collector access;
-it stays in page memory and must be entered again after reload. Never use it as a
-serving ingestion key. Keep this private pilot behind appropriate network controls.
+Default bind is loopback. Use [named operator access](OPERATOR_ACCESS.md) for
+administration, explicit GOVERNLOOM_ALLOWED_HOSTS/GOVERNLOOM_ALLOWED_ORIGINS and a
+TLS reverse proxy. Remote hook URLs require HTTPS and reject redirects. Legacy
+private development without accounts can use GOVERNLOOM_ADMIN_TOKEN (32+ characters)
+under Collector access. It cannot bypass named accounts. Sessions/tokens stay in
+page memory; never use them as ingestion keys. Keep the collector private.
 
-SQLite serializes ingestion transactions. No distributed ingestion, tenant
-isolation, authenticated reviewer identities, automatic retention or grouping
-across distinct events is provided. Storage grows with traffic; choose pilot
+SQLite serializes ingestion transactions. Application scopes and grouped incidents
+are supported, but there is no distributed ingestion, organization/tenant isolation
+or automatic retention. Storage grows with traffic; choose pilot
 duration and retention/backup plans before sending production data. The dashboard
 polls every two seconds and shows bounded pages, not an SLA. External notifications,
 automatic rollback and hosted deployment are not configured. These checks do not

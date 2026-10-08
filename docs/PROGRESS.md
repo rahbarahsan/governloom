@@ -1,16 +1,47 @@
 # Release progress
 
-## Active follow-through (2026-10-08)
+## Delivered v0.3 follow-through (2026-10-08)
 
 User approved all four next steps: replace the GIF with actual runtime capture,
 restart-safe metadata delivery, named authenticated operator roles, and stronger
-grounding/drift checks with measured misses and false positives. Work is active;
-the previous delivered checkpoint below remains the baseline. Implement and test
-each boundary, keep focused commits, then regenerate the GIF against the final UI,
-run the full checks, push and stop owned servers. Raw text/credentials must never
-enter the durable outbox. Engineering calibration is not independent human review.
+grounding/drift checks with measured misses and false positives. All four are
+implemented and locally verified on the v0.2 foundation. Raw text/credentials
+must never enter the durable outbox. Engineering calibration is not independent
+human review.
 Research: OWASP password/session guidance and the DKW–Massart concentration bound
 were checked against primary sources. No customer participation is required.
+
+Final release verification: 76 Python tests passed (101.02 s), all five Chromium
+workflows passed (31.2 s), dashboard production build, dependency check and Python
+compilation passed. One existing Starlette/httpx deprecation warning remains.
+Detector profiles now bind event phase as well as deployment versions; the test
+proves an input event cannot enter an output calibration window. The actual digit
+HTTP test covers same-origin browser controls, rejected cross-origin writes,
+durable counters and application review persistence across service restart.
+
+The replacement GIF has ten verified frames, 24.6 seconds, 426,587 bytes and a
+1280 x 900 poster. It shows real digit inference/withholding, named incident
+ownership, application label resolution, response-inspection attestation,
+durable heartbeat and explicitly labeled recorded real RAG evidence. The capture
+made zero new subscription requests. A case-sensitive disposition selector was
+fixed, then visual review found a hidden identity banner; its layout was corrected
+and the final capture regenerated. Private captures are under ignored
+data/runtime-gif-2026-10-08-d/; owned capture services stopped. Automated browser
+test side effects on the three legacy screenshots were discarded.
+
+Release version is 0.3.0. The wheel built successfully with isolated build
+dependencies; an initial no-isolation attempt lacked local setuptools and was
+replaced by the declared build workflow. Reviewed public media is docs/media/.
+Installed-wheel 0.3.0 SDK/outbox/auth/detector/API imports passed from the fresh
+target directory without importing NumPy or scikit-learn. Whitespace checks pass.
+Process/listener inspection found no owned Python/Node servers or listeners on
+8000/5173. Remote CI already passed for evidence commit e6347f7 (run 37836728832);
+the final release push/CI result is recorded below when complete.
+The next recommended scope is v0.4 in docs/ROADMAP.md: durable signed incident
+delivery, broader domain validation, async/TypeScript integrations and operational
+hardening. This recommendation does not authorize starting another release.
+
+### Implementation checkpoints
 
 First slice complete: `governloom.outbox.DurableObservationHook` freezes metadata
 in SQLite, resumes pending deliveries, persists counters/deadlines/attempts, fences

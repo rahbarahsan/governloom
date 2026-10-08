@@ -226,7 +226,7 @@ export default function App() {
             <br />
             Hooks · policies · risk alerts
           </p>
-          <span className="version">Release 0.2 · runtime foundation</span>
+          <span className="version">Release 0.3 · evidence & operations</span>
         </div>
       </aside>
       <main>

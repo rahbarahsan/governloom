@@ -1,63 +1,62 @@
-# Roadmap: govern connected AI systems in production
+# Roadmap: govern connected AI systems
 
-Updated 2026-10-07. The user's runtime-monitoring direction replaces the earlier
-RAG-judge/release-approval recommendation. The product connects developers'
-existing systems through hooks, monitors risk signals and supports mitigation.
+Updated 2026-10-08. Connect the developer's existing AI system through a hook,
+monitor task-specific signals and support mitigation. No organization-wide
+inventory or participating customer team is required for local development.
 
-## v0.2: runtime foundation
+## v0.3: evidence and dependable private operations
 
-Implemented: provider-independent HTTP contract, Python prediction/tool hooks,
-scoped revocable keys, versioned policies, durable alerts, operator ownership and
-disposition. Checks support vision confidence, custom numeric metrics, label/tool
-allowlists, RAG citation identity, bounded text patterns, serving errors and
-delayed forecast errors. Rolling mean shift is a simple signal, not a statistical
-drift detector.
+Delivered on top of the v0.2 runtime/testbed foundation:
 
-Observe mode records decisions. Explicit enforce mode can withhold outputs and
-deny tools before execution. Private remote hosting uses a separate admin token
-and explicit hosts/origins. This foundation supports integration development and
-controlled pilots; production throughput, availability and detector accuracy
-have not been established.
+| Work | Evidence |
+| --- | --- |
+| Actual runtime GIF | Live digit inference, withholding, named mitigation, durable heartbeat and labeled recorded RAG replay |
+| Crash-safe metadata outbox | Frozen-body replay, leases, persisted counters/deadlines/bounds; hard producer death after collector commit produces one alert |
+| Named operator roles | Scoped viewer/reviewer/operator/admin accounts, revocable sessions, server-supplied actors; backend and browser access checks |
+| Grounding evidence | Frozen source hashes, claim/quote validation, explicit coverage gaps and immutable profile approval; real subscription judgments and a natural answer |
+| Distribution signals | Reference snapshots, non-overlapping ECDF windows, conservative alpha spending; actual vision/forecast control measurements |
 
-See [integration](RUNTIME_MONITORING.md), [research](PRODUCT_RESEARCH.md) and
-[progress](PROGRESS.md) for capabilities, limitations and validation.
+See [progress](PROGRESS.md), [access](OPERATOR_ACCESS.md),
+[delivery](RUNTIME_DELIVERY.md), [detector contracts](DETECTOR_EVIDENCE.md),
+[measured detector evidence](DETECTOR_VALIDATION.md) and
+[original three-system evidence](TESTBED_EVIDENCE.md).
 
-## Next milestone: a three-system testbed and dependable delivery
+The vision confidence gate still misses one natural error and flags 52 correct
+predictions. Small engineering RAG calibration is not independent human validation.
+Serially dependent NOAA replay has no nominal false-alert guarantee.
+Experimental semantic/distribution signals flag or request review; they cannot block.
+Text cannot be replayed from the metadata outbox. These are delivered limitations.
 
-Completed 2026-10-08 UTC: three independent mini projects run actual digit,
-NOAA forecast and documentation RAG models through normal HTTP hooks. The
-isolated launcher saves evidence and stops its services, with optional bounded
-dashboard exploration. Natural errors and deliberate faults are separated.
-Bounded background sending, exact-body retry, heartbeats, incident grouping,
-operator/app action records, local test-sink escalation, backup/restore and
-conservative explicit retention are implemented. See the
-[delivery plan](PILOT_PLAN.md), [measured evidence](TESTBED_EVIDENCE.md) and
-[private pilot operations](PILOT_OPERATIONS.md).
+## Recommended v0.4: dependable incident delivery and domain validation
 
-| Priority | Work | Acceptance evidence |
-| --- | --- | --- |
-| Done | Connect three mini applications | Actual trained/generated outputs; split/provenance records; HTTP hooks; latency, errors, coverage and executed actions |
-| Done | Bounded delivery and coverage | RAM buffering, exact retry, visible overflow, stale heartbeat status and real outage/restart tests; persistent outbox remains future work |
-| Done | Private incident operations | Grouping, cooldowns, local test-sink retry audit, ownership and explicit operator attestation; external destinations remain future work |
-| 4 | Task-specific quality | Actual labels/outcomes for vision/forecasting; validated drift tests; calibrated RAG grounding; measured misses/false positives |
-| 5 | Private deployment operations | Retention, capacity/restore tests, TLS setup, authenticated operator identities and scoped permissions before broader access |
+Prioritize the path from a detected risk to an investigated, evidenced mitigation.
+Build/test it with the existing mini applications before a customer pilot.
 
-The next investment is a metadata-only persistent outbox, authenticated
-operator roles and domain-calibrated checks. Keep text replay coverage explicit;
-do not introduce raw-prompt retention accidentally. A customer pilot follows
-when a team is available. Add detectors based on measured needs, not a universal
-risk score. Existing observability outputs can supply numeric metrics.
-OpenTelemetry ingestion, native async/JavaScript SDKs and batch uploads remain
-future work; direct HTTP already supports other languages.
+1. **Durable incident delivery.** Signed webhooks, per-destination secrets,
+   restricted destinations, retry/dead-letter/replay and authenticated delivery
+   audit. Validate with owned local sinks first; actual external recipients require
+   explicit authorization. An accepted notification is not completed mitigation.
+2. **Domain validation.** More diverse grouped RAG claims and retrieval failures,
+   judge error analysis and independent label review when available. For forecasts,
+   use temporal/block calibration and outcome lateness; report sensitivity, misses
+   and false alerts on an untouched chronological holdout. For vision, monitor
+   actual-label quality alongside confidence and sampling shift.
+3. **Integration tooling.** Native async Python and TypeScript SDKs, batch delivery,
+   stable event contracts and OpenTelemetry adapters. Preserve synchronous
+   enforcement, explicit outage behavior and visible coverage gaps.
+4. **Operational hardening.** Longer restart/load/restore drills, outbox disk-space
+   handling and explicit retention horizons. Add SSO/MFA and finer administrative
+   permissions when the access/deployment scope justifies them.
 
-## Explicit boundaries
+Acceptance: restart/replay without duplicate incidents; visible terminal delivery
+failure; version-bound calibration; held-out false-positive/miss reports; actual
+application action evidence; no hidden text retention or overall governance score.
 
-No inventory/discovery, tenant isolation, SSO, RBAC or compliance certification.
+## Boundaries
+
+No inventory/discovery, organization/tenant isolation or compliance certification.
 No universal hallucination/injection detector, full image/audio understanding,
-demographic fairness computation or automatic retraining. No automatic rollback,
-fallback model or human-review queue in the collector: mini applications now
-demonstrate persisted review and explicitly selected subsequent fallback.
-No deployment, paid model calls or external notifications have been performed.
-
-The earlier RAG workbench and subscription experiment remain available; four
-exploratory cases do not validate runtime detectors.
+automatic fairness computation or retraining. The collector does not automatically
+roll back a model, choose a fallback or inspect independent application state.
+Mini applications demonstrate persisted review and explicitly chosen fallback.
+No hosted deployment, paid API usage or real-recipient notification has occurred.

@@ -6,8 +6,8 @@ Connect your existing AI system, monitor production signals, flag risks, and
 record mitigation decisions. Vision, RAG, forecasting, classification and custom
 systems share a provider-independent hook and HTTP event contract.
 
-Release 0.2 adds scoped ingestion keys, versioned policies, live alerts, operator
-ownership/disposition and optional application-side enforcement. Your own model
+Release 0.3 adds restart-safe metadata delivery, named operator roles and reviewed
+grounding/distribution evidence to scoped keys, live alerts and optional enforcement. Your own model
 performs inference; GovernLoom evaluates selected signals without its provider key.
 This foundation supports controlled integrations and pilots, with task-specific
 checks and explicit gaps.
@@ -20,15 +20,17 @@ recognition, historical NOAA forecasting, and documentation RAG with bounded rea
 generation. [Measured evidence](docs/TESTBED_EVIDENCE.md),
 [delivery and incidents](docs/RUNTIME_DELIVERY.md), and
 [private pilot operations](docs/PILOT_OPERATIONS.md) record results and limits.
+[Named access](docs/OPERATOR_ACCESS.md), [detector contracts](docs/DETECTOR_EVIDENCE.md)
+and [actual detector measurements](docs/DETECTOR_VALIDATION.md) cover the new release.
 
 The earlier RAG workbench remains available for source/dataset review, durable
 evaluation jobs and evidence comparison. It does not certify compliance.
 
-![Recorded GovernLoom workflow: inspect sources, review cases, freeze a dataset, compare clean and faulty runs, and inspect highlighted evidence.](docs/media/demo.gif)
+![GovernLoom runtime: live digit inference, response withholding, authenticated mitigation, durable delivery coverage and recorded real RAG grounding evidence.](docs/media/demo.gif)
 
-23-second capture of the v0.1 evaluation workflow, using fictional fixture data.
-This GIF does not demonstrate the new runtime hook. Approvals shown are scripted
-fixture acceptance, not independent human validation.
+25-second Chromium capture of actual held-out digit inference and runtime governance.
+RAG scenes replay a recorded real model answer and judgment, explicitly labeled.
+Operator actions are scripted demonstrations, not independent human validation.
 [Still preview](docs/media/demo-poster.png) · [Capture instructions](docs/media/README.md)
 · [Runtime roadmap](docs/ROADMAP.md)
 
@@ -57,6 +59,9 @@ Open **http://127.0.0.1:8000**, create an application connection, then use
 **Monitoring** to activate a policy and issue a scoped key. Follow the
 [integration guide](docs/RUNTIME_MONITORING.md) to wrap your actual callable or
 send HTTP events. Monitoring does not require the separate evaluation worker.
+For named accounts, bootstrap an administrator and follow [operator access](docs/OPERATOR_ACCESS.md).
+Collectors with accounts require sign-in automatically; the local development
+workflow remains available on databases without accounts.
 
 For dashboard development and legacy evaluation, use three terminals:
 
@@ -215,17 +220,17 @@ screenshots under `docs/screenshots/`.
   Detector coverage depends on task-specific signals; confidence is not accuracy,
   source IDs are not grounding, and text patterns are not comprehensive security.
   Missing evidence remains visible. No universal safety or compliance claim.
-- Default loopback binding; private remote hosting needs a separate admin token,
-  explicit hosts/origins and TLS. No accounts, tenant isolation, SSO or RBAC.
+- Default loopback binding; private hosting uses named accounts, application roles,
+  explicit hosts/origins and TLS. No organization/tenant isolation, SSO or MFA.
   SQLite ingestion is serialized; throughput/availability have not been established.
-  Automatic retention, reliable retry buffering and external escalation are future work.
+  Bounded metadata retry survives restarts; automatic retention and external escalation remain future work.
   See [runtime pilot boundaries](docs/RUNTIME_MONITORING.md).
-- UTF-8 Markdown/text and version 1 JSONL cases/traces. PDF/OCR is deferred.
+- Legacy workbench: UTF-8 Markdown/text and version 1 JSONL cases/traces. PDF/OCR is deferred.
   Automatic generation requires structured facts; arbitrary prose supports
   manual cases. The target uses lexical retrieval and literal answers, not a
   general language model. Correction scenarios use explicit correction prompts,
   not a stateful conversation agent.
-- Citation checks are document-level. Task success checks response behavior.
+- Legacy fixture citation checks are document-level. Task success checks response behavior.
   Literal agreement misses paraphrases and unsupported additions. Retrieval
   requires supplied relevance labels. Missing latency, usage and prices remain
   unavailable, never zero. Demo timeouts are simulated.
@@ -234,13 +239,13 @@ screenshots under `docs/screenshots/`.
   checks and no independent human review. Fault results are engineering checks,
   not estimates of general RAG performance.
 - Provider protocols and a budgeted integration seam are tested with a fake.
-  No paid generation/judge adapter or configuration route is shipped. Semantic
-  grounding stays unavailable in dashboard metrics. The opt-in local subscription
-  capture above records actual answers and separate uncalibrated claim estimates.
-  Future integrated adapters require explicit caps,
-  server-side credentials, pinned rubrics/models and independent calibration.
-- Next priority is a real connected-system pilot, reliable telemetry and incident
-  response. See the [updated roadmap](docs/ROADMAP.md).
+  No paid generation/judge adapter or configuration route is shipped. Legacy
+  evaluation grounding remains unavailable; runtime profiles accept separately
+  versioned upstream judge evidence. The mini RAG service exercises an opt-in
+  bounded subscription adapter with small engineering calibration, whose limits
+  and unresolved case are published. Independent human calibration remains needed.
+- Next priorities are temporal/domain calibration, durable incident delivery and
+  stronger integration tooling. See the [updated roadmap](docs/ROADMAP.md).
 
 Original code and fictional policy material use [Apache-2.0](LICENSE).
 See [third-party attribution](docs/THIRD_PARTY.md) for dependencies.

@@ -74,10 +74,10 @@ require workload-specific capacity studies.
 ## TLS outline (not deployed)
 
 Build the web bundle, run the API on loopback and keep administration on a private
-network. Set a separately generated `GOVERNLOOM_ADMIN_TOKEN` of at least 32
-characters, `GOVERNLOOM_ALLOWED_HOSTS` to the chosen domain plus loopback, and
+network. Bootstrap [named accounts](OPERATOR_ACCESS.md) and use operator mode.
+Set `GOVERNLOOM_ALLOWED_HOSTS` to the chosen domain plus loopback, and
 `GOVERNLOOM_ALLOWED_ORIGINS` to the exact HTTPS dashboard origin. Ingest agents
-use scoped keys, never the admin token.
+use scoped keys, never operator session tokens.
 
 Example Caddyfile for a domain the operator owns:
 
@@ -93,12 +93,14 @@ and [reverse proxy documentation](https://caddyserver.com/docs/caddyfile/directi
 Keep the backend port private; SDK remote URLs require HTTPS and reject
 redirects. This outline has not been deployed or TLS-tested here.
 
-## Identity requirements before broader access
+## Identity and remaining access boundaries
 
-Admin uses a shared private-collector token; actor/owner names are assertions.
-Before broader access, bind audited actors to authenticated identities, authorize
-policy/key/review/verification/dispatch/backup separately, add revocation/session
-expiry and test scoped application/tenant access. A proxy login does not add
-backend roles. SSO/RBAC, tenant isolation, persistent event outbox, externally
-delivered notifications and independent action verification remain future work.
+Named accounts now supply audited actors, revocable sessions and explicit
+viewer/reviewer/operator/admin application scopes. Legacy local mode still uses
+asserted actors. Owner names and operator verification remain attestations.
+Offline backup/restore uses host filesystem privileges, not API accounts.
+SSO/MFA, organization/tenant isolation, external notifications and independent
+action verification remain future work. The opt-in metadata outbox survives
+restarts; raw text cannot be replayed from it. See [access](OPERATOR_ACCESS.md)
+and [delivery](RUNTIME_DELIVERY.md) for exact bounds.
 No paid provider calls, deployment or real recipients are needed for this testbed.
