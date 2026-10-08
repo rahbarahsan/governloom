@@ -77,6 +77,41 @@ type Alert = {
   task_type: string;
   environment: string;
 };
+type Incident = {
+  id: string;
+  name: string;
+  environment: string;
+  model_version: string;
+  count: number;
+  status: string;
+  owner: string | null;
+  revision: number;
+  first_seen: string;
+  last_seen: string;
+  escalations_queued: number;
+};
+type Agent = {
+  id: string;
+  status: string;
+  received_at: string;
+  heartbeat: {
+    agent_id: string;
+    boot_id: string;
+    counters: Record<string, number>;
+  };
+};
+type ActionRecord = {
+  id: string;
+  action_type: string;
+  status: string;
+  event_id: string;
+  limitation: string;
+  verification: {
+    actor: string;
+    criterion: string;
+    evidence_sha256: string;
+  } | null;
+};
 
 const presets: Record<string, Omit<Rule, "id">> = {
   latency: {
@@ -213,6 +248,9 @@ export default function Monitoring({
   const [keyName, setKeyName] = useState("");
   const [actor, setActor] = useState("");
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [actions, setActions] = useState<ActionRecord[]>([]);
   const [events, setEvents] = useState<RuntimeRow[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -224,19 +262,28 @@ export default function Monitoring({
     if (fetching.current) return;
     fetching.current = true;
     try {
-      const [p, k, a, feed] = await Promise.all([
-        api<Policy | null>(`/applications/${application.id}/monitor-policy`),
-        api<Key[]>(`/applications/${application.id}/ingest-keys`),
-        api<Alert[]>(
-          `/applications/${application.id}/runtime-alerts${status === "all" ? "" : `?status=${status}`}`,
-        ),
-        api<{ events: RuntimeRow[]; next_cursor: number }>(
-          `/applications/${application.id}/runtime-events?after=${cursor.current}&limit=100`,
-        ),
-      ]);
+      const [p, k, a, feed, grouped, coverage, confirmations] =
+        await Promise.all([
+          api<Policy | null>(`/applications/${application.id}/monitor-policy`),
+          api<Key[]>(`/applications/${application.id}/ingest-keys`),
+          api<Alert[]>(
+            `/applications/${application.id}/runtime-alerts${status === "all" ? "" : `?status=${status}`}`,
+          ),
+          api<{ events: RuntimeRow[]; next_cursor: number }>(
+            `/applications/${application.id}/runtime-events?after=${cursor.current}&limit=100`,
+          ),
+          api<Incident[]>(`/applications/${application.id}/runtime-incidents`),
+          api<Agent[]>(`/applications/${application.id}/runtime-agents`),
+          api<ActionRecord[]>(
+            `/applications/${application.id}/runtime-actions`,
+          ),
+        ]);
       setPolicy(p);
       setKeys(k);
       setAlerts(a);
+      setIncidents(grouped);
+      setAgents(coverage);
+      setActions(confirmations);
       cursor.current = feed.next_cursor;
       if (feed.events.length)
         setEvents((current) => [...current, ...feed.events].slice(-100));
@@ -424,6 +471,74 @@ export default function Monitoring({
         />
       </section>
       <section className="panel">
+        <h2>Delivery coverage</h2>
+        <p className="small muted">
+          Heartbeats are separate from inference traffic. Counters are reported
+          by each application; queued events have not yet been accepted.
+        </p>
+        {!agents.length && (
+          <p>No agent heartbeat received. Delivery coverage is unknown.</p>
+        )}
+        {agents.map((agent) => (
+          <details key={agent.id}>
+            <summary>
+              {agent.heartbeat.agent_id} · {agent.status} · accepted{" "}
+              {agent.heartbeat.counters.accepted ?? "unknown"} · dropped{" "}
+              {agent.heartbeat.counters.dropped ?? "unknown"}
+            </summary>
+            <p>
+              Boot {agent.heartbeat.boot_id} · last heartbeat{" "}
+              {date(agent.received_at)}
+            </p>
+            <pre>{JSON.stringify(agent.heartbeat.counters, null, 2)}</pre>
+          </details>
+        ))}
+      </section>
+      <section className="panel">
+        <h2>Grouped incidents</h2>
+        <p className="small muted">
+          Repeats share an incident within a fixed time window and
+          policy/deployment. Individual alerts retain their evidence.
+        </p>
+        {!incidents.length && <p>No grouped incidents received.</p>}
+        {incidents.map((incident) => (
+          <IncidentCard
+            key={`${incident.id}-${incident.revision}`}
+            incident={incident}
+            busy={busy}
+            actor={actor}
+            save={(body) =>
+              action(async () => {
+                await api(`/runtime-incidents/${incident.id}/review`, body);
+              }, "Incident ownership and disposition recorded.")
+            }
+          />
+        ))}
+      </section>
+      <section className="panel">
+        <h2>Application actions</h2>
+        <p className="small muted">
+          A requested block does not prove enforcement. Acknowledgments are
+          application assertions; verification identifies an operator who
+          inspected evidence.
+        </p>
+        {!actions.length && (
+          <p>No application action acknowledgment received.</p>
+        )}
+        {actions.map((record) => (
+          <details key={record.id}>
+            <summary>
+              {title(record.action_type)} · {title(record.status)}
+            </summary>
+            <p>{record.limitation}</p>
+            <p className="small">Event {record.event_id}</p>
+            {record.verification && (
+              <pre>{JSON.stringify(record.verification, null, 2)}</pre>
+            )}
+          </details>
+        ))}
+      </section>
+      <section className="panel">
         <div className="row between">
           <h2>Live risk alerts</h2>
           <label>
@@ -519,6 +634,10 @@ function PolicyForm({
   const [name, setName] = useState("");
   const [rationale, setRationale] = useState("");
   const [limit, setLimit] = useState(600);
+  const [heartbeatTimeout, setHeartbeatTimeout] = useState(120);
+  const [incidentWindow, setIncidentWindow] = useState(300);
+  const [escalateCount, setEscalateCount] = useState(3);
+  const [cooldown, setCooldown] = useState(300);
   const [preset, setPreset] = useState("latency");
   const [rules, setRules] = useState<Rule[]>([]);
   function edit(index: number, values: Partial<Rule>) {
@@ -537,6 +656,10 @@ function PolicyForm({
             actor,
             rationale,
             expected_events_per_minute: limit,
+            heartbeat_timeout_seconds: heartbeatTimeout,
+            incident_window_seconds: incidentWindow,
+            escalate_after_count: escalateCount,
+            escalation_cooldown_seconds: cooldown,
             rules,
           });
         }}
@@ -568,6 +691,56 @@ function PolicyForm({
             onChange={(event) => setLimit(Number(event.target.value))}
           />
         </label>
+        <div className="row">
+          <label>
+            Heartbeat timeout (seconds)
+            <input
+              required
+              type="number"
+              min={1}
+              max={86400}
+              value={heartbeatTimeout}
+              onChange={(event) =>
+                setHeartbeatTimeout(Number(event.target.value))
+              }
+            />
+          </label>
+          <label>
+            Incident window (seconds)
+            <input
+              required
+              type="number"
+              min={1}
+              max={86400}
+              value={incidentWindow}
+              onChange={(event) =>
+                setIncidentWindow(Number(event.target.value))
+              }
+            />
+          </label>
+          <label>
+            Escalate after event count
+            <input
+              required
+              type="number"
+              min={1}
+              max={10000}
+              value={escalateCount}
+              onChange={(event) => setEscalateCount(Number(event.target.value))}
+            />
+          </label>
+          <label>
+            Escalation cooldown (seconds)
+            <input
+              required
+              type="number"
+              min={1}
+              max={86400}
+              value={cooldown}
+              onChange={(event) => setCooldown(Number(event.target.value))}
+            />
+          </label>
+        </div>
         <div className="row">
           <label>
             Rule template
@@ -791,6 +964,89 @@ function PolicyForm({
         </button>
       </form>
     </details>
+  );
+}
+
+function IncidentCard({
+  incident,
+  actor,
+  busy,
+  save,
+}: {
+  incident: Incident;
+  actor: string;
+  busy: boolean;
+  save: (body: unknown) => void;
+}) {
+  const [owner, setOwner] = useState(incident.owner ?? "");
+  const [status, setStatus] = useState(incident.status);
+  const [rationale, setRationale] = useState("");
+  return (
+    <article className="runtime-incident">
+      <h3>
+        {incident.name} · {incident.count} events
+      </h3>
+      <p>
+        {incident.environment} · {incident.model_version} ·{" "}
+        {title(incident.status)} · {incident.escalations_queued} escalations
+        queued
+      </p>
+      <p className="small">
+        First {date(incident.first_seen)} · latest {date(incident.last_seen)}
+      </p>
+      <details>
+        <summary>Assign or review incident</summary>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            save({
+              actor,
+              owner,
+              status,
+              rationale,
+              expected_revision: incident.revision,
+            });
+          }}
+        >
+          <label>
+            Incident owner
+            <input
+              required
+              maxLength={200}
+              value={owner}
+              onChange={(event) => setOwner(event.target.value)}
+            />
+          </label>
+          <label>
+            Incident disposition
+            <select
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+            >
+              {["open", "acknowledged", "mitigated", "false_positive"].map(
+                (value) => (
+                  <option key={value} value={value}>
+                    {title(value)}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+          <label>
+            Incident rationale
+            <textarea
+              required
+              maxLength={4000}
+              value={rationale}
+              onChange={(event) => setRationale(event.target.value)}
+            />
+          </label>
+          <button disabled={busy || !actor.trim()}>
+            Save incident disposition
+          </button>
+        </form>
+      </details>
+    </article>
   );
 }
 

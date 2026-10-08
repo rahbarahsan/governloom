@@ -9,7 +9,7 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Literal
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, StrictInt, model_validator
 from sqlalchemy import func, select, update
 
 from .schemas import Record, now, uid
@@ -93,6 +93,10 @@ class MonitorPolicy(MonitorRecord):
     rationale: str = Field(min_length=1, max_length=4000)
     rules: list[RuntimeRule] = Field(min_length=1, max_length=30)
     expected_events_per_minute: int = Field(default=600, ge=1, le=10000)
+    heartbeat_timeout_seconds: int = Field(default=120, ge=1, le=86400)
+    incident_window_seconds: int = Field(default=300, ge=1, le=86400)
+    escalate_after_count: int = Field(default=3, ge=1, le=10000)
+    escalation_cooldown_seconds: int = Field(default=300, ge=1, le=86400)
 
     @model_validator(mode="after")
     def unique_rules(self):
@@ -107,6 +111,38 @@ class AlertReview(MonitorRecord):
     status: Literal["open", "acknowledged", "mitigated", "false_positive"]
     rationale: str = Field(min_length=1, max_length=4000)
     expected_revision: int = Field(ge=1)
+
+
+class Heartbeat(MonitorRecord):
+    agent_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-zA-Z0-9_.:-]+$")
+    boot_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-zA-Z0-9_.:-]+$")
+    sequence: int = Field(ge=1, strict=True)
+    occurred_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    counters: dict[str, StrictInt] = Field(default_factory=dict, max_length=20)
+
+    @model_validator(mode="after")
+    def valid_heartbeat(self):
+        if self.occurred_at.tzinfo is None or self.occurred_at > datetime.now(timezone.utc) + timedelta(minutes=5):
+            raise ValueError("Heartbeat needs an aware timestamp within five minutes of now")
+        if SECRET_PATTERN.search(self.agent_id) or SECRET_PATTERN.search(self.boot_id):
+            raise ValueError("Use opaque agent/boot IDs")
+        allowed = {"emitted", "queued", "accepted", "dropped", "failed", "retries", "expired", "auth_failed", "rate_limited", "invalid", "pending"}
+        if set(self.counters) - allowed or any(type(value) is not int or value < 0 for value in self.counters.values()):
+            raise ValueError("Heartbeat counters must be known nonnegative integers")
+        return self
+
+
+class ActionAcknowledgment(MonitorRecord):
+    alert_id: str = Field(min_length=1, max_length=128)
+    action_type: Literal["withheld", "review_queued", "tool_denied", "fallback_selected"]
+    evidence_id: str = Field(min_length=1, max_length=128, pattern=r"^[a-zA-Z0-9_.:-]+$")
+
+
+class ActionVerification(MonitorRecord):
+    actor: str = Field(min_length=1, max_length=200)
+    criterion: Literal["response_withheld", "review_present", "side_effect_absent", "subsequent_fallback"]
+    evidence_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    rationale: str = Field(min_length=1, max_length=2000)
 
 
 class IngestUnauthorized(ValueError):
@@ -187,6 +223,47 @@ class Monitor:
         except (AttributeError, KeyError):
             raise IngestUnauthorized("Invalid ingestion credentials") from None
 
+    def heartbeat(self, token, body: Heartbeat):
+        incoming = body.model_dump(mode="json")
+        with self.store.session() as session:
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            key = self.authenticate(token, session)
+            identifier = checksum(["runtime_agent", key.application_id, body.agent_id])[:32]
+            row = session.get(Entity, identifier)
+            if row:
+                old = row.payload
+                if old["heartbeat"] == incoming:
+                    return {"id": identifier, "duplicate": True}
+                prior = old["heartbeat"]
+                if body.occurred_at <= datetime.fromisoformat(prior["occurred_at"]):
+                    raise IngestConflict("Heartbeat is stale")
+                if prior["boot_id"] == body.boot_id:
+                    if body.sequence <= prior["sequence"] or any(body.counters.get(name, -1) < value for name, value in prior["counters"].items() if name != "pending"):
+                        raise IngestConflict("Heartbeat sequence/cumulative counters cannot move backwards")
+                elif body.sequence != 1:
+                    raise IngestConflict("A new boot must start at sequence one")
+            else:
+                if body.sequence != 1:
+                    raise IngestConflict("A new agent must start at sequence one")
+                count = session.scalar(select(func.count()).select_from(Entity).where(Entity.kind == "runtime_agent", Entity.application_id == key.application_id))
+                if count >= 1000:
+                    raise IngestRateLimit("Per-application agent bound reached")
+            record = {"id": identifier, "application_id": key.application_id, "heartbeat": incoming, "received_at": now()}
+            if row:
+                row.payload = record
+            else:
+                session.add(Entity(id=identifier, kind="runtime_agent", application_id=key.application_id, payload=record))
+        return {"id": identifier, "duplicate": False}
+
+    def agents(self, application_id):
+        self.store.get("application", application_id)
+        timeout = (self.active_policy(application_id) or {}).get("heartbeat_timeout_seconds", 120)
+        instant = datetime.now(timezone.utc)
+        return [{**row, "heartbeat_timeout_seconds": timeout,
+                 "status": "stale" if (instant - datetime.fromisoformat(row["received_at"])).total_seconds() > timeout else "reporting",
+                 "limitation": "Client-reported delivery counters; quiet inference traffic is not an outage"}
+                for row in self.store.list("runtime_agent", application_id)]
+
     def ingest(self, token, event: RuntimeEvent):
         # Text is scanned transiently. The DB only receives lengths and detector
         # evidence; raw prompt/output text never enters persisted observations.
@@ -236,7 +313,7 @@ class Monitor:
             receipt = {"event_id": event.event_id, "trace_id": event.trace_id, "phase": event.phase,
                        "application_id": application_id, "policy_id": policy["id"],
                        "engine_version": policy["engine_version"], "action": action, "checks": checks,
-                       "alert_ids": [], "received_at": now(), "duplicate": False}
+                       "alert_ids": [], "incident_ids": [], "received_at": now(), "duplicate": False}
             stored = {key: value for key, value in incoming.items() if key != "text"}
             stored["metrics"] = metrics
             stored["text_supplied"] = event.text is not None
@@ -257,11 +334,113 @@ class Monitor:
                          "requested_action": check["action"], "mitigation": check["mitigation"], "evidence": check["evidence"],
                          "status": "open", "owner": None, "revision": 1, "created_at": now(), "updated_at": now(),
                          "environment": event.environment, "task_type": event.task_type}
+                incident = self.group_alert(session, alert, event, policy)
+                alert["incident_id"] = incident["id"]
+                if incident["id"] not in receipt["incident_ids"]:
+                    receipt["incident_ids"].append(incident["id"])
                 session.add(Entity(id=alert_id, kind="runtime_alert", application_id=application_id, payload=sanitize(alert)))
                 receipt["alert_ids"].append(alert_id)
             receipt["cursor"] = observation.cursor
             observation.payload = {"event": stored, "receipt": sanitize(receipt)}
         return sanitize(receipt)
+
+    def group_alert(self, session, alert, event, policy):
+        import time
+        instant = time.time()
+        window = policy.get("incident_window_seconds", 300)
+        identifier = checksum(["runtime_incident", alert["application_id"], event.environment, event.model_version,
+            event.application_version, event.task_type, policy["id"], alert["rule_id"], int(instant // window)])[:32]
+        row = session.get(Entity, identifier)
+        if row:
+            record = {**row.payload, "count": row.payload["count"] + 1, "last_seen": alert["created_at"],
+                "latest_alert_id": alert["id"], "revision": row.payload["revision"] + 1}
+            if record["status"] in ("mitigated", "false_positive"):
+                record["status"] = "open"
+        else:
+            record = {"id": identifier, "application_id": alert["application_id"], "policy_id": policy["id"],
+                "rule_id": alert["rule_id"], "name": alert["name"], "environment": event.environment,
+                "model_version": event.model_version, "application_version": event.application_version,
+                "task_type": event.task_type, "severity": alert["severity"], "requested_action": alert["requested_action"],
+                "count": 1, "first_seen": alert["created_at"], "last_seen": alert["created_at"],
+                "first_alert_id": alert["id"], "latest_alert_id": alert["id"], "window_seconds": window,
+                "status": "open", "owner": None, "revision": 1, "last_escalation_at": 0, "escalations_queued": 0}
+            row = Entity(id=identifier, kind="runtime_incident", application_id=alert["application_id"], payload=record)
+            session.add(row)
+        if record["count"] >= policy.get("escalate_after_count", 3) and instant - record["last_escalation_at"] >= policy.get("escalation_cooldown_seconds", 300):
+            pending = session.scalar(select(func.count()).select_from(Entity).where(Entity.kind == "runtime_escalation",
+                Entity.application_id == alert["application_id"], Entity.payload["status"].as_string().in_(["pending", "delivering"])))
+            if pending < 1000:
+                escalation_id = uid()
+                notification = {"id": escalation_id, "application_id": alert["application_id"], "incident_id": identifier,
+                    "status": "pending", "attempts": 0, "next_attempt_at": instant, "lease_until": 0,
+                    "created_at": now(), "count": record["count"], "owner": record["owner"], "severity": record["severity"]}
+                session.add(Entity(id=escalation_id, kind="runtime_escalation", application_id=alert["application_id"], payload=notification))
+                record["escalations_queued"] += 1
+                self.workbench.audit(session, alert["application_id"], escalation_id, 1, "runtime_escalation_queued", "runtime-engine", {"incident_id": identifier})
+            else:
+                record["escalations_dropped"] = record.get("escalations_dropped", 0) + 1
+            record["last_escalation_at"] = instant
+        row.payload = sanitize(record)
+        return row.payload
+
+    def incidents(self, application_id, limit=100):
+        self.store.get("application", application_id)
+        with self.store.session() as session:
+            query = select(Entity).where(Entity.kind == "runtime_incident", Entity.application_id == application_id)
+            return [row.payload for row in session.scalars(query.order_by(Entity.payload["last_seen"].as_string().desc()).limit(limit))]
+
+    def review_incident(self, identifier, body: AlertReview):
+        old = self.store.get("runtime_incident", identifier)
+        if old["revision"] != body.expected_revision:
+            raise IngestConflict("Stale incident revision; reload")
+        revised = {**old, **body.model_dump(exclude={"expected_revision"}), "revision": old["revision"] + 1}
+        with self.store.session() as session:
+            changed = session.execute(update(Entity).where(Entity.id == identifier, Entity.payload == old).values(payload=sanitize(revised)))
+            if changed.rowcount != 1:
+                raise IngestConflict("Concurrent incident update; reload")
+            self.workbench.audit(session, old["application_id"], identifier, revised["revision"], "runtime_incident_review", body.actor,
+                sanitize({"status": body.status, "owner": body.owner, "rationale": body.rationale}))
+        return sanitize(revised)
+
+    def acknowledge_action(self, token, body: ActionAcknowledgment):
+        with self.store.session() as session:
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            key = self.authenticate(token, session)
+            alert = session.get(Entity, body.alert_id)
+            if alert is None or alert.kind != "runtime_alert" or alert.application_id != key.application_id:
+                raise IngestUnauthorized("Unknown alert for this application")
+            observation = session.scalar(select(RuntimeObservation).where(RuntimeObservation.application_id == key.application_id,
+                RuntimeObservation.event_id == alert.payload["event_id"]))
+            phase = observation.payload["event"]["phase"]
+            if (body.action_type == "tool_denied" and (phase != "tool" or alert.payload["requested_action"] != "block") or
+                body.action_type == "withheld" and (phase not in ("input", "output") or alert.payload["requested_action"] != "block") or
+                body.action_type == "review_queued" and phase not in ("input", "output")):
+                raise ValueError("Acknowledged action does not match the monitored boundary")
+            identifier = checksum(["runtime_action", key.application_id, body.alert_id, body.action_type, body.evidence_id])[:32]
+            existing = session.get(Entity, identifier)
+            if existing:
+                return existing.payload
+            record = sanitize({"id": identifier, "application_id": key.application_id, **body.model_dump(), "status": "acknowledged",
+                "event_id": alert.payload["event_id"], "requested_action": alert.payload["requested_action"],
+                "created_at": now(), "verification": None, "limitation": "Application assertion; independent evidence not supplied"})
+            session.add(Entity(id=identifier, kind="runtime_action", application_id=key.application_id, payload=record))
+            self.workbench.audit(session, key.application_id, identifier, 1, "runtime_action_acknowledged", "ingestion-agent", {"alert_id": body.alert_id, "action_type": body.action_type})
+        return record
+
+    def verify_action(self, identifier, body: ActionVerification):
+        with self.store.session() as session:
+            session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+            row = session.get(Entity, identifier)
+            if row is None or row.kind != "runtime_action" or row.payload["verification"] is not None:
+                raise IngestConflict("Action is unknown or already verified")
+            criteria = {"withheld": "response_withheld", "review_queued": "review_present", "tool_denied": "side_effect_absent", "fallback_selected": "subsequent_fallback"}
+            if body.criterion != criteria[row.payload["action_type"]]:
+                raise ValueError("Verification criterion does not match acknowledged action")
+            row.payload = {**row.payload, "status": "verified_by_operator", "verification": sanitize({**body.model_dump(), "created_at": now()}),
+                "limitation": "Operator attestation to inspected evidence; collector does not independently inspect application state"}
+            self.workbench.audit(session, row.application_id, identifier, 2, "runtime_action_verified_by_operator", body.actor, sanitize(body.model_dump()))
+            record = row.payload
+        return record
 
     def evaluate_rule(self, rule, event, metrics, application_id, session):
         result = {"rule_id": rule["id"], "name": rule["name"], "severity": rule["severity"], "action": rule["action"],

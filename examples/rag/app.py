@@ -44,6 +44,9 @@ def create_app(retriever=None, generator=None, state=None, hook_factory=hook):
         state.put(record["id"], "answer", record)
         if receipt["action"] in ("review", "block"):
             state.put("review-" + record["id"], "review", {**record, "status": "awaiting_review"})
+            for alert_id in receipt["alert_ids"]:
+                hook_factory("observe").acknowledge_action(alert_id=alert_id,
+                    action_type="withheld" if blocked else "review_queued", evidence_id=record["id"])
         return {"status": "withheld" if blocked else "returned", "answer": None if blocked else output,
                 "receipt": receipt, "scenario": scenario, "capture": capture}
 
@@ -102,6 +105,9 @@ def create_app(retriever=None, generator=None, state=None, hook_factory=hook):
             monitored()
         except PolicyViolation:
             blocked = True
+        if blocked and not marker.exists():
+            for alert_id in connection.last_receipt["alert_ids"]:
+                connection.acknowledge_action(alert_id=alert_id, action_type="tool_denied", evidence_id=connection.last_receipt["event_id"])
         return {"blocked": blocked, "side_effect_occurred": marker.exists(), "receipt": connection.last_receipt}
 
     return api

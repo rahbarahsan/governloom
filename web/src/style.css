@@ -8,6 +8,7 @@
   font-size: 14px;
 }
 .runtime-alert,
+.runtime-incident,
 .runtime-event,
 .gate-check {
   border: 1px solid #dce5de;
@@ -15,7 +16,8 @@
   padding: 16px;
   margin: 12px 0;
 }
-.runtime-alert {
+.runtime-alert,
+.runtime-incident {
   border-left: 4px solid #ad6846;
 }
 .issued-key {

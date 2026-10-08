@@ -14,7 +14,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .demo import seed, seed_gold
 from .metrics import recommend
-from .monitoring import Monitor, MonitorPolicy, RuntimeEvent, AlertReview, IngestConflict, IngestRateLimit, IngestUnauthorized
+from .monitoring import Monitor, MonitorPolicy, RuntimeEvent, AlertReview, Heartbeat, ActionAcknowledgment, ActionVerification, IngestConflict, IngestRateLimit, IngestUnauthorized
 from .schemas import Application, Record, Review, RunRequest
 from .service import Workbench
 from .storage import Store
@@ -45,6 +45,12 @@ class KeyCreate(Record):
     actor: str = Field(min_length=1, max_length=200)
 
 
+class TestSinkDispatch(Record):
+    endpoint: str = Field(min_length=1, max_length=200)
+    actor: str = Field(min_length=1, max_length=200)
+    limit: int = Field(default=10, ge=1, le=100)
+
+
 def create_app(store=None):
     api = FastAPI(title="GovernLoom", version=__version__)
     workbench = Workbench(store or Store())
@@ -63,7 +69,7 @@ def create_app(store=None):
     async def local_mutations(request: Request, call_next):
         # Collector keys authorize only ingestion. Administration has a separate
         # shared token for private hosting, or is restricted to local clients.
-        if request.url.path.startswith("/api/") and request.url.path not in ("/api/runtime/events", "/api/health") and request.method != "OPTIONS":
+        if request.url.path.startswith("/api/") and request.url.path not in ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions", "/api/health") and request.method != "OPTIONS":
             if admin_token:
                 supplied = request.headers.get("authorization", "").removeprefix("Bearer ")
                 if not hmac.compare_digest(supplied.encode(), admin_token.encode()):
@@ -86,7 +92,7 @@ def create_app(store=None):
 
     @api.exception_handler(RequestValidationError)
     async def safe_validation_error(request: Request, exc):
-        if request.url.path == "/api/runtime/events":
+        if request.url.path in ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions"):
             return JSONResponse({"detail": [{"loc": error["loc"], "msg": error["msg"]} for error in exc.errors()]}, status_code=422)
         return await request_validation_exception_handler(request, exc)
 
@@ -100,6 +106,56 @@ def create_app(store=None):
         if not authorization.startswith("Bearer "):
             raise IngestUnauthorized("Ingestion credentials are required")
         return monitor.ingest(authorization.removeprefix("Bearer "), body)
+
+    @api.post("/api/runtime/heartbeats")
+    def runtime_heartbeat(body: Heartbeat, authorization: str = Header(default="")):
+        if not authorization.startswith("Bearer "):
+            raise IngestUnauthorized("Ingestion credentials are required")
+        return monitor.heartbeat(authorization.removeprefix("Bearer "), body)
+
+    @api.get("/api/applications/{application_id}/runtime-agents")
+    def runtime_agents(application_id: str):
+        return monitor.agents(application_id)
+
+    @api.get("/api/applications/{application_id}/runtime-incidents")
+    def runtime_incidents(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
+        return monitor.incidents(application_id, limit)
+
+    @api.post("/api/runtime-incidents/{identifier}/review")
+    def review_incident(identifier: str, body: AlertReview):
+        return monitor.review_incident(identifier, body)
+
+    @api.post("/api/runtime/actions")
+    def acknowledge_action(body: ActionAcknowledgment, authorization: str = Header(default="")):
+        if not authorization.startswith("Bearer "):
+            raise IngestUnauthorized("Ingestion credentials are required")
+        return monitor.acknowledge_action(authorization.removeprefix("Bearer "), body)
+
+    @api.get("/api/applications/{application_id}/runtime-actions")
+    def runtime_actions(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
+        return runtime_records("runtime_action", application_id, limit)
+
+    @api.post("/api/runtime-actions/{identifier}/verify")
+    def verify_action(identifier: str, body: ActionVerification):
+        return monitor.verify_action(identifier, body)
+
+    @api.get("/api/applications/{application_id}/runtime-escalations")
+    def runtime_escalations(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
+        return runtime_records("runtime_escalation", application_id, limit)
+
+    def runtime_records(kind, application_id, limit):
+        from sqlalchemy import select
+        from .storage import Entity
+        workbench.store.get("application", application_id)
+        with workbench.store.session() as session:
+            rows = session.scalars(select(Entity).where(Entity.kind == kind, Entity.application_id == application_id)
+                .order_by(Entity.payload["created_at"].as_string().desc()).limit(limit))
+            return [row.payload for row in rows]
+
+    @api.post("/api/runtime-escalations/dispatch-test-sink")
+    def dispatch_escalations(body: TestSinkDispatch):
+        from .escalation import dispatch_test_sink
+        return dispatch_test_sink(monitor, body.endpoint, body.actor, body.limit)
 
     @api.get("/api/applications/{application_id}/monitor-policy")
     def monitor_policy(application_id: str):

@@ -399,6 +399,63 @@ test("connect vision system, activate policy, observe risk and record mitigation
   );
   expect(response.ok()).toBeTruthy();
   expect((await response.json()).action).toBe("review");
+  const receipt = await response.json();
+  const heartbeat = await request.post(
+    "http://127.0.0.1:8000/api/runtime/heartbeats",
+    {
+      headers: { Authorization: `Bearer ${key}` },
+      data: {
+        agent_id: "browser-agent",
+        boot_id: "boot-1",
+        sequence: 1,
+        counters: {
+          emitted: 1,
+          queued: 1,
+          accepted: 1,
+          dropped: 0,
+          failed: 0,
+          pending: 0,
+        },
+      },
+    },
+  );
+  expect(heartbeat.ok()).toBeTruthy();
+  const confirmed = await request.post(
+    "http://127.0.0.1:8000/api/runtime/actions",
+    {
+      headers: { Authorization: `Bearer ${key}` },
+      data: {
+        alert_id: receipt.alert_ids[0],
+        action_type: "review_queued",
+        evidence_id: "browser-review-record",
+      },
+    },
+  );
+  expect(confirmed.ok()).toBeTruthy();
+  await expect(
+    page.getByText("browser-agent · reporting", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("review queued · acknowledged", { exact: false }),
+  ).toBeVisible();
+  const incident = page.locator(".runtime-incident");
+  await expect(incident).toHaveCount(1);
+  await incident
+    .getByText("Assign or review incident", { exact: true })
+    .click();
+  await incident.getByLabel("Incident owner").fill("Incident owner");
+  await incident
+    .getByLabel("Incident disposition")
+    .selectOption("acknowledged");
+  await incident
+    .getByLabel("Incident rationale")
+    .fill("Assigned grouped uncertainty for investigation.");
+  await incident
+    .getByRole("button", { name: "Save incident disposition" })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Incident ownership and disposition recorded",
+  );
   const alert = page.locator(".runtime-alert");
   await expect(alert).toHaveCount(1);
   await alert.getByText("Risk evidence", { exact: true }).click();
@@ -417,6 +474,11 @@ test("connect vision system, activate policy, observe risk and record mitigation
   await expect(alert).toHaveCount(1);
   await expect(alert.getByLabel("Alert owner")).toHaveValue("Serving team");
   await page.reload();
+  await expect(
+    page
+      .locator(".runtime-incident")
+      .getByText("production · vision-2 · acknowledged", { exact: false }),
+  ).toBeVisible();
   await page.getByLabel("Alert status").selectOption("mitigated");
   await expect(alert.getByLabel("Disposition rationale")).toHaveValue(
     "Routed this prediction to the manual review queue.",

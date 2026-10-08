@@ -1,10 +1,15 @@
+import os
+import time
+from contextlib import asynccontextmanager
 from typing import Literal
+from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from examples.common import State, hook, service
 from examples.vision.model import DigitModel
 from governloom.hook import PolicyViolation
+from governloom.delivery import HeartbeatReporter, ObservationHook
 
 
 class Prediction(BaseModel):
@@ -40,6 +45,40 @@ def create_app(model=None, state=None, hook_factory=hook):
     model = model or DigitModel()
     state = state or State("vision")
     api = service("Digit recognition")
+    background = reporter = None
+    if os.environ.get("ENABLE_BACKGROUND") == "1":
+        background = ObservationHook(os.environ["GOVERNLOOM_ENDPOINT"], os.environ["GOVERNLOOM_INGEST_KEY"],
+                                     timeout_seconds=0.5, max_age_seconds=15)
+        reporter = HeartbeatReporter(background, "digit-service-background", interval_seconds=2)
+
+    @asynccontextmanager
+    async def lifespan(_):
+        try:
+            yield
+        finally:
+            if reporter:
+                reporter.close()
+            if background:
+                background.close()
+    api.router.lifespan_context = lifespan
+
+    @api.get("/delivery")
+    def delivery():
+        if background is None:
+            raise ValueError("Set ENABLE_BACKGROUND=1 to enable the observation benchmark")
+        return {**background.stats, "heartbeat_sent": reporter.sent, "heartbeat_failures": reporter.failures}
+
+    @api.post("/observe-background")
+    def observe_background(body: Prediction):
+        if background is None or body.mode != "observe":
+            raise ValueError("Background observation requires ENABLE_BACKGROUND=1 and observe mode")
+        pixels = body.pixels if body.pixels is not None else model.sample(body.sample_id, body.corruption)
+        started = time.perf_counter()
+        result = model.predict(pixels)
+        queued = background.emit(trace_id=uuid4().hex, phase="output", task_type="vision", model_version=model.version,
+            application_version="vision-service-v1", environment="testbed-fault" if body.corruption != "none" else "testbed-natural",
+            metrics={"confidence": result["confidence"], "latency_ms": (time.perf_counter() - started) * 1000}, labels=[str(result["prediction"])])
+        return {"result": result, "delivery": queued, "limitation": "Queued decisions cannot withhold a returned prediction"}
 
     @api.get("/manifest")
     def manifest():
@@ -100,6 +139,9 @@ def create_app(model=None, state=None, hook_factory=hook):
             state.put(receipt["event_id"], "review", {"id": receipt["event_id"], "sample_id": body.sample_id,
                 "scenario": body.corruption, "result": captured, "receipt": receipt, "status": "awaiting_review",
                 "revision": 1, "withheld": blocked})
+            for alert_id in receipt["alert_ids"]:
+                connection.acknowledge_action(alert_id=alert_id, action_type="withheld" if blocked else "review_queued",
+                                             evidence_id=receipt["event_id"])
         return {"status": "withheld" if blocked else "queued_for_review" if needs_review else "returned",
                 "result": output, "receipt": receipt, "scenario": body.corruption}
 

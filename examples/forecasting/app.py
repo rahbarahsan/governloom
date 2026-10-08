@@ -65,6 +65,11 @@ def create_app(model=None, state=None, hook_factory=hook):
                      "horizon_months": 1, "offset_fault": float(body.scenario == "offset_fault")})
         state.put(receipt["event_id"], "prediction", {**result, "receipt": receipt, "environment": environment,
                                                      "scenario": body.scenario})
+        if fallback:
+            investigations = state.list("investigation")
+            if investigations:
+                for alert_id in investigations[0]["receipt"]["alert_ids"]:
+                    hook_factory("observe").acknowledge_action(alert_id=alert_id, action_type="fallback_selected", evidence_id=receipt["event_id"])
         return {"result": result, "receipt": receipt, "scenario": body.scenario}
 
     @api.post("/outcomes")

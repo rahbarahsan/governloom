@@ -57,7 +57,7 @@ def test_actual_vision_http_hook_withholding_review_and_restart(collector, digit
         "comparator": "lt", "threshold": digits.threshold, "action": "block", "mitigation": "Queue manual review"}])
     state_path = tmp_path / "vision.db"
     service = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint,
-        "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path)}, factory=True)
+        "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path), "ENABLE_BACKGROUND": "1"}, factory=True)
     row = next(row for row in digits.evaluate()["rows"] if row["review"])
     result = http(service, "/predict", {"sample_id": row["sample_id"], "mode": "enforce"})
     assert result["status"] == "withheld" and result["result"] is None
@@ -75,6 +75,15 @@ def test_actual_vision_http_hook_withholding_review_and_restart(collector, digit
     review = http(service, f"/reviews/{reviews[0]['id']}/resolve", {"actor": "Test operator", "rationale": "Checked the public image label",
         "corrected_label": row["actual"], "expected_revision": 1})
     assert review["status"] == "resolved" and review["revision"] == 2
+    import time
+    background = http(service, "/observe-background", {"sample_id": row["sample_id"]})
+    assert background["result"]["prediction"] == row["prediction"] and background["delivery"]["action"] == "queued"
+    deadline = time.monotonic() + 5
+    while http(service, "/delivery")["accepted"] != 1 and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert http(service, "/delivery")["accepted"] == 1
+    assert call(f"/applications/{app['id']}/runtime-agents")[0]["status"] == "reporting"
+    assert len(call(f"/applications/{app['id']}/runtime-actions")) == 2
     processes.stop_last()
     restarted = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint,
         "GOVERNLOOM_INGEST_KEY": key, "MINI_STATE": str(state_path)}, factory=True)
@@ -166,8 +175,9 @@ def test_launcher_completes_and_cleans_up_without_inference_or_download(series, 
     from types import SimpleNamespace
     from examples.testbed import run
     directory = tmp_path / "testbed"
-    run(SimpleNamespace(output=str(directory), noaa_snapshot=str(series), allow_subscription=False,
-                        model="never-called", vision_cases=4))
+    args = SimpleNamespace(output=str(directory), noaa_snapshot=str(series), allow_subscription=False,
+                           model="never-called", vision_cases=4)
+    run(args)
     report = json.loads((directory / "report.json").read_text())
     assert report["status"] == "completed" and report["processes_stopped"]
     assert report["vision"]["natural"]["cases"] == 4
@@ -176,4 +186,4 @@ def test_launcher_completes_and_cleans_up_without_inference_or_download(series, 
     assert report["rag"]["status"] == "not_run" and report["code_sha256"]
     assert not (directory / "subscription").exists()
     with pytest.raises(FileExistsError):
-        run(SimpleNamespace(output=str(directory)))
+        run(args)

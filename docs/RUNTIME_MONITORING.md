@@ -132,8 +132,9 @@ Replaying the exact serialized event, including its original timestamp, returns
 the same receipt without another alert. Changed content with the same ID returns
 409; invalid credentials 401; rate limit 429; invalid schema 422. Policy limit
 defaults to 600 events/minute; a wrapped call usually emits two events. This is
-not a throughput guarantee. The hook does not retry; your retries must preserve
-the exact original body.
+not a throughput guarantee. The synchronous hook does not retry; preserve the
+exact body yourself. Optional ObservationHook supplies bounded background retry;
+see [delivery coverage](RUNTIME_DELIVERY.md).
 
 ## Actions and outages
 
@@ -146,12 +147,13 @@ the exact original body.
 - on_unavailable="raise" is the default: rejection/timeout prevents continuation.
   Explicit "continue" permits operation, increments hook.unavailable_count and
   sets last_receipt.action to unavailable. Export this through your operations
-  monitoring. There is no durable retry queue.
+  monitoring. Background observation has a bounded RAM queue and visible losses;
+  there is no persistent event outbox.
 - Target exceptions are preserved; error telemetry records type, not message.
   Collector failure while reporting the target error does not replace it.
 
 Use separate hook instances if concurrent callers need reliable last_receipt
-inspection. The SDK is synchronous; async frameworks can use their HTTP client.
+inspection. Enforcement is synchronous; async frameworks can use their HTTP client.
 A collector decision is not proof that a client enforced it. An operator's
 "mitigated" disposition is asserted, not automatically verified.
 

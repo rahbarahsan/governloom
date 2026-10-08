@@ -4,16 +4,38 @@ import functools
 import json
 import math
 import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from .monitoring import RuntimeEvent
+from .monitoring import ActionAcknowledgment, Heartbeat, RuntimeEvent
 from .schemas import uid
 
 
+def retry_delay(value):
+    """HTTP Retry-After accepts integer seconds or an HTTP date (RFC 9110)."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if value.isascii() and value.isdigit():
+        return float(value) if len(value) <= 12 else math.inf
+    try:
+        instant = parsedate_to_datetime(value)
+        if instant.tzinfo is None:
+            return None
+        return max(0, (instant - datetime.now(timezone.utc)).total_seconds())
+    except (ValueError, TypeError, OverflowError):
+        return None
+
+
 class MonitoringUnavailable(RuntimeError):
-    pass
+    def __init__(self, message, *, retryable=True, status_code=None, retry_after_seconds=None):
+        super().__init__(message)
+        self.retryable = retryable
+        self.status_code = status_code
+        self.retry_after_seconds = retry_after_seconds
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -52,26 +74,44 @@ class RuntimeHook:
         self.unavailable_count = 0
 
     def _send(self, event):
-        request = Request(self.endpoint + "/api/runtime/events", data=json.dumps(event).encode("utf-8"),
+        return self._request("/api/runtime/events", event)
+
+    def heartbeat(self, **fields):
+        body = Heartbeat(**fields).model_dump(mode="json")
+        return self._request("/api/runtime/heartbeats", body)
+
+    def acknowledge_action(self, **fields):
+        body = ActionAcknowledgment(**fields).model_dump(mode="json")
+        return self._request("/api/runtime/actions", body)
+
+    def _request(self, path, body):
+        request = Request(self.endpoint + path, data=json.dumps(body).encode("utf-8"),
                           headers={"Authorization": "Bearer " + self.key, "Content-Type": "application/json"}, method="POST")
         try:
             with self.opener.open(request, timeout=self.timeout) as response:
                 if response.status != 200:
-                    raise MonitoringUnavailable("Collector did not accept the event")
+                    raise MonitoringUnavailable("Collector did not accept the event", retryable=False, status_code=response.status)
                 payload = response.read(1_000_001)
                 if len(payload) > 1_000_000:
-                    raise MonitoringUnavailable("Collector receipt exceeds the size limit")
+                    raise MonitoringUnavailable("Collector receipt exceeds the size limit", retryable=False)
                 return json.loads(payload)
-        except (HTTPError, URLError, TimeoutError, ValueError, OSError) as exc:
+        except HTTPError as exc:
+            status = exc.code
+            retry_after = retry_delay(exc.headers.get("Retry-After"))
+            exc.close()
+            raise MonitoringUnavailable(f"Collector rejected event (HTTP {status})", retryable=status in (408, 429, 500, 502, 503, 504),
+                status_code=status, retry_after_seconds=retry_after) from None
+        except (URLError, TimeoutError, ValueError, OSError) as exc:
             # Never include URL credentials, event text or target output in errors.
-            raise MonitoringUnavailable(f"Collector request failed ({type(exc).__name__})") from None
+            raise MonitoringUnavailable(f"Collector request failed ({type(exc).__name__})",
+                                        retryable=isinstance(exc, (URLError, TimeoutError, OSError))) from None
 
     def emit(self, *, enforce=True, **fields):
         event = RuntimeEvent(**{**fields, "client_mode": self.mode}).model_dump(mode="json")
         try:
             receipt = self.transport(event)
             if not isinstance(receipt, dict) or receipt.get("action") not in ("allow", "flag", "review", "block") or receipt.get("event_id") != event["event_id"]:
-                raise MonitoringUnavailable("Collector returned an invalid receipt")
+                raise MonitoringUnavailable("Collector returned an invalid receipt", retryable=False)
             self.last_receipt = receipt
         except MonitoringUnavailable:
             self.unavailable_count += 1
