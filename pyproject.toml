@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "governloom"
-version = "0.3.0"
+version = "0.4.0"
 description = "Provider-independent runtime AI monitoring and governance"
 requires-python = ">=3.11"
 license = "Apache-2.0"
@@ -12,6 +12,7 @@ dependencies = ["fastapi>=0.115,<1", "pydantic>=2.10,<3", "sqlalchemy>=2.0,<3", 
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "httpx>=0.28,<1"]
+async = ["httpx>=0.28,<1"]
 
 [project.scripts]
 governloom = "governloom.cli:main"

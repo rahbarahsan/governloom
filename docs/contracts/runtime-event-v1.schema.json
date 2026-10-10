@@ -1,0 +1,360 @@
+{
+  "$defs": {
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "maxLength": 32000,
+          "minLength": 1,
+          "title": "Claim",
+          "type": "string"
+        },
+        "verdict": {
+          "enum": [
+            "supported",
+            "unsupported",
+            "insufficient_evidence"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "explanation": {
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Quote"
+          },
+          "maxItems": 20,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim",
+        "verdict",
+        "explanation",
+        "evidence"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Grounding": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "corpus_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Corpus Sha256",
+          "type": "string"
+        },
+        "judge_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Judge Version",
+          "type": "string"
+        },
+        "rubric_version": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Rubric Version",
+          "type": "string"
+        },
+        "answer_sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Answer Sha256",
+          "type": "string"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Claims",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Passage"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "profile_id",
+        "corpus_sha256",
+        "judge_version",
+        "rubric_version",
+        "answer_sha256",
+        "claims",
+        "sources"
+      ],
+      "title": "Grounding",
+      "type": "object"
+    },
+    "Passage": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "content": {
+          "maxLength": 32000,
+          "minLength": 1,
+          "title": "Content",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "content"
+      ],
+      "title": "Passage",
+      "type": "object"
+    },
+    "Quote": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "quote": {
+          "maxLength": 32000,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "quote"
+      ],
+      "title": "Quote",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Event Id",
+      "type": "string"
+    },
+    "trace_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Trace Id",
+      "type": "string"
+    },
+    "phase": {
+      "enum": [
+        "input",
+        "output",
+        "tool",
+        "error",
+        "outcome"
+      ],
+      "title": "Phase",
+      "type": "string"
+    },
+    "task_type": {
+      "enum": [
+        "vision",
+        "rag",
+        "forecasting",
+        "classification",
+        "generative",
+        "custom"
+      ],
+      "title": "Task Type",
+      "type": "string"
+    },
+    "environment": {
+      "default": "production",
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Environment",
+      "type": "string"
+    },
+    "model_version": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Model Version",
+      "type": "string"
+    },
+    "application_version": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Application Version",
+      "type": "string"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "title": "Occurred At",
+      "type": "string"
+    },
+    "metrics": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "maxProperties": 40,
+      "title": "Metrics",
+      "type": "object"
+    },
+    "labels": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Labels"
+    },
+    "text": {
+      "anyOf": [
+        {
+          "maxLength": 32000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Text"
+    },
+    "tool_name": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Name"
+    },
+    "citations": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Citations"
+    },
+    "source_ids": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Ids"
+    },
+    "related_event_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Related Event Id"
+    },
+    "error_type": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Type"
+    },
+    "client_mode": {
+      "default": "observe",
+      "enum": [
+        "observe",
+        "enforce"
+      ],
+      "title": "Client Mode",
+      "type": "string"
+    },
+    "grounding": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Grounding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "trace_id",
+    "phase",
+    "task_type",
+    "model_version",
+    "application_version"
+  ],
+  "title": "RuntimeEvent",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
