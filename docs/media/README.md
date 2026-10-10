@@ -2,8 +2,8 @@
 
 `demo.gif` records ten actual Chromium states at 1280 × 900 over 24.6 seconds.
 It shows named sign-in, actual held-out UCI digit inference, response withholding,
-application review/outcome, attributed incident mitigation, durable metadata
-coverage, and grounding evidence from a recorded real RAG answer/judgment.
+application review/outcome, attributed incident mitigation, signed notification
+delivery after receipt loss, and grounding from a recorded real RAG answer/judgment.
 Values are not retouched. `demo-poster.png` is a still alternative; `demo.json`
 records timing, model/source provenance and the zero-new-inference replay.
 
@@ -32,8 +32,10 @@ database and target/judge captures. Another checkout can generate one via
 [detector validation](../DETECTOR_EVIDENCE.md); that step has a separate explicit
 subscription opt-in. On macOS/Linux use `.venv/bin/python`.
 
-The capture owns a fresh collector and actual digit service on free loopback ports,
-uses an isolated account database and stops both even on browser failure.
+The capture owns a collector, actual digit service, signed receiver and delivery
+worker, uses an isolated account database and stops every child on browser failure.
+Its gate is frozen at a 5% empirical calibration false-positive budget; held-out
+misses and budget violations are recorded in `demo.json` and launch evidence.
 PNG frames, private configuration, logs and manifests remain in the ignored capture
 directory. The Pillow encoder verifies frame count/looping, 20–30-second timing,
 size under 5 MB and agreement of every decoded frame with its screenshot.

@@ -75,10 +75,10 @@ try {
   await incident.getByRole("button", {name: "Save incident disposition"}).click();
   await expect(incident.locator("p").first()).toContainText("· mitigated ·");
   await capture(consolePage, "Mitigation follows application resolution and an audited response inspection", 2400, incident);
-  const coverage = consolePage.locator("section").filter({has: consolePage.getByRole("heading", {name: "Delivery coverage", exact: true})});
-  await expect(coverage).toContainText("accepted 1");
-  await coverage.locator("summary").first().click();
-  await capture(consolePage, "Durable metadata delivery reports accepted traffic through a separate heartbeat", 2200, coverage);
+  const delivery = consolePage.locator(".webhook-panel");
+  await expect(delivery.locator(".webhook-delivery strong")).toHaveText("delivered", {timeout: 25000});
+  await expect(delivery).toContainText("2 attempts");
+  await capture(consolePage, "A signed incident reaches the receiver once after a lost receipt and durable retry", 2200, delivery);
   await api("/runtime/events", config.rag_event, process.env.CAPTURE_RAG_KEY);
   await consolePage.getByLabel("Active application").selectOption(config.rag_id);
   const alert = consolePage.locator(".runtime-alert").first();
@@ -92,7 +92,7 @@ try {
   await event.locator("summary").click();
   await capture(consolePage, "The receipt retains coverage, source positions and hashes while text stays transient", 2600, event);
   if (errors.length) throw new Error(errors.join("\n"));
-  await writeFile(resolve(directory, "manifest.json"), JSON.stringify({schema_version: 1, source: config.source, demo: config.demo, provenance: {vision_manifest: config.vision_manifest, rag_capture: config.rag_capture, new_subscription_requests: 0, scripted_operator: "demo-operator"}, scenes}, null, 2));
+  await writeFile(resolve(directory, "manifest.json"), JSON.stringify({schema_version: 1, source: config.source, demo: config.demo, provenance: {vision_manifest: config.vision_manifest, policy_gate: config.policy_gate, rag_capture: config.rag_capture, new_subscription_requests: 0, scripted_operator: "demo-operator"}, scenes}, null, 2));
 } finally {
   await browser.close();
 }

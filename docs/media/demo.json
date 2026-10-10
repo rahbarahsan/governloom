@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "Actual UCI digit inference over HTTP; recorded real documentation RAG output/judgment replay",
+  "source": "Actual UCI digit inference and signed incident delivery over HTTP; recorded real documentation RAG output/judgment replay",
   "demo": "Named scripted operator; live model predictions and local mitigation; RAG replay is labeled, not new inference or independent human validation",
   "provenance": {
     "vision_manifest": {
@@ -31,6 +31,51 @@
       "selection": "20th confidence percentile on calibration only",
       "model_version": "digits-rf-d3eecd4aa4949282"
     },
+    "policy_gate": {
+      "label_provenance": "Original public UCI benchmark labels; risk means wrong predicted digit",
+      "model_version": "digits-rf-d3eecd4aa4949282",
+      "dataset_sha256": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+      "calibration_sha256": "4a1eabdfb1735a31ac764854d95e08cc3cfb2163931ec89aa420fc4e10c69d6d",
+      "held_out_sha256": "e3a04c05b7e53e52ed3d98c90920738f76f98a84da04940a6480ac1b5ff9c602",
+      "selection": {
+        "threshold": 0.4375,
+        "comparator": "lt",
+        "false_positive_budget": 0.05,
+        "calibration": {
+          "true_positives": 6,
+          "false_positives": 13,
+          "true_negatives": 248,
+          "false_negatives": 2,
+          "cases": 269,
+          "false_positive_rate": 0.04980842911877394,
+          "risk_capture_rate": 0.75
+        },
+        "method": "Most permissive observed threshold meeting empirical calibration false-positive budget",
+        "limitation": "Empirical calibration only; small/dependent samples and domain shift can violate the held-out or production budget"
+      },
+      "held_out": {
+        "true_positives": 15,
+        "false_positives": 26,
+        "true_negatives": 316,
+        "false_negatives": 3,
+        "cases": 360,
+        "false_positive_rate": 0.07602339181286549,
+        "risk_capture_rate": 0.8333333333333334
+      },
+      "original_percentile_gate": {
+        "threshold": 0.59375,
+        "held_out": {
+          "true_positives": 17,
+          "false_positives": 52,
+          "true_negatives": 290,
+          "false_negatives": 1,
+          "cases": 360,
+          "false_positive_rate": 0.15204678362573099,
+          "risk_capture_rate": 0.9444444444444444
+        }
+      },
+      "split": "Disjoint frozen training/calibration/held-out indices; threshold selected on calibration only"
+    },
     "rag_capture": {
       "created_at": "2026-10-08T19:52:28.804723+00:00",
       "corpus_sha256": "6f7acba0df0f190e841c310e9f460401e507164ae404fd104e872c5454457038",
@@ -45,7 +90,7 @@
   ],
   "frames": 10,
   "duration_ms": 24600,
-  "bytes": 426587,
+  "bytes": 437724,
   "scenes": [
     {
       "caption": "Named operator monitors an actual hooked digit service",
@@ -72,7 +117,7 @@
       "duration_ms": 2400
     },
     {
-      "caption": "Durable metadata delivery reports accepted traffic through a separate heartbeat",
+      "caption": "A signed incident reaches the receiver once after a lost receipt and durable retry",
       "duration_ms": 2200
     },
     {

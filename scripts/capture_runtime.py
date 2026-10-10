@@ -12,6 +12,7 @@ from pathlib import Path
 from examples.common import ROOT, http
 from examples.processes import Processes, free_port
 from examples.vision.model import DigitModel
+from examples.vision.calibration import gate_evidence
 from governloom.auth import Operators, UserCreate
 from governloom.schemas import now
 from governloom.service import Workbench
@@ -32,23 +33,29 @@ def run(directory, evidence):
     if judgment["status"] != "completed":
         raise ValueError("Recorded judgment did not complete")
     digits = DigitModel()
+    gate = gate_evidence(digits)
     rows = digits.evaluate()["rows"]
     good = max((row for row in rows if row["prediction"] == row["actual"]), key=lambda row: row["confidence"])
     bad = min((row for row in rows if row["prediction"] != row["actual"]), key=lambda row: row["confidence"])
-    assert bad["confidence"] < digits.threshold <= good["confidence"]
+    assert bad["confidence"] < gate["selection"]["threshold"] <= good["confidence"]
     bootstrap_password, password = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
     db_path = directory / "collector.db"
     workbench = Workbench(Store(f"sqlite:///{db_path.as_posix()}"))
     Operators(workbench).create(UserCreate(username="capture-admin", password=bootstrap_password, role="admin"), "scripted capture bootstrap", bootstrap=True)
     workbench.store.engine.dispose()
     config = {"created_at": now(), "vision_good": good["sample_id"], "vision_bad": bad["sample_id"],
-              "vision_manifest": digits.manifest, "source": "Actual UCI digit inference over HTTP; recorded real documentation RAG output/judgment replay",
+              "vision_manifest": digits.manifest, "policy_gate": gate, "source": "Actual UCI digit inference and signed incident delivery over HTTP; recorded real documentation RAG output/judgment replay",
               "demo": "Named scripted operator; live model predictions and local mitigation; RAG replay is labeled, not new inference or independent human validation"}
     config["selection"] = "Illustrative selection of one correct and one naturally wrong low-confidence held-out digit; quality counts come from the full separate benchmark"
     try:
         with Processes(directory / "logs") as processes:
             port = free_port()
-            endpoint = processes.start("governloom.api:app", {"GOVERNLOOM_DB": f"sqlite:///{db_path.as_posix()}", "GOVERNLOOM_AUTH_MODE": "operators", "GOVERNLOOM_ALLOWED_ORIGINS": f"http://127.0.0.1:{port}"}, port=port, readiness="/api/health")
+            receiver_port = free_port()
+            receiver_url = f"http://127.0.0.1:{receiver_port}/incidents"
+            secret_directory = directory / "webhook-secrets"
+            collector_environment = {"GOVERNLOOM_DB": f"sqlite:///{db_path.as_posix()}", "GOVERNLOOM_AUTH_MODE": "operators", "GOVERNLOOM_ALLOWED_ORIGINS": f"http://127.0.0.1:{port}",
+                "GOVERNLOOM_WEBHOOK_ALLOWLIST": receiver_url, "GOVERNLOOM_WEBHOOK_SECRETS": str(secret_directory)}
+            endpoint = processes.start("governloom.api:app", collector_environment, port=port, readiness="/api/health")
             admin_token = http(endpoint, "/api/auth/login", {"username": "capture-admin", "password": bootstrap_password})["token"]
             def call(path, body=None):
                 return http(endpoint, "/api" + path, body, admin_token)
@@ -56,7 +63,10 @@ def run(directory, evidence):
             rag = call("/applications", {"name": "Documentation RAG — recorded model evidence", "purpose": "Replay an actual generated answer and its recorded judge evidence", "owner": "Demo operator", "expected_behavior": "Review unsupported claims against frozen repository sources"})
             call("/auth/users", {"username": "demo-operator", "password": password, "role": "operator", "application_ids": [vision["id"], rag["id"]]})
             token = http(endpoint, "/api/auth/login", {"username": "demo-operator", "password": password})["token"]
-            call(f"/applications/{vision['id']}/monitor-policy", {"name": "Frozen vision confidence gate", "actor": "capture-admin", "rationale": "20th calibration confidence percentile; actual held-out errors remain visible", "rules": [{"id": "confidence", "name": "Low confidence prediction", "detector": "metric_threshold", "phase": "output", "task_type": "vision", "metric": "confidence", "comparator": "lt", "threshold": digits.threshold, "action": "block", "severity": "high", "mitigation": "Withhold the prediction and resolve its application review using the actual benchmark label."}]})
+            destination = call(f"/applications/{vision['id']}/webhook-destinations", {"name": "Owned signed incident receiver", "endpoint": receiver_url, "actor": "capture-admin"})
+            processes.start("examples.signed_receiver:create_app", {"RECEIVER_DB": str(directory / "receiver.db"), "RECEIVER_SECRET_FILE": str(secret_directory / destination["id"]), "RECEIVER_LOSE_FIRST_ACK": "1"}, factory=True, port=receiver_port)
+            processes.command([sys.executable, "-m", "governloom.cli", "webhook-worker"], collector_environment)
+            call(f"/applications/{vision['id']}/monitor-policy", {"name": "Frozen vision confidence gate", "actor": "capture-admin", "escalate_after_count": 1, "rationale": "5% empirical calibration false-positive budget; held-out misses and budget violations remain published", "rules": [{"id": "confidence", "name": "Low confidence prediction", "detector": "metric_threshold", "phase": "output", "task_type": "vision", "metric": "confidence", "comparator": "lt", "threshold": gate["selection"]["threshold"], "action": "block", "severity": "high", "mitigation": "Withhold the prediction and resolve its application review using the actual benchmark label."}]})
             vision_key = call(f"/applications/{vision['id']}/ingest-keys", {"name": "digit-service", "actor": "capture-admin"})["key"]
             vision_endpoint = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint, "GOVERNLOOM_INGEST_KEY": vision_key, "MINI_STATE": str(directory / "vision.db"), "ENABLE_BROWSER": "1", "ENABLE_BACKGROUND": "1", "ENABLE_DURABLE": "1", "VISION_OUTBOX": str(directory / "vision-outbox.db")}, factory=True)
             http(vision_endpoint, "/observe-background", {"sample_id": good["sample_id"]})
