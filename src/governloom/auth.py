@@ -202,7 +202,8 @@ class Operators:
             application_ids.append(self.workbench.run(parts[2])["application_id"])
         else:
             kinds = {"monitor-policies": "monitor_policy", "runtime-alerts": "runtime_alert", "runtime-incidents": "runtime_incident",
-                     "runtime-actions": "runtime_action", "ingest-keys": "ingest_key", "cases": "case", "datasets": "dataset", "detector-profiles": "detector_profile"}
+                     "runtime-actions": "runtime_action", "ingest-keys": "ingest_key", "cases": "case", "datasets": "dataset", "detector-profiles": "detector_profile",
+                     "webhook-destinations": "webhook_destination", "webhook-deliveries": "webhook_delivery"}
             if len(parts) >= 3 and parts[1] in kinds:
                 application_ids.append(self.store.get(kinds[parts[1]], parts[2])["application_id"])
         if not application_ids:

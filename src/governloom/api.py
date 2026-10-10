@@ -9,7 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import Field
+from pydantic import Field, model_validator
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .demo import seed, seed_gold
@@ -21,6 +21,7 @@ from .storage import Store
 from . import __version__
 from .auth import Operators, UserCreate, Login, PasswordChange, AccessDenied, LoginRequired, public_user
 from .detectors import Profiles, DetectorProfile, ProfileApproval
+from .webhooks import Webhooks, DestinationCreate, DeliveryChange
 
 
 class SourceImport(Record):
@@ -53,11 +54,24 @@ class TestSinkDispatch(Record):
     limit: int = Field(default=10, ge=1, le=100)
 
 
+class RuntimeBatch(Record):
+    events: list[RuntimeEvent] = Field(min_length=1, max_length=100)
+
+    @model_validator(mode="after")
+    def observation_only(self):
+        if any(event.client_mode != "observe" for event in self.events):
+            raise ValueError("Batch delivery is observation only; enforcement must await each boundary")
+        if len({event.event_id for event in self.events}) != len(self.events):
+            raise ValueError("Batch event IDs must be unique")
+        return self
+
+
 def create_app(store=None):
     api = FastAPI(title="GovernLoom", version=__version__)
     workbench = Workbench(store or Store())
     monitor = Monitor(workbench)
     profiles = Profiles(workbench)
+    webhooks = Webhooks(workbench)
     api.state.workbench = workbench
     operators = Operators(workbench)
     has_operators = bool(workbench.store.list("operator_user"))
@@ -87,7 +101,7 @@ def create_app(store=None):
             request._body = b"".join(chunks)
         # Collector keys authorize only ingestion. Administration has a separate
         # shared token for private hosting, or is restricted to local clients.
-        public_paths = ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions", "/api/health", "/api/auth/config", "/api/auth/login")
+        public_paths = ("/api/runtime/events", "/api/runtime/events/batch", "/api/runtime/heartbeats", "/api/runtime/actions", "/api/health", "/api/auth/config", "/api/auth/login")
         if request.url.path.startswith("/api/") and request.url.path not in public_paths and request.method != "OPTIONS":
             if auth_mode == "operators":
                 try:
@@ -145,7 +159,7 @@ def create_app(store=None):
 
     @api.exception_handler(RequestValidationError)
     async def safe_validation_error(request: Request, exc):
-        if request.url.path in ("/api/runtime/events", "/api/runtime/heartbeats", "/api/runtime/actions") or request.url.path.startswith("/api/auth/"):
+        if request.url.path.startswith(("/api/runtime/", "/api/auth/")):
             return JSONResponse({"detail": [{"loc": error["loc"], "msg": error["msg"]} for error in exc.errors()]}, status_code=422)
         return await request_validation_exception_handler(request, exc)
 
@@ -207,6 +221,22 @@ def create_app(store=None):
             raise IngestUnauthorized("Ingestion credentials are required")
         return monitor.ingest(authorization.removeprefix("Bearer "), body)
 
+    @api.post("/api/runtime/events/batch")
+    def ingest_runtime_batch(body: RuntimeBatch, authorization: str = Header(default="")):
+        if not authorization.startswith("Bearer "):
+            raise IngestUnauthorized("Supply an ingestion Bearer credential")
+        token = authorization.removeprefix("Bearer ")
+        with monitor.store.session() as session:
+            monitor.authenticate(token, session)
+        results = []
+        for event in body.events:
+            try:
+                results.append({"event_id": event.event_id, "status": 200, "receipt": monitor.ingest(token, event)})
+            except ValueError as error:
+                status = 401 if isinstance(error, IngestUnauthorized) else 409 if isinstance(error, IngestConflict) else 429 if isinstance(error, IngestRateLimit) else 400
+                results.append({"event_id": event.event_id, "status": status, "error": str(error)})
+        return {"schema_version": 1, "results": results}
+
     @api.post("/api/runtime/heartbeats")
     def runtime_heartbeat(body: Heartbeat, authorization: str = Header(default="")):
         if not authorization.startswith("Bearer "):
@@ -242,6 +272,26 @@ def create_app(store=None):
     @api.get("/api/applications/{application_id}/runtime-escalations")
     def runtime_escalations(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
         return runtime_records("runtime_escalation", application_id, limit)
+
+    @api.get("/api/applications/{application_id}/webhook-destinations")
+    def webhook_destinations(application_id: str):
+        return webhooks.destinations(application_id)
+
+    @api.post("/api/applications/{application_id}/webhook-destinations", status_code=201)
+    def create_webhook_destination(application_id: str, body: DestinationCreate):
+        return webhooks.create(application_id, body)
+
+    @api.post("/api/webhook-destinations/{identifier}/disable")
+    def disable_webhook_destination(identifier: str, body: DeliveryChange):
+        return webhooks.disable(identifier, body)
+
+    @api.get("/api/applications/{application_id}/webhook-deliveries")
+    def webhook_deliveries(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
+        return webhooks.deliveries(application_id, limit)
+
+    @api.post("/api/webhook-deliveries/{identifier}/replay")
+    def replay_webhook_delivery(identifier: str, body: DeliveryChange):
+        return webhooks.replay(identifier, body)
 
     def runtime_records(kind, application_id, limit):
         from sqlalchemy import select

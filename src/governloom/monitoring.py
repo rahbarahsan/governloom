@@ -387,6 +387,8 @@ class Monitor:
                     "status": "pending", "attempts": 0, "next_attempt_at": instant, "lease_until": 0,
                     "created_at": now(), "count": record["count"], "owner": record["owner"], "severity": record["severity"]}
                 session.add(Entity(id=escalation_id, kind="runtime_escalation", application_id=alert["application_id"], payload=notification))
+                from .webhooks import enqueue
+                enqueue(session, notification)
                 record["escalations_queued"] += 1
                 self.workbench.audit(session, alert["application_id"], escalation_id, 1, "runtime_escalation_queued", "runtime-engine", {"incident_id": identifier})
             else:

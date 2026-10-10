@@ -19,6 +19,8 @@ def main():
     bootstrap.add_argument("--password-stdin", action="store_true", help="Read one password line from stdin for automation")
     worker_parser = commands.add_parser("worker", help="Run the durable background worker")
     worker_parser.add_argument("--once", action="store_true")
+    webhook_parser = commands.add_parser("webhook-worker", help="Deliver signed incidents to registered, host-allowed destinations")
+    webhook_parser.add_argument("--once", action="store_true")
     export = commands.add_parser("export", help="Export versioned records as UTF-8 JSONL")
     export.add_argument("kind", choices=["case", "source", "dataset", "trace_batch", "review_event", "run"])
     export.add_argument("path", type=Path)
@@ -32,6 +34,20 @@ def main():
         password = sys.stdin.readline().rstrip("\r\n") if args.password_stdin else getpass.getpass("New administrator password (15+ characters): ")
         record = Operators(workbench).create(UserCreate(username=args.username, password=password, role="admin"), "local-bootstrap", bootstrap=True)
         print(f"Created administrator {record['username']}. Start with GOVERNLOOM_AUTH_MODE=operators.")
+    elif args.command == "webhook-worker":
+        import time
+        from .webhooks import Webhooks
+        notifications = Webhooks(workbench)
+        if args.once:
+            print(json.dumps(notifications.dispatch()))
+        else:
+            print("GovernLoom webhook worker ready", flush=True)
+            try:
+                while True:
+                    notifications.dispatch()
+                    time.sleep(0.5)
+            except KeyboardInterrupt:
+                pass
     elif args.command == "worker":
         worker = Worker(workbench.store)
         print("GovernLoom worker ready", flush=True)

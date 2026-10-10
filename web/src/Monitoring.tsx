@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useContext } from "react";
 import { AuthContext } from "./AuthContext";
+import WebhookPanel from "./WebhookPanel";
 import DetectorProfiles from "./DetectorProfiles";
 import { api, date, title } from "./api";
 import { Badge } from "./components";
@@ -480,6 +481,7 @@ export default function Monitoring({
         />
       </section>
       <DetectorProfiles applicationId={application.id} actor={actor} />
+      <WebhookPanel key={application.id} applicationId={application.id} actor={actor} />
       <section className="panel">
         <h2>Delivery coverage</h2>
         <p className="small muted">
