@@ -1,6 +1,6 @@
 # Release progress
 
-## v0.4 implemented; remote release verification pending (2026-10-10)
+## Delivered v0.4 public developer launch (2026-10-10)
 
 User authorized the launch-readiness work: reliable incident delivery, a quickstart
 that works without assistance, copyable real-system integrations, measured limits
@@ -85,10 +85,21 @@ cannot race the owner's exclusive directory admission. Legacy browser screenshot
 side effects were discarded. No Docker daemon was running; use the tested native
 fresh-install path, with no container/deployment claim.
 
-Focused commits cover signed delivery, first-escalation/lease fencing, native SDKs,
-calibration, quickstart and actual GIF. Next: push the complete release, inspect all
-five remote CI jobs, fix any failures, record the exact verified revision/run and
-confirm there are no owned services/listeners. Original brief remains untracked.
+Focused commits cover signed delivery (94a8028), first-escalation/lease fencing
+(d3c508a), native SDKs (f93ae46), calibration (ffa4108), quickstart (20656e1),
+actual GIF (f9d87a3) and launch documentation/CI (864e2d3). All are pushed to
+origin/main. All five release CI jobs passed at 864e2d3: Python 3.11/3.13 core,
+actual-model examples/headless quickstart, native SDK integration and Chromium.
+Verified run: https://github.com/rahbarahsan/governloom/actions/runs/38094170488.
+Local link checking passed across 28 guides. Process/listener inspection found
+zero owned Python/Node servers and no listeners on 8000/5173. Original brief
+remains untouched and untracked. No required v0.4 implementation remains.
+
+This documentation-only checkpoint follows the verified release; the run above
+identifies the exact tested code. Recommended next scope is v0.5 in ROADMAP.md:
+independent fresh-checkout onboarding evidence, stronger task-specific grouped
+RAG/forecast calibration and longer recovery/storage drills. Registry publication,
+deployment, customer pilots and announcements have not occurred.
 
 ## Delivered v0.3 follow-through (2026-10-08)
 

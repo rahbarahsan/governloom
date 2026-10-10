@@ -5,7 +5,8 @@ telemetry, monitor task-specific risks and support an evidenced response.
 
 ## v0.4: first public developer launch
 
-Implemented and under final release verification:
+Delivered and verified. All five [release CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/38094170488)
+passed at `864e2d3`:
 
 | Work | Delivered boundary |
 | --- | --- |
