@@ -18,6 +18,18 @@ def digits():
     return DigitModel()
 
 
+def test_actual_public_label_budget_is_frozen_before_held_out_and_exposes_tradeoff(digits):
+    from examples.vision.calibration import gate_evidence
+    report = gate_evidence(digits)
+    assert not set(digits.calibration) & set(digits.held_out)
+    assert report["selection"]["calibration"]["false_positive_rate"] <= .05
+    original, selected = report["original_percentile_gate"]["held_out"], report["held_out"]
+    assert selected["cases"] == original["cases"] == 360
+    assert selected["false_positives"] < original["false_positives"]
+    assert selected["false_negatives"] > original["false_negatives"]
+    assert selected["false_positive_rate"] > .05  # A held-out violation remains evidence, never retune.
+
+
 @pytest.fixture
 def collector(tmp_path):
     token = secrets.token_urlsafe(32)
