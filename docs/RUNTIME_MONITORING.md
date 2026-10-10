@@ -196,6 +196,7 @@ SQLite serializes ingestion transactions. Application scopes and grouped inciden
 are supported, but there is no distributed ingestion, organization/tenant isolation
 or automatic retention. Storage grows with traffic; choose pilot
 duration and retention/backup plans before sending production data. The dashboard
-polls every two seconds and shows bounded pages, not an SLA. External notifications,
-automatic rollback and hosted deployment are not configured. These checks do not
+polls every two seconds and shows bounded pages, not an SLA. [Signed incident
+delivery](WEBHOOKS.md) requires a registered host-allowed receiver and a separate
+worker. Automatic rollback and hosted deployment are not configured. These checks do not
 establish universal safety, fairness or regulatory compliance.

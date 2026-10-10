@@ -1,5 +1,95 @@
 # Release progress
 
+## v0.4 implemented; remote release verification pending (2026-10-10)
+
+User authorized the launch-readiness work: reliable incident delivery, a quickstart
+that works without assistance, copyable real-system integrations, measured limits
+and community/security documentation. Preserve the untracked original brief.
+No deployment, paid API usage or messages to external recipients are authorized.
+
+Delivery sequence:
+1. Working vertical slice: real mini-application risk, registered signed webhook,
+   persisted retry/restart/deduplication, application action evidence and incident
+   review. Add named-role API/UI visibility and failure replay.
+2. One-command isolated quickstart with real digit inference, generated private
+   credentials, owned local receiver and cleanup; clean-install/container path.
+3. Easier Python/TypeScript integration and an explicit versioned event contract.
+4. Publish measured onboarding/overhead/failure evidence and detector coverage;
+   retain honest engineering-label and forecast dependence limits.
+5. Contributor/security/issue guidance, concise README, versioned release notes,
+   full local/remote checks, focused commits/pushes and stopped owned servers.
+
+Inspection: v0.3 is clean apart from the original brief. Existing runtime
+escalations are transactional; the legacy dispatcher is a local test-only sink.
+No repository/ancestor AGENTS.md was found. Standard Webhooks 1.0 and OWASP SSRF
+guidance were reviewed against primary sources.
+
+Vertical slice complete: seven signed-delivery/incident checks passed (12.31 s),
+including real receiver commit followed by worker os._exit(23), lease recovery,
+same-body one-notification replay, concurrent claiming, Retry-After, endpoint/DNS
+guards, dead-letter/replay and named-role scope. Dashboard build passed after
+esbuild's ancestor-directory scan required normal elevated access. Owned real
+digit quickstart completed in 20.335 s; its first incident arrived in 10.104 s.
+Fresh setup via scripts/quickstart.py --check --venv data/launch-clean-venv
+--directory data/launch-clean-2026-10-10 completed: setup 104.144 s, first incident
+119.475 s from setup start; receiver persisted one notification after two attempts.
+Application review/outcome and authenticated response-inspection attestation were
+recorded. Services stopped; credentials/raw databases remain ignored.
+
+Native async Python and the Node/TypeScript SDK are implemented. Real integration
+checks exposed timestamp regeneration on replay; explicit prepare_event/prepareEvent
+now freezes the body before retry. Two integration checks passed (4.29 s), including
+the compiled Node SDK against the actual collector. Node HTTP contract check passes.
+The explicit numeric OpenTelemetry span adapter passes its ingestion/privacy/missing
+evidence check (0.15 s); this fixture checks the span interface, not an installed
+OpenTelemetry SDK.
+
+All five Chromium workflows passed (44.2 s), including receiver failure/replay,
+viewer/reviewer denial, operator connection/disable and one-time secrets absent
+from browser storage. The first full Python suite passed 84 checks (146.73 s).
+New calibration selects only on calibration labels: 5% budget yields 13/261
+calibration false positives; held-out 15 captured errors, 3 misses, 26 false
+positives and 316 clear controls. Its 7.60% held-out false-positive rate exceeds
+the calibration budget and is published without retuning. Original gate: 17
+captured errors, 1 miss, 52 false positives and 290 clear controls.
+
+Updated GIF capture initially expired before the worker retry plus five-second UI
+poll; backend had actually delivered. A bounded 25-second wait produced ten
+verified frames, 24.6 s and 435,696 bytes. Visual review then exposed a first-event
+incident counter/cooldown persistence bug from premature ORM autoflush. New
+incident admission is deferred until counters are complete; regression checks
+cover the first escalation and cooldown. Terminal/replay transitions now clear
+leases and fence stale completion. A race fixture was corrected to dispatch one
+claim, since a continuously running worker may legitimately claim a replay anew.
+Final boundary checks passed; the regenerated ten-frame GIF is 437,724 bytes,
+24.6 seconds and 1280 x 900. Visual review confirms one queued escalation and
+signed delivery after two attempts. Owned capture services stopped.
+
+Quickstart/docs/SDK packaging/community files and expanded CI are implemented.
+Reviewed launch evidence records two captures, source hashes, overhead and gate
+trade-offs; no keys/raw databases or new provider requests are published.
+Final local checks: 88 Python tests passed (138.61 s); all five Chromium workflows
+passed (44.2 s); dashboard production build, dependency check, schema drift check,
+compilation and whitespace checks passed. One existing Starlette/httpx deprecation
+warning remains. The 0.4.0 wheel installed into a fresh target and core/SDK/API
+imports passed without importing NumPy/scikit-learn. The TypeScript tarball built,
+installed into a fresh consumer and exported its runtime hook/event preparation.
+No registry publication occurred.
+
+Committed-code quickstart capture at 20656e1 completed in 23.655 s; first incident
+12.776 s, two sender attempts and one receiver notification. Its code snapshot
+hash and separate measurements are published alongside the earlier fresh-install
+capture. A separate interactive public-wrapper drill used the same stop-file
+protocol as Ctrl+C and proved parent exit plus owned-service cleanup. Early Ctrl+C
+cannot race the owner's exclusive directory admission. Legacy browser screenshot
+side effects were discarded. No Docker daemon was running; use the tested native
+fresh-install path, with no container/deployment claim.
+
+Focused commits cover signed delivery, first-escalation/lease fencing, native SDKs,
+calibration, quickstart and actual GIF. Next: push the complete release, inspect all
+five remote CI jobs, fix any failures, record the exact verified revision/run and
+confirm there are no owned services/listeners. Original brief remains untracked.
+
 ## Delivered v0.3 follow-through (2026-10-08)
 
 User approved all four next steps: replace the GIF with actual runtime capture,

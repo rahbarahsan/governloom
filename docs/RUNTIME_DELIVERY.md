@@ -94,6 +94,10 @@ the asserted actor behind a shared token. Alert disposition is separate.
 
 ## Local escalation sink
 
+For registered production-style receiver integrations, use [signed incident
+delivery](WEBHOOKS.md). The following legacy endpoint remains a local software
+test sink; it does not dispatch registered webhook destinations.
+
 Policies set `escalate_after_count` (default 3) and
 `escalation_cooldown_seconds` (default 300). Repeats enqueue durable notifications;
 cooldown limits repeats. At most 1,000 pending per application are admitted;

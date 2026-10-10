@@ -1,62 +1,66 @@
 # Roadmap: govern connected AI systems
 
-Updated 2026-10-08. Connect the developer's existing AI system through a hook,
-monitor task-specific signals and support mitigation. No organization-wide
-inventory or participating customer team is required for local development.
+Updated 2026-10-10. Connect a developer's existing AI system through explicit
+telemetry, monitor task-specific risks and support an evidenced response.
 
-## v0.3: evidence and dependable private operations
+## v0.4: first public developer launch
 
-Delivered on top of the v0.2 runtime/testbed foundation:
+Implemented and under final release verification:
 
-| Work | Evidence |
+| Work | Delivered boundary |
 | --- | --- |
-| Actual runtime GIF | Live digit inference, withholding, named mitigation, durable heartbeat and labeled recorded RAG replay |
-| Crash-safe metadata outbox | Frozen-body replay, leases, persisted counters/deadlines/bounds; hard producer death after collector commit produces one alert |
-| Named operator roles | Scoped viewer/reviewer/operator/admin accounts, revocable sessions, server-supplied actors; backend and browser access checks |
-| Grounding evidence | Frozen source hashes, claim/quote validation, explicit coverage gaps and immutable profile approval; real subscription judgments and a natural answer |
-| Distribution signals | Reference snapshots, non-overlapping ECDF windows, conservative alpha spending; actual vision/forecast control measurements |
+| Reliable incident delivery | Registered host-allowed receivers, Standard Webhooks signing, transactionally frozen bodies, retry/restart, visible dead letters and scoped replay |
+| First useful workflow | One-command real digit-model quickstart with named access, owned signed receiver, deliberate receipt loss, application outcome and scripted mitigation |
+| Integration tooling | Sync/native async Python, Node/TypeScript, bounded observation batches, frozen event preparation, v1 schema and selected numeric Python span adapter |
+| Detection trade-offs | Calibration-only false-positive budget selection, untouched held-out comparison and explicit budget violation/misses |
+| Open-source onboarding | Short README, measured launch evidence, SDK/receiver guides, contributor/conduct/security policies and issue templates |
+| Verification | Core matrix, actual mini applications, native SDK/real collector integration and browser workflows in CI; updated runtime GIF |
 
-See [progress](PROGRESS.md), [access](OPERATOR_ACCESS.md),
-[delivery](RUNTIME_DELIVERY.md), [detector contracts](DETECTOR_EVIDENCE.md),
-[measured detector evidence](DETECTOR_VALIDATION.md) and
-[original three-system evidence](TESTBED_EVIDENCE.md).
+See [quickstart](QUICKSTART.md), [integrations](INTEGRATIONS.md),
+[launch evidence](LAUNCH_EVIDENCE.md), [webhooks](WEBHOOKS.md) and [progress](PROGRESS.md).
+Package registry publication, hosted deployment, announcements and customer
+adoption have not occurred. This release supplies a reviewable developer launch.
 
-The vision confidence gate still misses one natural error and flags 52 correct
-predictions. Small engineering RAG calibration is not independent human validation.
-Serially dependent NOAA replay has no nominal false-alert guarantee.
-Experimental semantic/distribution signals flag or request review; they cannot block.
-Text cannot be replayed from the metadata outbox. These are delivered limitations.
+## v0.3 and v0.2 foundations
 
-## Recommended v0.4: dependable incident delivery and domain validation
+Runtime hooks/scoped ingestion, immutable policies and alerts, grouped incidents,
+application action acknowledgment, metadata outbox/heartbeats, named roles and
+reviewed grounding/distribution profiles. Vision, NOAA forecasting and model-backed
+documentation RAG have actual-model evidence. [Earlier detector evidence](DETECTOR_VALIDATION.md)
+and [three-system results](TESTBED_EVIDENCE.md) preserve the measured limitations.
 
-Prioritize the path from a detected risk to an investigated, evidenced mitigation.
-Build/test it with the existing mini applications before a customer pilot.
+## Recommended v0.5: validate external usefulness
 
-1. **Durable incident delivery.** Signed webhooks, per-destination secrets,
-   restricted destinations, retry/dead-letter/replay and authenticated delivery
-   audit. Validate with owned local sinks first; actual external recipients require
-   explicit authorization. An accepted notification is not completed mitigation.
-2. **Domain validation.** More diverse grouped RAG claims and retrieval failures,
-   judge error analysis and independent label review when available. For forecasts,
-   use temporal/block calibration and outcome lateness; report sensitivity, misses
-   and false alerts on an untouched chronological holdout. For vision, monitor
-   actual-label quality alongside confidence and sampling shift.
-3. **Integration tooling.** Native async Python and TypeScript SDKs, batch delivery,
-   stable event contracts and OpenTelemetry adapters. Preserve synchronous
-   enforcement, explicit outage behavior and visible coverage gaps.
-4. **Operational hardening.** Longer restart/load/restore drills, outbox disk-space
-   handling and explicit retention horizons. Add SSO/MFA and finer administrative
-   permissions when the access/deployment scope justifies them.
+1. **Independent onboarding feedback.** Observe developers connecting their own
+   services; measure setup completion, integration effort and recurring use.
+   Owned mini applications remain the fallback when participants are unavailable.
+2. **Domain validation.** Broader grouped RAG claims, retrieval failures and judge
+   error analysis; independent label review when available. For forecasts use
+   temporal/block calibration, outcome lateness and untouched chronological holdouts.
+   For vision evaluate additional data/sampling groups and domain label quality.
+3. **Longer operational drills.** Sustained restart/load/restore testing, disk-space
+   exhaustion, explicit notification/history retention and secret recovery/rotation.
+   Receiver delivery latency and application action evidence need separate budgets.
+4. **Distribution/deployment.** Consider registry publication and a tested container
+   path after native clean setup feedback. Add broader OTel integration, SSO/MFA
+   and finer permissions where real deployment/access requirements justify them.
 
-Acceptance: restart/replay without duplicate incidents; visible terminal delivery
-failure; version-bound calibration; held-out false-positive/miss reports; actual
-application action evidence; no hidden text retention or overall governance score.
+Success means independent users can connect systems, understand coverage gaps
+and investigate/respond to risks. Stars are not a usage or reliability measure.
 
-## Boundaries
+## Current evidence limits
 
-No inventory/discovery, organization/tenant isolation or compliance certification.
-No universal hallucination/injection detector, full image/audio understanding,
-automatic fairness computation or retraining. The collector does not automatically
-roll back a model, choose a fallback or inspect independent application state.
-Mini applications demonstrate persisted review and explicitly chosen fallback.
-No hosted deployment, paid API usage or real-recipient notification has occurred.
+The original vision gate catches 17 of 18 errors with 52 false positives; the new
+budget gate catches 15 with 26 false positives and three misses. Its held-out
+false-positive rate exceeds the 5% empirical calibration budget. RAG evidence
+remains small/authored; NOAA replay is serially dependent and revised. No
+independent human validation or production-scale guarantee is claimed.
+
+Notification receipt is not completed mitigation. Operator verification remains
+an attestation. Terminal webhook/audit history needs a storage policy; signing
+secrets need a separate backup. The metadata outbox cannot replay raw text.
+
+No organization-wide inventory/discovery, tenants, compliance certification,
+universal hallucination/injection detector, automatic fairness computation or
+retraining. The collector does not independently roll back a model or inspect
+application state. No paid API work or external-recipient notifications occurred.

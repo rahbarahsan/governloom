@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-10",
+  "publication_runtime": {
+    "os": "Windows",
+    "python": "3.13.1"
+  },
+  "capture_notes": "Fresh-install baseline preceded the new calibration-budget gate and final version/docs. Final gate capture follows the committed reliability, SDK, calibration and quickstart changes and records both Git revision and Python source snapshot hash. These are development captures, not independent deployments.",
+  "captures": [
+    {
+      "name": "fresh_install_development_baseline",
+      "report": {
+        "schema_version": 1,
+        "status": "completed",
+        "source": "Actual frozen UCI digits, real collector/application/receiver HTTP",
+        "label_provenance": "Public benchmark labels; scripted operator actions",
+        "new_provider_requests": 0,
+        "first_incident_seconds": 15.331,
+        "notification": {
+          "receiver_notifications": 1,
+          "sender_attempts": 2,
+          "lost_first_receipt": true,
+          "same_id_deduplication": true,
+          "body_sha256": "f08ba97b289ae04f9ad61c99cab1e14f24daac8fdc45a0549afb3d22f8d89707",
+          "seconds_from_start": 20.628
+        },
+        "model_manifest": {
+          "dataset": "UCI handwritten digits, sklearn bundled original-test subset",
+          "dataset_url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+          "attribution": "Alpaydin and Kaynak (1998), DOI 10.24432/C50P49, CC BY 4.0",
+          "dataset_hash": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+          "splits": {
+            "train": {
+              "count": 1168,
+              "index_hash": "084b4a3f9bf51db1df2796e7c0dece8014fc160e0765073ae304f928649c9941"
+            },
+            "calibration": {
+              "count": 269,
+              "index_hash": "262c5051938f4f98d4f8362e7fc673bb18f0be0ebe0dbad64a9815a6023c4297"
+            },
+            "held_out": {
+              "count": 360,
+              "index_hash": "e2f7446e922c67e73330417670f3e7b7328a6964a4b171a4098b8762d82c7ce1"
+            }
+          },
+          "algorithm": "RandomForestClassifier",
+          "trees": 64,
+          "model_seed": 43,
+          "sklearn_version": "1.9.1",
+          "numpy_version": "2.5.3",
+          "confidence_threshold": 0.59375,
+          "selection": "20th confidence percentile on calibration only",
+          "model_version": "digits-rf-d3eecd4aa4949282"
+        },
+        "model_quality": {
+          "cases": 360,
+          "correct": 342,
+          "errors": 18,
+          "review_count": 69,
+          "errors_flagged": 17,
+          "confident_errors_missed": 1
+        },
+        "mitigation": {
+          "incident_status": "mitigated",
+          "application_review": "resolved",
+          "linked_outcome_action": "allow",
+          "action_status": "verified_by_operator",
+          "evidence_sha256": "ed0d1dda57e34d950be7f66008311fc7761a6bd9a9d71e483659ba4a541d88d1",
+          "limitation": "Scripted application evidence and operator attestation; not independent verification"
+        },
+        "overhead": {
+          "samples": 32,
+          "unmonitored_median_ms": 76.618,
+          "monitored_median_ms": 178.808,
+          "paired_overhead_median_ms": 98.558,
+          "monitored_p95_ms": 250.472,
+          "scope": "Serial loopback HTTP, real digit model, 32 confidence-clear controls; not a production throughput estimate"
+        },
+        "owned_services_stopped": true,
+        "elapsed_seconds": 29.636,
+        "setup_seconds": 104.144,
+        "setup_to_first_incident_seconds": 119.475
+      }
+    },
+    {
+      "name": "final_committed_source_gate",
+      "report": {
+        "schema_version": 1,
+        "status": "completed",
+        "source": "Actual frozen UCI digits, real collector/application/receiver HTTP",
+        "label_provenance": "Public benchmark labels; scripted operator actions",
+        "new_provider_requests": 0,
+        "first_incident_seconds": 12.776,
+        "notification": {
+          "receiver_notifications": 1,
+          "sender_attempts": 2,
+          "lost_first_receipt": true,
+          "same_id_deduplication": true,
+          "body_sha256": "fe44c343f204b2f5752eb99059493a00828a866605dfa3750a856a3f0b485202",
+          "seconds_from_start": 16.549
+        },
+        "model_manifest": {
+          "dataset": "UCI handwritten digits, sklearn bundled original-test subset",
+          "dataset_url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+          "attribution": "Alpaydin and Kaynak (1998), DOI 10.24432/C50P49, CC BY 4.0",
+          "dataset_hash": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+          "splits": {
+            "train": {
+              "count": 1168,
+              "index_hash": "084b4a3f9bf51db1df2796e7c0dece8014fc160e0765073ae304f928649c9941"
+            },
+            "calibration": {
+              "count": 269,
+              "index_hash": "262c5051938f4f98d4f8362e7fc673bb18f0be0ebe0dbad64a9815a6023c4297"
+            },
+            "held_out": {
+              "count": 360,
+              "index_hash": "e2f7446e922c67e73330417670f3e7b7328a6964a4b171a4098b8762d82c7ce1"
+            }
+          },
+          "algorithm": "RandomForestClassifier",
+          "trees": 64,
+          "model_seed": 43,
+          "sklearn_version": "1.9.1",
+          "numpy_version": "2.5.3",
+          "confidence_threshold": 0.59375,
+          "selection": "20th confidence percentile on calibration only",
+          "model_version": "digits-rf-d3eecd4aa4949282"
+        },
+        "model_quality": {
+          "cases": 360,
+          "correct": 342,
+          "errors": 18,
+          "review_count": 69,
+          "errors_flagged": 17,
+          "confident_errors_missed": 1
+        },
+        "policy_gate": {
+          "label_provenance": "Original public UCI benchmark labels; risk means wrong predicted digit",
+          "model_version": "digits-rf-d3eecd4aa4949282",
+          "dataset_sha256": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+          "calibration_sha256": "4a1eabdfb1735a31ac764854d95e08cc3cfb2163931ec89aa420fc4e10c69d6d",
+          "held_out_sha256": "e3a04c05b7e53e52ed3d98c90920738f76f98a84da04940a6480ac1b5ff9c602",
+          "selection": {
+            "threshold": 0.4375,
+            "comparator": "lt",
+            "false_positive_budget": 0.05,
+            "calibration": {
+              "true_positives": 6,
+              "false_positives": 13,
+              "true_negatives": 248,
+              "false_negatives": 2,
+              "cases": 269,
+              "false_positive_rate": 0.04980842911877394,
+              "risk_capture_rate": 0.75
+            },
+            "method": "Most permissive observed threshold meeting empirical calibration false-positive budget",
+            "limitation": "Empirical calibration only; small/dependent samples and domain shift can violate the held-out or production budget"
+          },
+          "held_out": {
+            "true_positives": 15,
+            "false_positives": 26,
+            "true_negatives": 316,
+            "false_negatives": 3,
+            "cases": 360,
+            "false_positive_rate": 0.07602339181286549,
+            "risk_capture_rate": 0.8333333333333334
+          },
+          "original_percentile_gate": {
+            "threshold": 0.59375,
+            "held_out": {
+              "true_positives": 17,
+              "false_positives": 52,
+              "true_negatives": 290,
+              "false_negatives": 1,
+              "cases": 360,
+              "false_positive_rate": 0.15204678362573099,
+              "risk_capture_rate": 0.9444444444444444
+            }
+          },
+          "split": "Disjoint frozen training/calibration/held-out indices; threshold selected on calibration only"
+        },
+        "mitigation": {
+          "incident_status": "mitigated",
+          "application_review": "resolved",
+          "linked_outcome_action": "allow",
+          "action_status": "verified_by_operator",
+          "evidence_sha256": "aece0025a44f03e410350c0a412829e31ada18446af1f6889ad19eac7eb10d4f",
+          "limitation": "Scripted application evidence and operator attestation; not independent verification"
+        },
+        "overhead": {
+          "samples": 32,
+          "unmonitored_median_ms": 55.112,
+          "monitored_median_ms": 143.166,
+          "paired_overhead_median_ms": 82.352,
+          "monitored_p95_ms": 187.802,
+          "scope": "Serial loopback HTTP, real digit model, 32 confidence-clear controls; not a production throughput estimate"
+        },
+        "owned_services_stopped": true,
+        "elapsed_seconds": 23.655,
+        "provenance": {
+          "package_version": "0.4.0",
+          "git_revision": "20656e1b6f24d729fc1b882a1a84b3382714a591",
+          "python_source_snapshot_sha256": "8a1ee72d7bae3278903755bd92e2725bb8cfecd78142517226063ea97c1dac45",
+          "scope": "Working-tree Python source snapshot; Git revision alone may precede local changes"
+        }
+      }
+    }
+  ],
+  "vision_gate_comparison": {
+    "label_provenance": "Original public UCI benchmark labels; risk means wrong predicted digit",
+    "model_version": "digits-rf-d3eecd4aa4949282",
+    "dataset_sha256": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+    "calibration_sha256": "4a1eabdfb1735a31ac764854d95e08cc3cfb2163931ec89aa420fc4e10c69d6d",
+    "held_out_sha256": "e3a04c05b7e53e52ed3d98c90920738f76f98a84da04940a6480ac1b5ff9c602",
+    "selection": {
+      "threshold": 0.4375,
+      "comparator": "lt",
+      "false_positive_budget": 0.05,
+      "calibration": {
+        "true_positives": 6,
+        "false_positives": 13,
+        "true_negatives": 248,
+        "false_negatives": 2,
+        "cases": 269,
+        "false_positive_rate": 0.04980842911877394,
+        "risk_capture_rate": 0.75
+      },
+      "method": "Most permissive observed threshold meeting empirical calibration false-positive budget",
+      "limitation": "Empirical calibration only; small/dependent samples and domain shift can violate the held-out or production budget"
+    },
+    "held_out": {
+      "true_positives": 15,
+      "false_positives": 26,
+      "true_negatives": 316,
+      "false_negatives": 3,
+      "cases": 360,
+      "false_positive_rate": 0.07602339181286549,
+      "risk_capture_rate": 0.8333333333333334
+    },
+    "original_percentile_gate": {
+      "threshold": 0.59375,
+      "held_out": {
+        "true_positives": 17,
+        "false_positives": 52,
+        "true_negatives": 290,
+        "false_negatives": 1,
+        "cases": 360,
+        "false_positive_rate": 0.15204678362573099,
+        "risk_capture_rate": 0.9444444444444444
+      }
+    },
+    "split": "Disjoint frozen training/calibration/held-out indices; threshold selected on calibration only"
+  },
+  "limits": [
+    "One Windows installation, two serial loopback captures; not setup-time or throughput guarantees",
+    "Scripted benchmark operator actions; verification is an attestation",
+    "Public digit labels and small authored RAG evidence do not establish customer/domain performance",
+    "Forecast historical dependence prevents a nominal false-alert guarantee",
+    "No new provider requests, deployment or external-recipient notification"
+  ]
+}

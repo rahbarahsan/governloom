@@ -1,5 +1,24 @@
 # Decisions
 
+- v0.4 signed notifications use Standard Webhooks 1.0 HMAC-SHA256 (ID, current
+  attempt timestamp and immutable raw body). Transactional per-destination
+  deliveries retain one ID/body across restart/replay; receivers must persistently
+  deduplicate. Receipt loss means at-least-once delivery, not exactly-once HTTP.
+- Destination URLs must match a collector-host allowlist. Remote HTTPS resolves
+  exclusively to public addresses and dials a validated address while retaining
+  original TLS SNI/Host. Redirects/proxies are disabled. Explicit literal loopback
+  HTTP supports owned local receivers. Signing secrets live in a separate private
+  host directory; full recovery requires both database and secret backup.
+- Webhook notification bodies contain incident IDs, severity and counts only;
+  they exclude prompts, source passages, reviewer names and credentials. Separate
+  workers isolate network latency from ingestion. Eight attempts/24 hours bound
+  automatic delivery; dead-letter replay is an authenticated, audited operation.
+  A 2xx receipt confirms receiver acceptance, never completed mitigation.
+- Runtime batches accept at most 100 observation events with per-item results.
+  Enforcement stays synchronous at each application boundary. Clients prepare IDs
+  and timestamps once before replay. Async Python and Node SDKs retain explicit
+  outage behavior and never automatically upload inputs or retry side effects.
+
 - Evidence detectors require immutable approved profiles with declared scope,
   source/reference hashes and grouped calibration results. Upstream judgments
   remain replaceable/provider independent; quote checks verify provenance, not

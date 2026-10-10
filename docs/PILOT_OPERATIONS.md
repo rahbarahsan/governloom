@@ -99,8 +99,10 @@ Named accounts now supply audited actors, revocable sessions and explicit
 viewer/reviewer/operator/admin application scopes. Legacy local mode still uses
 asserted actors. Owner names and operator verification remain attestations.
 Offline backup/restore uses host filesystem privileges, not API accounts.
-SSO/MFA, organization/tenant isolation, external notifications and independent
-action verification remain future work. The opt-in metadata outbox survives
+SSO/MFA, organization/tenant isolation and independent action verification remain
+future work. Signed, host-allowed incident delivery now has a separate worker,
+audited retry/replay and secret backup requirements; see [webhooks](WEBHOOKS.md).
+The opt-in metadata outbox survives
 restarts; raw text cannot be replayed from it. See [access](OPERATOR_ACCESS.md)
 and [delivery](RUNTIME_DELIVERY.md) for exact bounds.
 No paid provider calls, deployment or real recipients are needed for this testbed.
