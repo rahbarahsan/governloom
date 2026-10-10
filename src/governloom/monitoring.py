@@ -377,7 +377,6 @@ class Monitor:
                 "first_alert_id": alert["id"], "latest_alert_id": alert["id"], "window_seconds": window,
                 "status": "open", "owner": None, "revision": 1, "last_escalation_at": 0, "escalations_queued": 0}
             row = Entity(id=identifier, kind="runtime_incident", application_id=alert["application_id"], payload=record)
-            session.add(row)
         if record["count"] >= policy.get("escalate_after_count", 3) and instant - record["last_escalation_at"] >= policy.get("escalation_cooldown_seconds", 300):
             pending = session.scalar(select(func.count()).select_from(Entity).where(Entity.kind == "runtime_escalation",
                 Entity.application_id == alert["application_id"], Entity.payload["status"].as_string().in_(["pending", "delivering"])))
@@ -395,6 +394,7 @@ class Monitor:
                 record["escalations_dropped"] = record.get("escalations_dropped", 0) + 1
             record["last_escalation_at"] = instant
         row.payload = sanitize(record)
+        session.add(row)
         return row.payload
 
     def incidents(self, application_id, limit=100):

@@ -160,9 +160,10 @@ class Webhooks:
         try:
             with self.store.session() as session:
                 session.connection().exec_driver_sql("BEGIN IMMEDIATE")
-                count = len(list(session.scalars(select(Entity.id).where(Entity.kind == "webhook_destination", Entity.application_id == application_id))))
+                count = len(list(session.scalars(select(Entity.id).where(Entity.kind == "webhook_destination", Entity.application_id == application_id,
+                    Entity.payload["active"].as_boolean() == True))))
                 if count >= 20:
-                    raise ValueError("At most 20 destinations per application")
+                    raise ValueError("At most 20 active destinations per application")
                 session.add(Entity(id=identifier, kind="webhook_destination", application_id=application_id, payload=record))
                 self.workbench.audit(session, application_id, identifier, 1, "webhook_destination_created", body.actor, {"name": body.name})
         except BaseException:
@@ -202,7 +203,8 @@ class Webhooks:
                 raise ValueError("Replay requires a failed delivery and active destination")
             validate_endpoint(destination.payload["endpoint"], self.allowed)
             row.payload = {**row.payload, "status": "pending", "attempts": 0, "replays": row.payload["replays"] + 1,
-                "revision": row.payload["revision"] + 1, "next_attempt_at": time.time(), "expires_at": time.time() + 86400, "reason": None}
+                "revision": row.payload["revision"] + 1, "next_attempt_at": time.time(), "expires_at": time.time() + 86400, "reason": None,
+                "lease": None, "lease_until": 0}
             self.workbench.audit(session, row.application_id, row.id, row.payload["revision"], "webhook_delivery_replayed", body.actor, {})
             return {k: v for k, v in row.payload.items() if k not in ("body", "lease")}
 
@@ -223,7 +225,8 @@ class Webhooks:
                 record = row.payload
                 destination = session.get(Entity, record["destination_id"]).payload
                 if record["attempts"] >= max_attempts or instant >= record["expires_at"] or not destination["active"]:
-                    row.payload = {**record, "status": "dead_letter", "reason": "Attempt/age bound or disabled destination", "revision": record["revision"] + 1}
+                    row.payload = {**record, "status": "dead_letter", "reason": "Attempt/age bound or disabled destination", "revision": record["revision"] + 1,
+                        "lease": None, "lease_until": 0}
                     self.workbench.audit(session, row.application_id, row.id, row.payload["revision"], "webhook_delivery_result", actor, {"status": "dead_letter"})
                     result["dead_letter"] += 1
                     continue
@@ -253,7 +256,7 @@ class Webhooks:
             with self.store.session() as session:
                 session.connection().exec_driver_sql("BEGIN IMMEDIATE")
                 row = session.get(Entity, record["id"])
-                if row.payload.get("lease") != lease:
+                if row.payload.get("lease") != lease or row.payload["status"] != "delivering":
                     continue
                 row.payload = {**row.payload, "status": outcome, "lease_until": 0, "revision": row.payload["revision"] + 1,
                     "http_status": status, "reason": reason, "updated_at": now(),

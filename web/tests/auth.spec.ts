@@ -7,11 +7,13 @@ const root = resolve("..");
 const python = resolve(root, ".venv", process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
 const password = "browser-test-only passphrase 42";
 
-test("named sign-in, scoped viewer, reviewer disposition and logout", async ({page, request}) => {
+test("named roles, detector approval, signed delivery failure replay and logout", async ({page, request}) => {
   const port = await new Promise<number>(done => { const socket = createServer(); socket.listen(0, "127.0.0.1", () => { const address = socket.address() as {port: number}; socket.close(() => done(address.port)); }); });
   const endpoint = `http://127.0.0.1:${port}`;
   const db = `sqlite:///${resolve(root, "data", `browser-auth-${Date.now()}.db`).replaceAll("\\", "/")}`;
-  const env = {...process.env, GOVERNLOOM_DB: db, GOVERNLOOM_AUTH_MODE: "operators", GOVERNLOOM_ALLOWED_ORIGINS: endpoint};
+  const receiver = "http://127.0.0.1:9876/incidents";
+  const env = {...process.env, GOVERNLOOM_DB: db, GOVERNLOOM_AUTH_MODE: "operators", GOVERNLOOM_ALLOWED_ORIGINS: endpoint,
+    GOVERNLOOM_WEBHOOK_ALLOWLIST: receiver, GOVERNLOOM_WEBHOOK_SECRETS: resolve(root, "data", `browser-secrets-${port}`)};
   let server: ChildProcess | undefined;
   await new Promise<void>((done, reject) => {
     const child = spawn(python, ["-m", "governloom.cli", "--db", db, "bootstrap-admin", "admin", "--password-stdin"], {cwd: root, env, windowsHide: true});
@@ -25,18 +27,27 @@ test("named sign-in, scoped viewer, reviewer disposition and logout", async ({pa
     const session = await (await request.post(endpoint + "/api/auth/login", {data: {username: "admin", password}})).json();
     const adminHeaders = {Authorization: "Bearer " + session.token};
     const application = await (await request.post(endpoint + "/api/applications", {headers: adminHeaders, data: {name: "Scoped vision", purpose: "Vision test", owner: "Test", expected_behavior: "Review risk"}})).json();
-    for (const role of ["viewer", "reviewer"]) {
+    for (const role of ["viewer", "reviewer", "operator"]) {
       expect((await request.post(endpoint + "/api/auth/users", {headers: adminHeaders, data: {username: role, password, role, application_ids: [application.id]}})).status()).toBe(201);
     }
     const prefix = endpoint + `/api/applications/${application.id}`;
+    expect((await request.post(prefix + "/webhook-destinations", {headers: adminHeaders, data: {name: "Browser receiver", endpoint: receiver, actor: "spoofed"}})).status()).toBe(201);
     expect((await request.post(prefix + "/detector-profiles", {headers: adminHeaders, data: {name: "CI distribution control", actor: "spoofed", kind: "distribution_shift", task_type: "vision", environment: "test", model_version: "test-v1", application_version: "test-v1", metric: "confidence", reference: Array(20).fill(.8), window_size: 20, calibration: {dataset_sha256: "a".repeat(64), labels_sha256: "b".repeat(64), label_provenance: "engineering", description: "Software fixture, not measured model quality", calibration_groups: ["cal"], held_out_groups: ["held"], true_positives: 1, false_positives: 0, true_negatives: 1, false_negatives: 0}}})).status()).toBe(201);
-    await request.post(prefix + "/monitor-policy", {headers: adminHeaders, data: {name: "Low confidence", actor: "spoofed", rationale: "Test", rules: [{id: "confidence", name: "Review confidence", detector: "metric_threshold", metric: "confidence", comparator: "lt", threshold: .6, action: "review", mitigation: "Inspect prediction"}]}});
+    await request.post(prefix + "/monitor-policy", {headers: adminHeaders, data: {name: "Low confidence", actor: "spoofed", rationale: "Test", escalate_after_count: 1, rules: [{id: "confidence", name: "Review confidence", detector: "metric_threshold", metric: "confidence", comparator: "lt", threshold: .6, action: "review", mitigation: "Inspect prediction"}]}});
     const key = await (await request.post(prefix + "/ingest-keys", {headers: adminHeaders, data: {name: "service", actor: "spoofed"}})).json();
     await request.post(endpoint + "/api/runtime/events", {headers: {Authorization: "Bearer " + key.key}, data: {trace_id: "browser-auth", phase: "output", task_type: "vision", model_version: "test-v1", application_version: "test-v1", metrics: {confidence: .2}}});
+    await new Promise<void>((done, reject) => {
+      const code = "from governloom.service import Workbench; from governloom.storage import Store; from governloom.webhooks import Webhooks; Webhooks(Workbench(Store()),transport=lambda *args:(503,None)).dispatch(max_attempts=1)";
+      const child = spawn(python, ["-c", code], {cwd: root, env, windowsHide: true, stdio: "ignore"});
+      child.on("error", reject); child.on("exit", status => status === 0 ? done() : reject(new Error("Declared receiver failure setup failed")));
+    });
     await page.goto(endpoint);
     await page.getByLabel("Username", {exact: true}).fill("viewer"); await page.getByLabel("Password", {exact: true}).fill(password); await page.getByRole("button", {name: "Sign in", exact: true}).click();
     await expect(page.getByText("Signed in as")).toContainText("viewer");
     await expect(page.getByRole("button", {name: "Create ingestion key"})).toBeDisabled();
+    await page.locator(".webhook-panel").getByText("Connect an incident receiver", {exact: true}).click();
+    await expect(page.getByRole("button", {name: "Connect receiver", exact: true})).toBeDisabled();
+    await expect(page.getByRole("button", {name: "Replay failed delivery", exact: true})).toBeDisabled();
     await page.locator(".detector-profiles").getByText("CI distribution control · awaiting review", {exact: true}).click();
     await expect(page.getByRole("button", {name: "Approve detector evidence"})).toBeDisabled();
     await page.locator(".runtime-incident").getByText("Assign or review incident", {exact: true}).click();
@@ -59,6 +70,21 @@ test("named sign-in, scoped viewer, reviewer disposition and logout", async ({pa
     await expect(page.getByText("Incident ownership and disposition recorded.")).toBeVisible();
     const audit = await (await request.get(prefix + "/review-events", {headers: adminHeaders})).json();
     expect(audit.some((r: {actor: string; action: string}) => r.actor === "reviewer" && r.action === "runtime_incident_review")).toBeTruthy();
+    await expect(page.getByRole("button", {name: "Replay failed delivery", exact: true})).toBeDisabled();
+    await page.getByRole("button", {name: "Sign out", exact: true}).click();
+    await page.getByLabel("Username", {exact: true}).fill("operator"); await page.getByLabel("Password", {exact: true}).fill(password); await page.getByRole("button", {name: "Sign in", exact: true}).click();
+    await page.getByRole("button", {name: "Replay failed delivery", exact: true}).click();
+    await expect(page.locator(".webhook-delivery strong")).toHaveText("pending");
+    await page.locator(".webhook-panel").getByText("Connect an incident receiver", {exact: true}).click();
+    await page.getByLabel("Receiver name", {exact: true}).fill("Second receiver");
+    await page.getByLabel("Receiver URL", {exact: true}).fill(receiver);
+    await page.getByRole("button", {name: "Connect receiver", exact: true}).click();
+    await expect(page.locator(".webhook-panel code")).toContainText("whsec_");
+    expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain("whsec_");
+    await page.getByRole("button", {name: "Dismiss signing secret"}).click();
+    await expect(page.locator(".webhook-panel code")).toHaveCount(0);
+    await page.locator(".webhook-panel article").filter({hasText: "Second receiver"}).getByRole("button", {name: "Disable receiver"}).click();
+    await expect(page.locator(".webhook-panel article").filter({hasText: "Second receiver"})).toContainText("disabled");
     await page.reload();
     await expect(page.getByRole("button", {name: "Sign in", exact: true})).toBeVisible();
   } finally {

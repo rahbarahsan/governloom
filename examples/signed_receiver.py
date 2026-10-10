@@ -34,7 +34,7 @@ def create_app():
             secret = Path(os.environ["RECEIVER_SECRET_FILE"]).read_text(encoding="ascii")
             identifier = verify_webhook(secret, request.headers, bytes(data))
             body = json.loads(data)
-            if body.get("id") != identifier or body.get("schema_version") != 1 or body.get("type") != "governloom.incident.escalated":
+            if not isinstance(body, dict) or body.get("id") != identifier or body.get("schema_version") != 1 or body.get("type") != "governloom.incident.escalated":
                 raise ValueError()
         except (OSError, ValueError, TypeError):
             return JSONResponse({"detail": "Notification verification failed"}, status_code=401)

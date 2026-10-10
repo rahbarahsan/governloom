@@ -56,6 +56,16 @@ def test_signature_interoperability_replay_tamper_and_endpoint_guards():
         validate_endpoint("https://example.com/incidents", [])
 
 
+def test_first_event_escalation_persists_counter_and_cooldown(workbench, tmp_path, monkeypatch):
+    monkeypatch.setattr("time.time", lambda: 100000.)
+    app, hooks, _, monitor, key, event, receipt = setup(workbench, tmp_path)
+    first = monitor.incidents(app["id"])[0]
+    assert first["escalations_queued"] == 1 and first["last_escalation_at"] == 100000.
+    monitor.ingest(key, event.model_copy(update={"event_id": "second-natural-risk"}))
+    assert monitor.incidents(app["id"])[0]["escalations_queued"] == 1
+    assert len(hooks.deliveries(app["id"])) == 1
+
+
 def test_durable_exact_body_retry_concurrent_claim_no_secrets_and_terminal_replay(workbench, tmp_path):
     sent = []
     def transport(endpoint, body, headers, timeout, allowed):
@@ -157,3 +167,25 @@ def test_dns_rebinding_private_answers_and_redirect_are_rejected(workbench, tmp_
     app, hooks, destination, _, _, _, _ = setup(workbench, tmp_path, lambda *args: (302, None))
     assert hooks.dispatch()["dead_letter"] == 1
     assert hooks.deliveries(app["id"])[0]["http_status"] == 302
+
+
+def test_abandoned_attempt_cannot_overwrite_terminal_or_operator_replay(workbench, tmp_path):
+    from threading import Event
+    entered, release = Event(), Event()
+    def slow(*args):
+        entered.set()
+        assert release.wait(5)
+        return 204, None
+    app, hooks, _, _, _, _, _ = setup(workbench, tmp_path, slow)
+    with ThreadPoolExecutor(1) as pool:
+        old_worker = pool.submit(lambda: hooks.dispatch(limit=1, max_attempts=1))
+        assert entered.wait(3)
+        delivery = hooks.deliveries(app["id"])[0]
+        due(hooks, delivery["id"], lease_until=0)
+        assert hooks.dispatch(max_attempts=1)["dead_letter"] == 1
+        dead = hooks.deliveries(app["id"])[0]
+        replay = hooks.replay(dead["id"], DeliveryChange(actor="operator", expected_revision=dead["revision"]))
+        release.set()
+        assert old_worker.result(timeout=5)["delivered"] == 0
+    assert hooks.deliveries(app["id"])[0]["status"] == "pending"
+    assert hooks.deliveries(app["id"])[0]["revision"] == replay["revision"]
