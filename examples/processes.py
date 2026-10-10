@@ -55,6 +55,13 @@ class Processes:
             log.close()
         self.children.clear()
 
+    def command(self, command, environment, name="worker"):
+        log = (self.directory / f"{name}.log").open("w", encoding="utf-8")
+        child = subprocess.Popen(command, cwd=ROOT, env={**os.environ, **environment}, stdout=log, stderr=log,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        self.children.append((child, log))
+        return child
+
     def stop_last(self):
         child, log = self.children.pop()
         if child.poll() is None:
