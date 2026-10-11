@@ -39,8 +39,10 @@ described in [recovery](RECOVERY.md). Do not delete the named volume to upgrade.
 The distribution CI job builds the image and tests named access, dashboard serving,
 deadline persistence, exact event replay and eventual actuals across container
 restart. It uses an ephemeral test account/volume, no provider calls and deletes
-only its owned CI container/volume. Local Windows has no running Docker daemon;
-the container execution result must come from that CI job. No image is published
+only its owned CI container/volume. The [v0.5 distribution job](https://github.com/rahbarahsan/governloom/actions/runs/38116779187)
+passed both creation and restart checks at `aca7c10`, running as UID 10001 with
+the built dashboard. Local Windows has no running Docker daemon; execution was
+verified in Linux CI. No image is published
 to a registry. See [release evidence](V05_EVIDENCE.md) for verified results.
 
 Design references: [Docker multi-stage builds](https://docs.docker.com/build/building/multi-stage/)

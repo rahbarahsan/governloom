@@ -8,6 +8,15 @@ Release package/container checks are separate. Raw keys, databases and prompts
 remain private under ignored `data/`. Public report fields were selected and
 checked for credential patterns.
 
+All six [release CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/38116779187)
+passed at `aca7c10`: Python 3.11/3.13 core (89 passed and two optional skips each),
+actual-model examples (10 passed plus the headless quickstart), SDK integration,
+five Chromium workflows and distribution. The fresh Linux consumer installed
+**0.5.0**, reached its real incident in 29.856 seconds and stopped its collector.
+The container built and passed both create/restart checks as UID 10001 with a
+read-only root, named access, built dashboard, persisted deadline and exact replay.
+These software checks do not establish production scale or independent usability.
+
 ## Installed consumer and operational boundary
 
 A fresh venv installed a built wheel, locked dependencies and model libraries.

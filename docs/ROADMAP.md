@@ -32,7 +32,8 @@ and [three-system results](TESTBED_EVIDENCE.md) preserve the measured limitation
 
 ## v0.5: outcome coverage and connected-system validation
 
-Implemented; final push and six-job release CI are pending. The release adds:
+Delivered at `aca7c10`. All six [release CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/38116779187)
+passed, including fresh installed-wheel onboarding and container restart. The release adds:
 
 - Numeric feedback deadlines, persisted missing/late outcome coverage and an
   incident watchdog, demonstrated against the real forecast mini-application.

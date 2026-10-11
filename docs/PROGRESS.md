@@ -1,6 +1,23 @@
 # Release progress
 
-## Active v0.5: validate connected-system usefulness (2026-10-11)
+## Delivered v0.5: outcome coverage and connected-system validation (2026-10-11)
+
+Release code/docs/GIF pushed at `aca7c10`; all six CI jobs passed:
+https://github.com/rahbarahsan/governloom/actions/runs/38116779187.
+Core Python 3.11/3.13 each passed 89 checks with two optional skips; actual-model
+examples passed ten checks plus the headless quickstart, SDK integration passed,
+and all five Chromium workflows passed. Distribution independently installed the
+0.5.0 wheel in a fresh Linux consumer (29.856 s to actual incident), then built
+the container and passed non-root creation/restart, built-dashboard, persisted
+deadline, exact replay and actual-resolution checks. CI owned services stopped.
+
+Final local process/listener inspection found zero project-owned processes and
+zero listeners on 8000/5173. Only the original untracked brief remains outside
+commits. Release versions are 0.5.0; packages/images remain unpublished.
+No further v0.5 implementation work remains. Recommended next release is v0.6
+as scoped in docs/ROADMAP.md; do not start without the user's next instruction.
+Independent users/labels and sustained deployment evidence remain unavailable.
+The implementation/capture history below is retained for reproducibility.
 
 User authorized proceeding with the recommended next release. No participating
 team is required: use owned standalone consumers and real mini-applications.
@@ -25,8 +42,8 @@ Delivery sequence:
 Repository/ancestor instructions inspected; no AGENTS.md found. v0.4 code is
 clean apart from the original brief. Research checks: current official Codex
 non-interactive/authentication docs, Standard Webhooks multi-signature rotation
-and dependent-data conformal research. The four implementation stages are complete;
-the final release push and remote distribution/browser/core checks remain.
+and dependent-data conformal research. All four implementation stages and the
+release push/remote distribution/browser/core checks are complete.
 
 Vertical slice implemented: explicit numeric deadlines, transactional expectations,
 bounded restart/concurrent-safe watchdog, scoped coverage API/UI, frozen-policy
@@ -76,8 +93,8 @@ Twelve-frame actual runtime GIF captured and visually inspected: 29.8 s,
 with review still open. All six capture actors stopped; no new LLM requests.
 The container is implemented with non-root/read-only runtime and named access;
 local Docker daemon is unavailable, so remote distribution CI must establish its
-build/restart result. Next: final package/schema/link checks, focused commits,
-push all changes, inspect/fix all six CI jobs, record verified revision and cleanup.
+build/restart result. Those final checks and cleanup are now complete, as recorded
+in the delivery checkpoint above.
 
 Final packaging checks passed: installed Python 0.5.0 wheel imports the API,
 deadline/recovery and integration modules without importing NumPy/scikit-learn;
@@ -87,8 +104,9 @@ all local links across 36 Markdown guides and public-report credential-pattern
 checks passed. npm's default cache was sandbox-restricted; workspace-local cache
 resolved packaging without changing user cache permissions. Focused local commits:
 9ea1fd1 deadlines, 5e81a4a rotation/recovery, e414df5 domain validation, 6a6281a
-calendar gap boundary, 54de8e4 distribution, 986e7c2 runtime GIF. Release docs/evidence
-are next, followed by authorized push and all six remote checks.
+calendar gap boundary, 54de8e4 distribution, 986e7c2 runtime GIF and aca7c10 release
+docs/evidence. All are pushed; all six remote checks passed at aca7c10. This final
+documentation checkpoint records that verified release; it adds no code changes.
 
 ## Delivered v0.4 public developer launch (2026-10-10)
 
