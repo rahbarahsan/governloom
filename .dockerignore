@@ -1,0 +1,17 @@
+.git
+.venv
+data
+web/node_modules
+web/dist
+web/test-results
+sdks
+docs
+tests
+governloom-build-brief.md
+**/__pycache__
+**/*.pyc
+.agents
+.codex
+.aws
+.env
+.env.*

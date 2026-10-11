@@ -19,7 +19,7 @@ jobs:
       - run: .venv/bin/python -m scripts.export_contracts --check
       - run: .venv/bin/python -m pip wheel . --no-deps --wheel-dir dist
       - run: .venv/bin/python -m pip install --no-deps --target data/wheel-import dist/governloom-*.whl
-      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations, governloom.webhooks, governloom.calibration, governloom.contract, governloom.otel; assert 'wheel-import' in governloom.webhooks.__file__"
+      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations, governloom.webhooks, governloom.calibration, governloom.contract, governloom.otel, governloom.outcomes, governloom.recovery; assert 'wheel-import' in governloom.recovery.__file__; assert governloom.__version__ == '0.5.0'"
   browser:
     runs-on: ubuntu-latest
     steps:
@@ -90,3 +90,32 @@ jobs:
       - run: npm test
         working-directory: sdks/typescript
       - run: .venv/bin/python -m pytest -q tests/test_async_hook.py tests/test_typescript_http.py tests/test_otel.py
+  distribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python scripts/check_onboarding.py --directory data/ci-onboarding
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standalone-install-report
+          path: data/ci-onboarding/report.json
+      - run: docker build -t governloom-ci .
+      - run: docker run -d --name governloom-ci --read-only --tmpfs /tmp:rw,noexec,nosuid --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:8000:8000 governloom-ci
+      - run: |
+          for attempt in $(seq 1 30); do
+            if docker exec governloom-ci python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=1).read()"; then break; fi
+            sleep 1
+          done
+          docker exec -i governloom-ci python - create < scripts/container_smoke.py
+          docker restart governloom-ci
+          for attempt in $(seq 1 30); do
+            if docker exec governloom-ci python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=1).read()"; then break; fi
+            sleep 1
+          done
+          docker exec -i governloom-ci python - restart < scripts/container_smoke.py
+      - run: docker rm -fv governloom-ci
+        if: always()
