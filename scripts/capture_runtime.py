@@ -19,7 +19,7 @@ from governloom.service import Workbench
 from governloom.storage import Store
 
 
-def run(directory, evidence):
+def run(directory, evidence, forecast_snapshot=None):
     directory, evidence = Path(directory).resolve(), Path(evidence).resolve()
     directory.mkdir(parents=True, exist_ok=False)
     if not (ROOT / "web/dist/index.html").exists():
@@ -33,6 +33,11 @@ def run(directory, evidence):
     if judgment["status"] != "completed":
         raise ValueError("Recorded judgment did not complete")
     digits = DigitModel()
+    forecast_gate = None
+    if forecast_snapshot:
+        from examples.forecasting.calibration import evidence as forecast_evidence
+        from examples.forecasting.model import ForecastModel
+        forecast_gate = forecast_evidence(ForecastModel(forecast_snapshot))
     gate = gate_evidence(digits)
     rows = digits.evaluate()["rows"]
     good = max((row for row in rows if row["prediction"] == row["actual"]), key=lambda row: row["confidence"])
@@ -61,7 +66,8 @@ def run(directory, evidence):
                 return http(endpoint, "/api" + path, body, admin_token)
             vision = call("/applications", {"name": "Live digit recognition", "purpose": "Actual held-out digit recognition", "owner": "Demo operator", "expected_behavior": "Withhold low-confidence predictions; resolve using the benchmark label"})
             rag = call("/applications", {"name": "Documentation RAG — recorded model evidence", "purpose": "Replay an actual generated answer and its recorded judge evidence", "owner": "Demo operator", "expected_behavior": "Review unsupported claims against frozen repository sources"})
-            call("/auth/users", {"username": "demo-operator", "password": password, "role": "operator", "application_ids": [vision["id"], rag["id"]]})
+            forecast = call("/applications", {"name": "Live NOAA forecast outcomes", "purpose": "Observe actual rolling forecast and deliberately delayed feedback", "owner": "Demo operator", "expected_behavior": "Flag missing actual evidence without calling it a wrong prediction"}) if forecast_gate else None
+            call("/auth/users", {"username": "demo-operator", "password": password, "role": "operator", "application_ids": [vision["id"], rag["id"]] + ([forecast["id"]] if forecast else [])})
             token = http(endpoint, "/api/auth/login", {"username": "demo-operator", "password": password})["token"]
             destination = call(f"/applications/{vision['id']}/webhook-destinations", {"name": "Owned signed incident receiver", "endpoint": receiver_url, "actor": "capture-admin"})
             processes.start("examples.signed_receiver:create_app", {"RECEIVER_DB": str(directory / "receiver.db"), "RECEIVER_SECRET_FILE": str(secret_directory / destination["id"]), "RECEIVER_LOSE_FIRST_ACK": "1"}, factory=True, port=receiver_port)
@@ -70,6 +76,13 @@ def run(directory, evidence):
             vision_key = call(f"/applications/{vision['id']}/ingest-keys", {"name": "digit-service", "actor": "capture-admin"})["key"]
             vision_endpoint = processes.start("examples.vision.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint, "GOVERNLOOM_INGEST_KEY": vision_key, "MINI_STATE": str(directory / "vision.db"), "ENABLE_BROWSER": "1", "ENABLE_BACKGROUND": "1", "ENABLE_DURABLE": "1", "VISION_OUTBOX": str(directory / "vision-outbox.db")}, factory=True)
             http(vision_endpoint, "/observe-background", {"sample_id": good["sample_id"]})
+            if forecast:
+                call(f"/applications/{forecast['id']}/monitor-policy", {"name": "Frozen temporal residual gate", "actor": "capture-admin", "rationale": "Chronological block calibration; explicitly delayed actual evidence", "rules": [{"id": "residual", "name": "Forecast residual", "detector": "metric_threshold", "phase": "outcome", "metric": "absolute_error", "threshold": forecast_gate["selection"]["threshold"], "action": "review", "mitigation": "Inspect actual outcomes"}]})
+                forecast_key = call(f"/applications/{forecast['id']}/ingest-keys", {"name": "forecast", "actor": "capture-admin"})["key"]
+                forecast_endpoint = processes.start("examples.forecasting.app:create_app", {"GOVERNLOOM_ENDPOINT": endpoint, "GOVERNLOOM_INGEST_KEY": forecast_key, "NOAA_SNAPSHOT": str(Path(forecast_snapshot).resolve()), "MINI_STATE": str(directory / "forecast.db")}, factory=True)
+                processes.command([sys.executable, "-m", "governloom.cli", "monitor-worker"], collector_environment, "outcome-worker")
+                config.update(forecast_endpoint=forecast_endpoint, forecast_id=forecast["id"], forecast_gate=forecast_gate)
+                config["source"] += "; actual NOAA rolling forecast with deliberately delayed numeric feedback"
             profile_body = next(item["request"] for item in report["profiles"] if item["request"]["kind"] == "claim_support" and item["request"]["environment"] == "testbed-natural")
             profile_body = {**profile_body, "environment": "recorded-rag-replay"}
             profile = call(f"/applications/{rag['id']}/detector-profiles", profile_body)
@@ -99,5 +112,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--forecast-snapshot", type=Path)
     args = parser.parse_args()
-    run(args.directory, args.evidence)
+    run(args.directory, args.evidence, args.forecast_snapshot)

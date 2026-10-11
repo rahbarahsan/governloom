@@ -79,6 +79,24 @@ try {
   await expect(delivery.locator(".webhook-delivery strong")).toHaveText("delivered", {timeout: 25000});
   await expect(delivery).toContainText("2 attempts");
   await capture(consolePage, "A signed incident reaches the receiver once after a lost receipt and durable retry", 2200, delivery);
+  if (config.forecast_endpoint) {
+    async function forecast(path, body) {
+      const response = await fetch(config.forecast_endpoint + path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
+      if (!response.ok) throw new Error(`Forecast capture rejected ${path}: ${response.status}`);
+      return response.json();
+    }
+    const prediction = await forecast("/predict", {date: "2021-01", outcome_wait_seconds: 1});
+    await consolePage.getByLabel("Active application").selectOption(config.forecast_id);
+    const coverage = consolePage.locator(".outcome-coverage");
+    await expect(coverage).toContainText("1 overdue", {timeout: 25000});
+    await expect(consolePage.locator(".runtime-alert").first()).toContainText("Expected outcome overdue", {timeout: 25000});
+    await coverage.getByText("Inspect expected outcomes", {exact: true}).click();
+    await capture(consolePage, "A real NOAA forecast with deliberately delayed feedback flags missing actual evidence", 2800, coverage);
+    await forecast("/outcomes", {event_id: prediction.receipt.event_id});
+    await expect(coverage).toContainText("1 received", {timeout: 25000});
+    await expect(consolePage.locator(".runtime-incident").first()).toContainText("· open ·");
+    await capture(consolePage, "The actual resolves coverage while incident review remains open", 2400, coverage);
+  }
   await api("/runtime/events", config.rag_event, process.env.CAPTURE_RAG_KEY);
   await consolePage.getByLabel("Active application").selectOption(config.rag_id);
   const alert = consolePage.locator(".runtime-alert").first();
@@ -92,7 +110,7 @@ try {
   await event.locator("summary").click();
   await capture(consolePage, "The receipt retains coverage, source positions and hashes while text stays transient", 2600, event);
   if (errors.length) throw new Error(errors.join("\n"));
-  await writeFile(resolve(directory, "manifest.json"), JSON.stringify({schema_version: 1, source: config.source, demo: config.demo, provenance: {vision_manifest: config.vision_manifest, policy_gate: config.policy_gate, rag_capture: config.rag_capture, new_subscription_requests: 0, scripted_operator: "demo-operator"}, scenes}, null, 2));
+  await writeFile(resolve(directory, "manifest.json"), JSON.stringify({schema_version: 1, source: config.source, demo: config.demo, provenance: {vision_manifest: config.vision_manifest, policy_gate: config.policy_gate, forecast_gate: config.forecast_gate, rag_capture: config.rag_capture, new_subscription_requests: 0, scripted_operator: "demo-operator"}, scenes}, null, 2));
 } finally {
   await browser.close();
 }
