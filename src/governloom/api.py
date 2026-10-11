@@ -21,7 +21,7 @@ from .storage import Store
 from . import __version__
 from .auth import Operators, UserCreate, Login, PasswordChange, AccessDenied, LoginRequired, public_user
 from .detectors import Profiles, DetectorProfile, ProfileApproval
-from .webhooks import Webhooks, DestinationCreate, DeliveryChange
+from .webhooks import Webhooks, DestinationCreate, DeliveryChange, SecretRotation
 
 
 class SourceImport(Record):
@@ -285,6 +285,10 @@ def create_app(store=None):
     def disable_webhook_destination(identifier: str, body: DeliveryChange):
         return webhooks.disable(identifier, body)
 
+    @api.post("/api/webhook-destinations/{identifier}/rotate-secret")
+    def rotate_webhook_secret(identifier: str, body: SecretRotation):
+        return webhooks.rotate(identifier, body)
+
     @api.get("/api/applications/{application_id}/webhook-deliveries")
     def webhook_deliveries(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
         return webhooks.deliveries(application_id, limit)
@@ -292,6 +296,11 @@ def create_app(store=None):
     @api.post("/api/webhook-deliveries/{identifier}/replay")
     def replay_webhook_delivery(identifier: str, body: DeliveryChange):
         return webhooks.replay(identifier, body)
+
+    @api.get("/api/applications/{application_id}/outcome-coverage")
+    def outcome_coverage(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
+        from .outcomes import Outcomes
+        return Outcomes(monitor).coverage(application_id, limit)
 
     def runtime_records(kind, application_id, limit):
         from sqlalchemy import select
@@ -475,7 +484,7 @@ def create_app(store=None):
         return Response("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), media_type="application/x-ndjson",
                         headers={"Content-Disposition": f'attachment; filename="governloom-{kind}-v1.jsonl"'})
 
-    dist = Path(__file__).resolve().parents[2] / "web" / "dist"
+    dist = Path(os.environ.get("GOVERNLOOM_WEB_DIST", str(Path(__file__).resolve().parents[2] / "web" / "dist")))
     if dist.exists():
         api.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
 

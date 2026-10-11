@@ -49,11 +49,12 @@ export default function WebhookPanel({applicationId, actor}: {applicationId: str
         <button disabled={busy || !canConfigure || !actor.trim()}>Connect receiver</button>
       </form>
     </details>
-    {secret && <div className="callout"><p>Save this signing secret in your receiver. It is shown only for this connection and stays in page memory.</p><code>{secret}</code><button onClick={() => setSecret("")}>Dismiss signing secret</button></div>}
+    {secret && <div className="callout"><p>Save this signing secret in your receiver. It is shown once and stays in page memory. For rotation, update the receiver within the one-hour overlap before the old key stops signing.</p><code>{secret}</code><button onClick={() => setSecret("")}>Dismiss signing secret</button></div>}
     {!destinations.length && <p className="muted">No receivers connected. Incidents remain available in this console.</p>}
     {destinations.map(destination => <article className="finding" key={destination.id}>
       <strong>{destination.name}</strong><p>{destination.endpoint} · {destination.active ? "active" : "disabled"}</p>
       <button disabled={busy || !canConfigure || !destination.active || !actor.trim()} onClick={() => void change(`/webhook-destinations/${destination.id}/disable`, {actor, expected_revision: destination.revision})}>Disable receiver</button>
+      <button disabled={busy || !canConfigure || !destination.active || !actor.trim()} onClick={() => void change(`/webhook-destinations/${destination.id}/rotate-secret`, {actor, expected_revision: destination.revision, overlap_seconds: 3600})}>Rotate signing secret</button>
     </article>)}
     {!deliveries.length && <p className="muted">No notifications yet. The active policy controls escalation count and cooldown.</p>}
     {deliveries.map(delivery => <article className="finding webhook-delivery" key={delivery.id}>

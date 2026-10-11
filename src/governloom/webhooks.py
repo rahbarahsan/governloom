@@ -34,6 +34,14 @@ class DeliveryChange(MonitorRecord):
     expected_revision: int = Field(ge=1)
 
 
+class SecretRotation(DeliveryChange):
+    overlap_seconds: int = Field(default=3600, ge=0, le=86400, strict=True)
+
+
+def public_destination(record):
+    return {key: value for key, value in record.items() if key not in ("secret_ref", "previous_secret_ref")}
+
+
 def allowed_endpoints():
     return {value.strip() for value in os.environ.get("GOVERNLOOM_WEBHOOK_ALLOWLIST", "").split(",") if value.strip()}
 
@@ -67,12 +75,16 @@ def resolved_addresses(parsed):
 
 def signing_headers(secret, identifier, body, timestamp=None):
     timestamp = int(time.time()) if timestamp is None else timestamp
-    key = base64.b64decode(secret.removeprefix("whsec_"), validate=True)
-    if len(key) != 32:
-        raise ValueError("Webhook keys require 32 bytes")
     message = f"{identifier}.{timestamp}.".encode() + body
-    signature = base64.b64encode(hmac.new(key, message, hashlib.sha256).digest()).decode()
-    return {"webhook-id": identifier, "webhook-timestamp": str(timestamp), "webhook-signature": "v1," + signature}
+    signatures = []
+    for value in [secret] if isinstance(secret, str) else secret:
+        key = base64.b64decode(value.removeprefix("whsec_"), validate=True)
+        if len(key) != 32:
+            raise ValueError("Webhook keys require 32 bytes")
+        signatures.append("v1," + base64.b64encode(hmac.new(key, message, hashlib.sha256).digest()).decode())
+    if not 1 <= len(signatures) <= 2:
+        raise ValueError("Use one current key and at most one retiring key")
+    return {"webhook-id": identifier, "webhook-timestamp": str(timestamp), "webhook-signature": " ".join(signatures)}
 
 
 def verify_webhook(secret, headers, body, *, instant=None, tolerance=300):
@@ -140,7 +152,7 @@ class Webhooks:
 
     def destinations(self, application_id):
         self.store.get("application", application_id)
-        return [{k: v for k, v in row.items() if k != "secret_ref"} for row in self.store.list("webhook_destination", application_id)]
+        return [public_destination(row) for row in self.store.list("webhook_destination", application_id)]
 
     def create(self, application_id, body):
         self.store.get("application", application_id)
@@ -169,7 +181,40 @@ class Webhooks:
         except BaseException:
             path.unlink(missing_ok=True)
             raise
-        return {**{k: v for k, v in record.items() if k != "secret_ref"}, "secret": secret}
+        return {**public_destination(record), "secret": secret}
+
+    def rotate(self, identifier, body):
+        secret_ref, secret = uid(), "whsec_" + base64.b64encode(secrets.token_bytes(32)).decode()
+        path = self.secrets_directory / secret_ref
+        created = False
+        try:
+            with self.store.session() as session:
+                session.connection().exec_driver_sql("BEGIN IMMEDIATE")
+                row = session.get(Entity, identifier)
+                if row is None or row.kind != "webhook_destination":
+                    raise ValueError("Unknown webhook destination")
+                if row.payload["revision"] != body.expected_revision:
+                    raise IngestConflict("Stale destination revision")
+                if not row.payload["active"]:
+                    raise ValueError("Rotate only an active destination")
+                if row.payload.get("previous_secret_until", 0) > time.time() and body.overlap_seconds:
+                    raise ValueError("Finish the existing overlap before planned rotation; zero overlap revokes immediately")
+                self.secrets_directory.mkdir(parents=True, exist_ok=True)
+                descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                created = True
+                with os.fdopen(descriptor, "w", encoding="ascii") as target:
+                    target.write(secret); target.flush(); os.fsync(target.fileno())
+                row.payload = {**row.payload, "secret_ref": secret_ref,
+                    "previous_secret_ref": row.payload["secret_ref"] if body.overlap_seconds else None,
+                    "previous_secret_until": time.time() + body.overlap_seconds if body.overlap_seconds else 0,
+                    "revision": row.payload["revision"] + 1, "rotated_at": now()}
+                self.workbench.audit(session, row.application_id, identifier, row.payload["revision"], "webhook_secret_rotated", body.actor, {"overlap_seconds": body.overlap_seconds})
+                result = {**public_destination(row.payload), "secret": secret}
+            return result
+        except BaseException:
+            if created:
+                path.unlink(missing_ok=True)
+            raise
 
     def disable(self, identifier, body):
         with self.store.session() as session:
@@ -181,7 +226,7 @@ class Webhooks:
                 raise IngestConflict("Stale destination revision")
             row.payload = {**row.payload, "active": False, "revision": row.payload["revision"] + 1}
             self.workbench.audit(session, row.application_id, identifier, row.payload["revision"], "webhook_destination_disabled", body.actor, {})
-            return {k: v for k, v in row.payload.items() if k != "secret_ref"}
+            return public_destination(row.payload)
 
     def deliveries(self, application_id, limit=100):
         self.store.get("application", application_id)
@@ -225,7 +270,7 @@ class Webhooks:
                 record = row.payload
                 destination = session.get(Entity, record["destination_id"]).payload
                 if record["attempts"] >= max_attempts or instant >= record["expires_at"] or not destination["active"]:
-                    row.payload = {**record, "status": "dead_letter", "reason": "Attempt/age bound or disabled destination", "revision": record["revision"] + 1,
+                    row.payload = {**record, "status": "dead_letter", "reason": "Attempt/age bound or disabled destination", "revision": record["revision"] + 1, "updated_at": now(),
                         "lease": None, "lease_until": 0}
                     self.workbench.audit(session, row.application_id, row.id, row.payload["revision"], "webhook_delivery_result", actor, {"status": "dead_letter"})
                     result["dead_letter"] += 1
@@ -240,7 +285,12 @@ class Webhooks:
                 secret_ref = destination["secret_ref"]
                 if not secret_ref.isalnum():
                     raise ValueError("Invalid secret reference")
-                secret = (self.secrets_directory / secret_ref).read_text(encoding="ascii")
+                secret = [(self.secrets_directory / secret_ref).read_text(encoding="ascii")]
+                if destination.get("previous_secret_until", 0) > time.time():
+                    retiring = destination.get("previous_secret_ref")
+                    if not isinstance(retiring, str) or not retiring.isalnum():
+                        raise ValueError("Invalid retiring secret reference")
+                    secret.append((self.secrets_directory / retiring).read_text(encoding="ascii"))
                 data = record["body"].encode()
                 status, retry_header = self.transport(destination["endpoint"], data, signing_headers(secret, record["id"], data), timeout, self.allowed)
                 hint = retry_delay(retry_header) or 0
@@ -256,7 +306,7 @@ class Webhooks:
             with self.store.session() as session:
                 session.connection().exec_driver_sql("BEGIN IMMEDIATE")
                 row = session.get(Entity, record["id"])
-                if row.payload.get("lease") != lease or row.payload["status"] != "delivering":
+                if row is None or row.payload.get("lease") != lease or row.payload["status"] != "delivering":
                     continue
                 row.payload = {**row.payload, "status": outcome, "lease_until": 0, "revision": row.payload["revision"] + 1,
                     "http_status": status, "reason": reason, "updated_at": now(),

@@ -36,8 +36,16 @@ privately in the receiver. Server secrets are readable only from the private hos
 directory, not list/export/audit responses. Protect that directory with OS access
 controls, including explicit NTFS permissions on Windows. Back it up separately
 from SQLite; a missing key causes visible delivery failure. To replace a key,
-disable the old destination, create a new connection and configure the new secret.
-There is no seamless key-rotation API in this release.
+use `POST /api/webhook-destinations/{id}/rotate-secret` with `actor`,
+`expected_revision` and `overlap_seconds` (0–86,400, default 3,600). The dashboard
+uses one hour. The new secret is shown once; update the receiver within the overlap.
+Deliveries carry both current and retiring signatures until expiry, then only the
+current key. Planned rotation is rejected while an earlier overlap remains active.
+Zero overlap revokes both prior signing generations immediately; use it for a
+compromise and accept delivery interruption until the receiver is updated.
+An already in-flight send cannot be recalled. Old key files remain private for
+recovery; expiry revokes signing, not stored backup copies. Signing/ingestion keys
+have different lifecycles; this route rotates only the receiver signing key.
 
 Each POST has Standard Webhooks 1.0 headers:
 
