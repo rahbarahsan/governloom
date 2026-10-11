@@ -8,6 +8,9 @@ from governloom.calibration import temporal_block_threshold
 
 
 def evidence(model):
+    expected = [f"{year}-{month:02d}" for year in (2019, 2020) for month in range(1, 13)]
+    if model.calibration != expected:
+        raise ValueError("Quarterly calibration requires every observed 2019-2020 month; missing actuals must not shift time blocks")
     residuals = [{"timestamp": date + "-01T00:00:00+00:00", "value": abs(model.predict(date)["prediction"] - model.rows[date]["value"])} for date in model.calibration]
     selection = temporal_block_threshold(residuals, block_size=3, alpha=.2, held_out_start="2021-01-01T00:00:00+00:00")
     evaluation = model.evaluate()

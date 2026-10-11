@@ -139,6 +139,18 @@ def series(tmp_path):
     return path
 
 
+def test_forecast_blocks_preserve_calendar_gaps_and_reject_missing_calibration(series):
+    from examples.forecasting.calibration import evidence
+    model = ForecastModel(series)
+    report = evidence(model)
+    unavailable = [block for block in report["held_out_blocks"] if block["missing"]]
+    assert len(unavailable) == 1 and unavailable[0]["start"] == "2022-01" and unavailable[0]["end"] == "2022-03"
+    assert unavailable[0]["flagged"] is None
+    model.calibration = model.calibration[3:]
+    with pytest.raises(ValueError, match="missing"):
+        evidence(model)
+
+
 def test_forecast_uses_only_prior_data_and_preserves_missing_ground_truth(series):
     model = ForecastModel(series)
     forecast = model.predict("2021-01")
