@@ -1,6 +1,6 @@
 export type Task = "vision" | "rag" | "forecasting" | "classification" | "generative" | "custom";
 export type Phase = "input" | "output" | "tool" | "error" | "outcome";
-export type Telemetry = {metrics?: Record<string, number>; labels?: string[]; text?: string; tool_name?: string; citations?: string[]; source_ids?: string[]; related_event_id?: string; error_type?: string; grounding?: Record<string, unknown>};
+export type Telemetry = {metrics?: Record<string, number>; labels?: string[]; text?: string; tool_name?: string; citations?: string[]; source_ids?: string[]; related_event_id?: string; outcome_due_at?: string; error_type?: string; grounding?: Record<string, unknown>};
 export type Scope = {task_type: Task; model_version: string; application_version: string; environment?: string};
 export type RuntimeEvent = Scope & Telemetry & {phase: Phase; trace_id: string; event_id?: string; occurred_at?: string};
 export type Receipt = {event_id: string; action: "allow" | "flag" | "review" | "block" | "unavailable"; checks: unknown[]; alert_ids?: string[]; incident_ids?: string[]; duplicate?: boolean};

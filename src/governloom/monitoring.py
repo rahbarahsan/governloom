@@ -38,6 +38,7 @@ class RuntimeEvent(MonitorRecord):
     citations: list[str] | None = Field(default=None, max_length=100)
     source_ids: list[str] | None = Field(default=None, max_length=100)
     related_event_id: str | None = Field(default=None, max_length=128)
+    outcome_due_at: datetime | None = None
     error_type: str | None = Field(default=None, max_length=200)
     client_mode: Literal["observe", "enforce"] = "observe"
     grounding: Grounding | None = None
@@ -56,6 +57,10 @@ class RuntimeEvent(MonitorRecord):
                 raise ValueError("Labels/source identifiers must be nonempty and at most 200 characters")
         if self.phase == "tool" and not self.tool_name:
             raise ValueError("Tool events require a tool name")
+        if self.outcome_due_at is not None and (self.phase != "output" or "prediction" not in self.metrics
+                or self.outcome_due_at.tzinfo is None or self.outcome_due_at < self.occurred_at
+                or self.outcome_due_at > self.occurred_at + timedelta(days=3650)):
+            raise ValueError("Outcome deadlines require an output prediction and an aware deadline within ten years after its timestamp")
         return self
 
 
@@ -102,11 +107,15 @@ class MonitorPolicy(MonitorRecord):
     incident_window_seconds: int = Field(default=300, ge=1, le=86400)
     escalate_after_count: int = Field(default=3, ge=1, le=10000)
     escalation_cooldown_seconds: int = Field(default=300, ge=1, le=86400)
+    outcome_deadline_action: Literal["flag", "review"] = "review"
+    outcome_deadline_mitigation: str = Field(default="Investigate actual-outcome delivery; do not substitute zero error.", min_length=1, max_length=2000)
 
     @model_validator(mode="after")
     def unique_rules(self):
         if len({rule.id for rule in self.rules}) != len(self.rules):
             raise ValueError("Rule identifiers must be unique")
+        if any(rule.id == "outcome_deadline" for rule in self.rules):
+            raise ValueError("outcome_deadline is reserved for the missing-outcome watchdog")
         profiles = [rule.profile_id for rule in self.rules if rule.profile_id]
         if len(profiles) != len(set(profiles)):
             raise ValueError("A profile can occur once per policy to preserve non-overlapping windows")
@@ -278,6 +287,8 @@ class Monitor:
         incoming = event.model_dump(mode="json")
         if incoming.get("grounding") is None:
             incoming.pop("grounding", None)  # Preserve exact replay hashes from 0.2 collectors.
+        if incoming.get("outcome_due_at") is None:
+            incoming.pop("outcome_due_at", None)  # Preserve existing v1 prepared-event replay hashes.
         digest = checksum(incoming)
         with self.store.session() as session:
             session.connection().exec_driver_sql("BEGIN IMMEDIATE")
@@ -354,6 +365,9 @@ class Monitor:
                 receipt["alert_ids"].append(alert_id)
             receipt["cursor"] = observation.cursor
             observation.payload = {"event": stored, "receipt": sanitize(receipt)}
+            from .outcomes import register, resolve
+            register(session, application_id, event, observation, policy)
+            resolve(session, application_id, event, receipt["received_at"])
         return sanitize(receipt)
 
     def group_alert(self, session, alert, event, policy):

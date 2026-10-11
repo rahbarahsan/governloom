@@ -100,6 +100,9 @@ AND NOT EXISTS (SELECT 1 FROM entities AS alert WHERE kind='runtime_alert'
 AND NOT EXISTS (SELECT 1 FROM runtime_observations AS outcome
     WHERE outcome.application_id=observation.application_id
     AND json_extract(outcome.payload,'$.event.related_event_id')=observation.event_id)
+AND NOT EXISTS (SELECT 1 FROM entities AS expectation WHERE kind='runtime_expectation'
+    AND expectation.application_id=observation.application_id
+    AND json_extract(expectation.payload,'$.event_id')=observation.event_id)
 """
 
 

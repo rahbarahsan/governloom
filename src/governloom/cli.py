@@ -21,6 +21,8 @@ def main():
     worker_parser.add_argument("--once", action="store_true")
     webhook_parser = commands.add_parser("webhook-worker", help="Deliver signed incidents to registered, host-allowed destinations")
     webhook_parser.add_argument("--once", action="store_true")
+    monitor_parser = commands.add_parser("monitor-worker", help="Persist alerts for explicit missing numeric outcome deadlines")
+    monitor_parser.add_argument("--once", action="store_true")
     export = commands.add_parser("export", help="Export versioned records as UTF-8 JSONL")
     export.add_argument("kind", choices=["case", "source", "dataset", "trace_batch", "review_event", "run"])
     export.add_argument("path", type=Path)
@@ -34,6 +36,21 @@ def main():
         password = sys.stdin.readline().rstrip("\r\n") if args.password_stdin else getpass.getpass("New administrator password (15+ characters): ")
         record = Operators(workbench).create(UserCreate(username=args.username, password=password, role="admin"), "local-bootstrap", bootstrap=True)
         print(f"Created administrator {record['username']}. Start with GOVERNLOOM_AUTH_MODE=operators.")
+    elif args.command == "monitor-worker":
+        import time
+        from .monitoring import Monitor
+        from .outcomes import Outcomes
+        outcomes = Outcomes(Monitor(workbench))
+        if args.once:
+            print(json.dumps(outcomes.sweep()))
+        else:
+            print("GovernLoom outcome monitor ready", flush=True)
+            try:
+                while True:
+                    outcomes.sweep()
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                pass
     elif args.command == "webhook-worker":
         import time
         from .webhooks import Webhooks

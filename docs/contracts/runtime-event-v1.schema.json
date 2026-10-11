@@ -313,6 +313,19 @@
       "default": null,
       "title": "Related Event Id"
     },
+    "outcome_due_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Outcome Due At"
+    },
     "error_type": {
       "anyOf": [
         {
