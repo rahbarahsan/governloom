@@ -14,12 +14,12 @@ RUBRIC_VERSION = "claim-support-v1"
 
 
 class Retriever:
-    def __init__(self, root=ROOT):
-        self.sources, documents = [], []
-        for name in ("README.md", "docs/RUNTIME_MONITORING.md", "docs/PRODUCT_RESEARCH.md"):
+    def __init__(self, root=ROOT, documents=None):
+        self.sources, manifest_documents = [], []
+        for name in documents or ("README.md", "docs/RUNTIME_MONITORING.md", "docs/PRODUCT_RESEARCH.md"):
             content = (root / name).read_text(encoding="utf-8")
             fingerprint = digest(content.encode())
-            documents.append({"path": name, "sha256": fingerprint})
+            manifest_documents.append({"path": name, "sha256": fingerprint})
             lines = content.splitlines(keepends=True)
             for start in range(0, len(lines), 20):
                 passage = "".join(lines[start:start + 20])
@@ -30,7 +30,7 @@ class Retriever:
         self.vectorizer = TfidfVectorizer(ngram_range=(1, 2), stop_words="english")
         self.matrix = self.vectorizer.fit_transform([source["content"] for source in self.sources])
         revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, timeout=5)
-        self.manifest = {"documents": documents, "corpus_sha256": digest(documents),
+        self.manifest = {"documents": manifest_documents, "corpus_sha256": digest(manifest_documents),
             "git_revision": revision.stdout.strip() if revision.returncode == 0 else None,
             "retrieval": "TF-IDF word unigrams/bigrams; 20-line passages; top 3 positive matches",
             "prompt_version": PROMPT_VERSION, "passages": len(self.sources)}

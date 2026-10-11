@@ -18,6 +18,14 @@ def digits():
     return DigitModel()
 
 
+def test_retriever_honors_explicit_corpus_without_default_files(tmp_path):
+    from examples.rag.model import Retriever
+    (tmp_path / "custom.md").write_text("Quasar telemetry stores bounded photon observations.\n", encoding="utf-8")
+    retrieved = Retriever(root=tmp_path, documents=["custom.md"])
+    assert retrieved.manifest["documents"][0]["path"] == "custom.md"
+    assert retrieved.retrieve("quasar photon")[0]["path"] == "custom.md"
+
+
 def test_actual_public_label_budget_is_frozen_before_held_out_and_exposes_tradeoff(digits):
     from examples.vision.calibration import gate_evidence
     report = gate_evidence(digits)

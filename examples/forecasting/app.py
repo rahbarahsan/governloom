@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import datetime, timedelta, timezone
 from typing import Literal
 from uuid import uuid4
 
@@ -13,6 +14,7 @@ class Prediction(BaseModel):
     model_config = ConfigDict(extra="forbid")
     date: str = Field(pattern=r"^202[1-4]-(0[1-9]|1[0-2])$")
     scenario: Literal["natural", "offset_fault"] = "natural"
+    outcome_wait_seconds: float | None = Field(default=None, ge=.1, le=86400, allow_inf_nan=False)
 
 
 class Outcome(BaseModel):
@@ -61,6 +63,7 @@ def create_app(model=None, state=None, hook_factory=hook):
         environment = "testbed-fault" if body.scenario != "natural" else "testbed-natural"
         receipt = hook_factory("observe").emit(trace_id=uuid4().hex, phase="output", task_type="forecasting",
             model_version=result["model_version"], application_version="forecast-service-v1", environment=environment,
+            outcome_due_at=(datetime.now(timezone.utc) + timedelta(seconds=body.outcome_wait_seconds)).isoformat() if body.outcome_wait_seconds is not None else None,
             metrics={"prediction": result["prediction"], "latency_ms": (time.perf_counter() - started) * 1000,
                      "horizon_months": 1, "offset_fault": float(body.scenario == "offset_fault")})
         state.put(receipt["event_id"], "prediction", {**result, "receipt": receipt, "environment": environment,
