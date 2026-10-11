@@ -1,0 +1,1523 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-11",
+  "phase": "Development captures preceding final 0.5 version/commits; public package/image verification is separate",
+  "capture_hashes": {
+    "reliability": "6e72910a0a51bc3ee27fee9981cabbbc97ab836b20b5cb8642196e8514f5b9c1",
+    "onboarding": "5b0dc98055b00865cdbbbb800f094f99d92f3d38adaf25242eaab05189f61b89",
+    "rag_original": "7f908517929b7c9633b0fd98c72fd2b2dd61fcc51471731511307d2ed8bf9442",
+    "rag_replay": "9fd5820954218b67e548eeb141a492777cc642284a5985dfd1fd67a3940467bb",
+    "vision": "7b6a4c13bfe2579f6834017499717aa8d792692c038d6fb843b59d306373dd30"
+  },
+  "reliability": {
+    "schema_version": 1,
+    "status": "completed",
+    "scope": "Owned real forecast and bounded software drills, not production load/customer validation",
+    "new_provider_requests": 0,
+    "forecast": {
+      "manifest": {
+        "source_url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt",
+        "provenance": {
+          "url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt",
+          "sha256": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
+          "retrieved_at": "2026-10-08T01:33:34.494881+00:00",
+          "attribution": "NOAA Global Monitoring Laboratory; monthly CO2 data and source-header contributors"
+        },
+        "dataset_hash": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
+        "algorithm": "Quadratic trend plus annual Fourier terms",
+        "fit_window": "last 120 observed months, strictly before forecast date",
+        "first_training_month": "2005-01",
+        "calibration_period": [
+          "2019-01",
+          "2020-12"
+        ],
+        "held_out_period": [
+          "2021-01",
+          "2024-12"
+        ],
+        "calibration_count": 24,
+        "held_out_count": 48,
+        "unit": "ppm",
+        "horizon_months": 1,
+        "absolute_error_threshold": 0.9743297198304673,
+        "selection": "90th calibration absolute-error percentile, frozen",
+        "limitation": "Historical replay; excludes interpolated/missing actuals; source documents a 2022-2023 site change"
+      },
+      "calibration_sha256": "7e33012f729336a577339aa8b3407feb01819ff42f67056cc18c1e554fb9b1b2",
+      "held_out_sha256": "d9036d39591944119186c39269681d7693365ee7917c83830761ee4caded4ff3",
+      "selection": {
+        "threshold": 1.4969686282772159,
+        "comparator": "gt",
+        "alpha": 0.2,
+        "block_size": 3,
+        "blocks": [
+          {
+            "start": "2019-01-01T00:00:00+00:00",
+            "end": "2019-03-01T00:00:00+00:00",
+            "score": 1.4215377100171054,
+            "cases": 3
+          },
+          {
+            "start": "2019-04-01T00:00:00+00:00",
+            "end": "2019-06-01T00:00:00+00:00",
+            "score": 0.92628537723607,
+            "cases": 3
+          },
+          {
+            "start": "2019-07-01T00:00:00+00:00",
+            "end": "2019-09-01T00:00:00+00:00",
+            "score": 0.9949201523709235,
+            "cases": 3
+          },
+          {
+            "start": "2019-10-01T00:00:00+00:00",
+            "end": "2019-12-01T00:00:00+00:00",
+            "score": 0.7277880805072527,
+            "cases": 3
+          },
+          {
+            "start": "2020-01-01T00:00:00+00:00",
+            "end": "2020-03-01T00:00:00+00:00",
+            "score": 1.4969686282772159,
+            "cases": 3
+          },
+          {
+            "start": "2020-04-01T00:00:00+00:00",
+            "end": "2020-06-01T00:00:00+00:00",
+            "score": 0.7952832174917717,
+            "cases": 3
+          },
+          {
+            "start": "2020-07-01T00:00:00+00:00",
+            "end": "2020-09-01T00:00:00+00:00",
+            "score": 0.8070986950303336,
+            "cases": 3
+          },
+          {
+            "start": "2020-10-01T00:00:00+00:00",
+            "end": "2020-12-01T00:00:00+00:00",
+            "score": 0.5504614845590368,
+            "cases": 3
+          }
+        ],
+        "rank": 8,
+        "held_out_start": "2021-01-01T00:00:00+00:00",
+        "method": "Finite-sample order statistic of non-overlapping chronological block maxima",
+        "nominal_probability_valid": false,
+        "limitation": "Empirical replay only: dependence between blocks, nonstationarity and revised data can invalidate nominal coverage"
+      },
+      "held_out_blocks": [
+        {
+          "start": "2021-01",
+          "end": "2021-03",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.9876785626943274,
+          "flagged": false
+        },
+        {
+          "start": "2021-04",
+          "end": "2021-06",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.6999134777357199,
+          "flagged": false
+        },
+        {
+          "start": "2021-07",
+          "end": "2021-09",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.358391799351125,
+          "flagged": false
+        },
+        {
+          "start": "2021-10",
+          "end": "2021-12",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.5462087514623022,
+          "flagged": false
+        },
+        {
+          "start": "2022-01",
+          "end": "2022-03",
+          "cases": 3,
+          "missing": 0,
+          "score": 2.2010310851984514,
+          "flagged": true
+        },
+        {
+          "start": "2022-04",
+          "end": "2022-06",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.284781093276706,
+          "flagged": false
+        },
+        {
+          "start": "2022-07",
+          "end": "2022-09",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.7974783610140435,
+          "flagged": false
+        },
+        {
+          "start": "2022-10",
+          "end": "2022-12",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.7491421367311091,
+          "flagged": false
+        },
+        {
+          "start": "2023-01",
+          "end": "2023-03",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.8559800839067293,
+          "flagged": true
+        },
+        {
+          "start": "2023-04",
+          "end": "2023-06",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.3398262562994887,
+          "flagged": false
+        },
+        {
+          "start": "2023-07",
+          "end": "2023-09",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.7132861547441962,
+          "flagged": false
+        },
+        {
+          "start": "2023-10",
+          "end": "2023-12",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.4269555268090244,
+          "flagged": false
+        },
+        {
+          "start": "2024-01",
+          "end": "2024-03",
+          "cases": 3,
+          "missing": 0,
+          "score": 0.6449790889383848,
+          "flagged": false
+        },
+        {
+          "start": "2024-04",
+          "end": "2024-06",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.8989506772390428,
+          "flagged": true
+        },
+        {
+          "start": "2024-07",
+          "end": "2024-09",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.7262385487371716,
+          "flagged": true
+        },
+        {
+          "start": "2024-10",
+          "end": "2024-12",
+          "cases": 3,
+          "missing": 0,
+          "score": 1.8336328040928151,
+          "flagged": true
+        }
+      ],
+      "held_out": {
+        "observed_months": 48,
+        "missing_actuals": 0,
+        "blocks": 16,
+        "flagged_blocks": 5,
+        "unavailable_blocks": 0,
+        "months_over_block_threshold": 6,
+        "months_over_original_threshold": 15,
+        "mae_ppm": 0.7565399272393165
+      },
+      "interpretation": "Block exceedance is an empirical residual signal, not an independently labeled unsafe forecast. No held-out tuning; rolling models use only prior months from a revised snapshot."
+    },
+    "deadline_delivery": {
+      "overdue_flagged": true,
+      "sender_attempts": 2,
+      "receiver_notifications": 1,
+      "old_receiver_during_overlap": true,
+      "receiver_updated": true,
+      "late_seconds": 4.580013,
+      "incident_still_requires_review": true
+    },
+    "bounded_load": {
+      "controlled_events": 600,
+      "elapsed_seconds": 3.996,
+      "interpretation": "Serial loopback observation batches; not real model predictions or sustained production throughput"
+    },
+    "recovery": {
+      "backup": {
+        "complete": true,
+        "database_sha256": "590f59fa7e721a50164bb94feee681ddb1e4ca1fa36ae61a4886406d70540d0b",
+        "secret_files": 2,
+        "counts": {
+          "entities": 30,
+          "jobs": 0,
+          "results": 0,
+          "runtime_observations": 602
+        }
+      },
+      "restore": {
+        "counts": {
+          "entities": 30,
+          "jobs": 0,
+          "results": 0,
+          "runtime_observations": 602
+        },
+        "integrity_check": "ok",
+        "restored_from_sha256": "590f59fa7e721a50164bb94feee681ddb1e4ca1fa36ae61a4886406d70540d0b",
+        "secret_files": 2,
+        "complete": true,
+        "next_step": "Configure restored SQLite/secret paths, inspect destinations and deadlines, then start workers explicitly"
+      },
+      "network_auto_started": false
+    },
+    "owned_services_stopped": true,
+    "elapsed_seconds": 18.68
+  },
+  "onboarding": {
+    "setup_seconds": 130.5,
+    "setup_to_first_incident_seconds": 148.598,
+    "consumer": {
+      "status": "withheld",
+      "package_version": "0.4.0",
+      "natural_errors": 15,
+      "held_out_cases": 450,
+      "target_calls": 1,
+      "confidence": 0.44649187416165237,
+      "scope": "Owned independent LogisticRegression consumer; selected natural error, not independent onboarding feedback or detector accuracy evidence"
+    },
+    "installed_into_isolated_environment": true,
+    "owned_services_stopped": true,
+    "provider_requests": 0
+  },
+  "rag": {
+    "dataset_sha256": "993a4cf95465525059e858b68bb9bf0ea8245d9a7ae41b05e285822e38dfdbeb",
+    "label_provenance": "Engineering authored source-backed controls; no independent human review",
+    "rubric": "source-entailment-explicit-contradiction-v2",
+    "unsupported_fraction_threshold": 0,
+    "groups": [
+      {
+        "split": "cal",
+        "group": "signing",
+        "path": "docs/WEBHOOKS.md",
+        "question": "How does incident notification relate to mitigation?",
+        "source_sha256": "ed4d05663e0c496cb4231352d93b8e098328d72941dd58c4f914ed2fb35b0a94"
+      },
+      {
+        "split": "cal",
+        "group": "deadlines",
+        "path": "docs/EXPECTED_OUTCOMES.md",
+        "question": "What does a missing forecast outcome mean?",
+        "source_sha256": "63c02f23acff1da28f4d3ba0375d58a12f96b3e6208def51fe6c58165edddca1"
+      },
+      {
+        "split": "cal",
+        "group": "async",
+        "path": "docs/INTEGRATIONS.md",
+        "question": "Does the async hook retry application side effects?",
+        "source_sha256": "81e932c110cd4f8c012b3a754e65fcebe839de5e5bdb7b4496d8be5a2ccd81a7"
+      },
+      {
+        "split": "cal",
+        "group": "roles",
+        "path": "docs/OPERATOR_ACCESS.md",
+        "question": "Can a viewer change monitoring policies?",
+        "source_sha256": "10540e541c8721d271af14a39b030164b2fe7c646096bc9959adc37eab1fee5f"
+      },
+      {
+        "split": "held",
+        "group": "profiles",
+        "path": "docs/DETECTOR_EVIDENCE.md",
+        "question": "Can experimental evidence detectors block an AI response?",
+        "source_sha256": "7bdcaca767105763fb4f2b61f311e4dde75270e5b597e1c33b3c8370d8782dd0"
+      },
+      {
+        "split": "held",
+        "group": "outbox",
+        "path": "docs/RUNTIME_DELIVERY.md",
+        "question": "Does the durable outbox persist raw prompts?",
+        "source_sha256": "457bdf34ff55e5e6d2cb0d551e309738ee6b848951082721de09c64e5c9fb6c7"
+      },
+      {
+        "split": "held",
+        "group": "restore",
+        "path": "docs/PILOT_OPERATIONS.md",
+        "question": "Does restoring a database overwrite an existing destination?",
+        "source_sha256": "dda1171f4efa24359f93aca959052e60d93ca29863da6cd1c16afa9bdd518bd6"
+      },
+      {
+        "split": "held",
+        "group": "security",
+        "path": "SECURITY.md",
+        "question": "What protects a remote collector connection?",
+        "source_sha256": "69cbb26c4087ba099b464b6f7be9e7963eb78d9b252eb6aa91e213d6cf44e026"
+      }
+    ],
+    "calibration": {
+      "true_positives": 4,
+      "false_positives": 0,
+      "true_negatives": 4,
+      "false_negatives": 0,
+      "unavailable": 0,
+      "cases": 12,
+      "known_controls": 8,
+      "expected_unresolved": 4,
+      "unresolved_correctly_preserved": 4,
+      "unresolved_incorrectly_cleared": 0,
+      "unresolved_incorrectly_flagged": 0
+    },
+    "held_out": {
+      "true_positives": 4,
+      "false_positives": 0,
+      "true_negatives": 4,
+      "false_negatives": 0,
+      "unavailable": 0,
+      "cases": 12,
+      "known_controls": 8,
+      "expected_unresolved": 4,
+      "unresolved_correctly_preserved": 4,
+      "unresolved_incorrectly_cleared": 0,
+      "unresolved_incorrectly_flagged": 0
+    },
+    "claims": [
+      {
+        "group": "signing",
+        "split": "cal",
+        "claim": "Notification receipt is separate from application mitigation.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage separates delivery confirmation from evidence needed to record mitigation."
+      },
+      {
+        "group": "signing",
+        "split": "cal",
+        "claim": "Notification receipt automatically marks the incident mitigated.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that delivery confirmation does not change the incident's disposition."
+      },
+      {
+        "group": "signing",
+        "split": "cal",
+        "claim": "The receiver's production p95 processing latency is below one millisecond.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The supplied passage provides no production p95 processing latency measurement."
+      },
+      {
+        "group": "deadlines",
+        "split": "cal",
+        "claim": "A missing numeric actual leaves prediction correctness unknown.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage states that a missing outcome supplies no evidence of prediction correctness."
+      },
+      {
+        "group": "deadlines",
+        "split": "cal",
+        "claim": "A missing numeric actual is substituted with zero error.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that a missing outcome does not mean zero error."
+      },
+      {
+        "group": "deadlines",
+        "split": "cal",
+        "claim": "Actual outcomes become observable within exactly ten milliseconds in production.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The passage does not specify how quickly actual outcomes become observable."
+      },
+      {
+        "group": "async",
+        "split": "cal",
+        "claim": "The SDK does not automatically retry a target or side effect.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that target and side-effect retries are never automatic SDK behavior."
+      },
+      {
+        "group": "async",
+        "split": "cal",
+        "claim": "The SDK automatically retries every blocked tool side effect.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly contradicts automatic SDK retries of side effects."
+      },
+      {
+        "group": "async",
+        "split": "cal",
+        "claim": "The async wrapper's production cancellation latency is below five milliseconds.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The passage states that cancellation propagates but provides no production cancellation latency measurement."
+      },
+      {
+        "group": "roles",
+        "split": "cal",
+        "claim": "Viewers can read assigned applications and evidence.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The Viewer role explicitly includes reading assigned applications and evidence."
+      },
+      {
+        "group": "roles",
+        "split": "cal",
+        "claim": "Viewers can change monitoring policies for assigned applications.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The role table restricts Viewer access to reading/exporting and assigns policy permissions to Operator access."
+      },
+      {
+        "group": "roles",
+        "split": "cal",
+        "claim": "The recommended account capacity is fifty thousand simultaneous users.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The passage does not specify recommended account capacity or simultaneous user capacity."
+      },
+      {
+        "group": "profiles",
+        "split": "held",
+        "claim": "Experimental evidence detectors produce flag or review signals.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that the checks produce flag/review signals."
+      },
+      {
+        "group": "profiles",
+        "split": "held",
+        "claim": "Experimental evidence detectors automatically block AI responses.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that the detectors never produce automatic blocks."
+      },
+      {
+        "group": "profiles",
+        "split": "held",
+        "claim": "These detectors achieve ninety-nine percent precision across all industries.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The supplied passage does not establish or explicitly contradict ninety-nine percent precision across all industries."
+      },
+      {
+        "group": "outbox",
+        "split": "held",
+        "claim": "The durable observation outbox is for metadata rather than raw prompt text.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage rejects text and requires callers to select non-sensitive metadata."
+      },
+      {
+        "group": "outbox",
+        "split": "held",
+        "claim": "The durable observation outbox persists raw prompt and output text by default.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that text is rejected."
+      },
+      {
+        "group": "outbox",
+        "split": "held",
+        "claim": "The recommended outbox storage volume is two terabytes.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The passage provides logical limits and says additional disk space is needed, but specifies no recommended storage volume."
+      },
+      {
+        "group": "restore",
+        "split": "held",
+        "claim": "Restoring a database refuses an existing destination.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage explicitly states that restore refuses existing destinations."
+      },
+      {
+        "group": "restore",
+        "split": "held",
+        "claim": "Restoring a database overwrites any existing destination.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly contradicts overwriting existing destinations by stating that they are refused."
+      },
+      {
+        "group": "restore",
+        "split": "held",
+        "claim": "Database backups sustain one hundred gigabytes per second on every supported host.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The passage provides no sustained backup throughput measurement or guarantee across supported hosts."
+      },
+      {
+        "group": "security",
+        "split": "held",
+        "claim": "Remote collector use requires TLS and OS access controls.",
+        "expected": "supported",
+        "observed": "supported",
+        "invalid": false,
+        "explanation": "The passage requires TLS and OS access controls for remote use."
+      },
+      {
+        "group": "security",
+        "split": "held",
+        "claim": "Remote collector use does not require TLS or OS access controls.",
+        "expected": "unsupported",
+        "observed": "unsupported",
+        "invalid": false,
+        "explanation": "The passage explicitly requires both TLS and OS access controls for remote use."
+      },
+      {
+        "group": "security",
+        "split": "held",
+        "claim": "The security team consists of five maintainers.",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "invalid": false,
+        "explanation": "The passage mentions maintainers but does not specify their number or the security team's composition."
+      }
+    ],
+    "retrieval": [
+      {
+        "group": "signing",
+        "expected_document_retrieved": true,
+        "returned_documents": [
+          "docs/DETECTOR_EVIDENCE.md",
+          "docs/WEBHOOKS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "deadlines",
+        "expected_document_retrieved": true,
+        "returned_documents": [
+          "docs/DETECTOR_EVIDENCE.md",
+          "docs/EXPECTED_OUTCOMES.md",
+          "docs/INTEGRATIONS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "async",
+        "expected_document_retrieved": true,
+        "returned_documents": [
+          "docs/INTEGRATIONS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "roles",
+        "expected_document_retrieved": true,
+        "returned_documents": [
+          "docs/OPERATOR_ACCESS.md",
+          "docs/PILOT_OPERATIONS.md",
+          "docs/RUNTIME_DELIVERY.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "profiles",
+        "expected_document_retrieved": false,
+        "returned_documents": [
+          "SECURITY.md",
+          "docs/INTEGRATIONS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "outbox",
+        "expected_document_retrieved": true,
+        "returned_documents": [
+          "docs/INTEGRATIONS.md",
+          "docs/RUNTIME_DELIVERY.md",
+          "docs/WEBHOOKS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "restore",
+        "expected_document_retrieved": false,
+        "returned_documents": [
+          "docs/OPERATOR_ACCESS.md",
+          "docs/WEBHOOKS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      },
+      {
+        "group": "security",
+        "expected_document_retrieved": false,
+        "returned_documents": [
+          "docs/EXPECTED_OUTCOMES.md",
+          "docs/INTEGRATIONS.md",
+          "docs/WEBHOOKS.md"
+        ],
+        "limitation": "Engineering relevant-document judgment; lexical top-three passages, not answer correctness"
+      }
+    ],
+    "retrieval_gaps": [
+      {
+        "group": "profiles",
+        "scenario": "Declared removal of relevant document",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "explanation": "The supplied passage does not describe experimental evidence detectors or establish whether they produce flag or review signals.",
+        "collector_status": "insufficient_evidence"
+      },
+      {
+        "group": "outbox",
+        "scenario": "Declared removal of relevant document",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "explanation": "The passage excludes prompts from incident notifications but does not describe a durable observation outbox or establish what it stores.",
+        "collector_status": "insufficient_evidence"
+      },
+      {
+        "group": "restore",
+        "scenario": "Declared removal of relevant document",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "explanation": "The supplied passage does not describe database restoration or whether restoration refuses an existing destination.",
+        "collector_status": "insufficient_evidence"
+      },
+      {
+        "group": "security",
+        "scenario": "Declared removal of relevant document",
+        "expected": "insufficient_evidence",
+        "observed": "insufficient_evidence",
+        "explanation": "The passage requires HTTPS for remote receivers and OS access controls for the signing-secret directory, but does not establish these as requirements for remote collector use generally.",
+        "collector_status": "insufficient_evidence"
+      }
+    ],
+    "natural_answer": {
+      "answer": "Save the prediction\u2019s returned event/trace ID. When the actual arrives, emit an `outcome` with `related_event_id` pointing to the original output event, matching its task, environment, model version, application version and trace. The original output must belong to the same application. The collector derives `absolute_error` when both prediction and actual exist. [docs/RUNTIME_MONITORING.md:81:9ced5f0361ba]\n\nA `mitigated` disposition is an assertion, not automatic verification or independent proof. Review requires actor, owner, disposition, rationale and `expected_revision`; stale or concurrent edits fail. The passages do not establish when mitigation is actually achieved. Late events also require care because mean-shift windows use arrival order. [docs/RUNTIME_MONITORING.md:161:9ced5f0361ba]",
+      "behavior": "answer",
+      "citations": [
+        "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+        "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba"
+      ],
+      "judgment": {
+        "claims": [
+          {
+            "claim": "Save the prediction\u2019s returned event/trace ID.",
+            "verdict": "supported",
+            "explanation": "The passage explicitly instructs saving the returned ID with the prediction.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "Save the returned event/trace ID with your prediction."
+              }
+            ]
+          },
+          {
+            "claim": "When the actual arrives, emit an `outcome` with `related_event_id` pointing to the original output event, matching its task, environment, model version, application version and trace.",
+            "verdict": "supported",
+            "explanation": "The instructions require matching context, and the example links the outcome to the output receipt\u2019s event ID.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "Later, submit its actual\noutcome using matching task/environment/model/application version and trace."
+              },
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "receipt = hook.emit(**context, phase=\"output\", metrics={\"prediction\": float(your_prediction)})\n# Store receipt[\"event_id\"] alongside your prediction. Later:\noutcome = hook.emit(**context, phase=\"outcome\", related_event_id=receipt[\"event_id\"],\n                    metrics={\"actual\": float(your_actual_outcome)})"
+              }
+            ]
+          },
+          {
+            "claim": "The original output must belong to the same application.",
+            "verdict": "supported",
+            "explanation": "This requirement is explicit.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "The original event must be an output from the same application."
+              }
+            ]
+          },
+          {
+            "claim": "The collector derives `absolute_error` when both prediction and actual exist. [docs/RUNTIME_MONITORING.md:81:9ced5f0361ba]",
+            "verdict": "supported",
+            "explanation": "The passage describes prediction and actual metrics and explicitly states that the collector derives their absolute error.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "The collector derives absolute_error when both numbers exist."
+              }
+            ]
+          },
+          {
+            "claim": "A `mitigated` disposition is an assertion, not automatic verification or independent proof.",
+            "verdict": "supported",
+            "explanation": "The passage explicitly distinguishes asserted mitigation from verification and independent proof.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "\"mitigated\" disposition is asserted, not automatically verified."
+              },
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Owner assignments and mitigation/verification attestations are not independent proof."
+              }
+            ]
+          },
+          {
+            "claim": "Review requires actor, owner, disposition, rationale and `expected_revision`; stale or concurrent edits fail.",
+            "verdict": "supported",
+            "explanation": "The passage explicitly lists these requirements and failure conditions.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Review requires actor, owner,\ndisposition, rationale and expected_revision; stale/concurrent edits fail."
+              }
+            ]
+          },
+          {
+            "claim": "The passages do not establish when mitigation is actually achieved.",
+            "verdict": "insufficient_evidence",
+            "explanation": "The passages describe assertions and their evidentiary limitations, but no exact quote establishes when mitigation is actually achieved or explicitly states that the passages do not establish it.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "\"mitigated\" disposition is asserted, not automatically verified."
+              }
+            ]
+          },
+          {
+            "claim": "Late events also require care because mean-shift windows use arrival order. [docs/RUNTIME_MONITORING.md:161:9ced5f0361ba]",
+            "verdict": "supported",
+            "explanation": "The passage states that mean shift uses arrival order and cautions about late events when interpreting windows.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Mean shift uses arrival order and a bounded scan of the previous 1,000 events,\nisolated by task/phase/environment/model/application version."
+              },
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Late events and changed policies\nneed care when interpreting windows."
+              }
+            ]
+          }
+        ]
+      },
+      "retrieval_scope": "Original capture's legacy three-document corpus; no regenerated answer",
+      "limitation": "One real generated answer judged by the same model, not an independently labeled accuracy sample",
+      "collector_status": "insufficient_evidence",
+      "collector_action": "allow"
+    },
+    "collector_checks": [
+      {
+        "group": "signing",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "signing",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "signing",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "deadlines",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "deadlines",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "deadlines",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "async",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "async",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "async",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "roles",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "roles",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "roles",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "profiles",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "profiles",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "profiles",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "outbox",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "outbox",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "outbox",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "restore",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "restore",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "restore",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      },
+      {
+        "group": "security",
+        "expected": "supported",
+        "status": "clear"
+      },
+      {
+        "group": "security",
+        "expected": "unsupported",
+        "status": "triggered"
+      },
+      {
+        "group": "security",
+        "expected": "insufficient_evidence",
+        "status": "insufficient_evidence"
+      }
+    ],
+    "profile_checksum": "58fdd67a3f16b327998d8a64fd54169933a9442b2d604bcd6f643ebf58baebab",
+    "subscription_requests": 0,
+    "recorded_subscription_requests": 14,
+    "capture_mode": "Frozen real judgment replay; corrected retrieval, unchanged model outputs"
+  },
+  "rag_original_capture": {
+    "subscription_requests": 14,
+    "expected_document_retrieved": 0,
+    "retrieval_questions": 8,
+    "natural_answer": {
+      "answer": "Save the prediction\u2019s returned event/trace ID. When the actual arrives, emit an `outcome` with `related_event_id` pointing to the original output event, matching its task, environment, model version, application version and trace. The original output must belong to the same application. The collector derives `absolute_error` when both prediction and actual exist. [docs/RUNTIME_MONITORING.md:81:9ced5f0361ba]\n\nA `mitigated` disposition is an assertion, not automatic verification or independent proof. Review requires actor, owner, disposition, rationale and `expected_revision`; stale or concurrent edits fail. The passages do not establish when mitigation is actually achieved. Late events also require care because mean-shift windows use arrival order. [docs/RUNTIME_MONITORING.md:161:9ced5f0361ba]",
+      "behavior": "answer",
+      "citations": [
+        "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+        "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba"
+      ],
+      "judgment": {
+        "claims": [
+          {
+            "claim": "Save the prediction\u2019s returned event/trace ID.",
+            "verdict": "supported",
+            "explanation": "The passage explicitly instructs saving the returned ID with the prediction.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "Save the returned event/trace ID with your prediction."
+              }
+            ]
+          },
+          {
+            "claim": "When the actual arrives, emit an `outcome` with `related_event_id` pointing to the original output event, matching its task, environment, model version, application version and trace.",
+            "verdict": "supported",
+            "explanation": "The instructions require matching context, and the example links the outcome to the output receipt\u2019s event ID.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "Later, submit its actual\noutcome using matching task/environment/model/application version and trace."
+              },
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "receipt = hook.emit(**context, phase=\"output\", metrics={\"prediction\": float(your_prediction)})\n# Store receipt[\"event_id\"] alongside your prediction. Later:\noutcome = hook.emit(**context, phase=\"outcome\", related_event_id=receipt[\"event_id\"],\n                    metrics={\"actual\": float(your_actual_outcome)})"
+              }
+            ]
+          },
+          {
+            "claim": "The original output must belong to the same application.",
+            "verdict": "supported",
+            "explanation": "This requirement is explicit.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "The original event must be an output from the same application."
+              }
+            ]
+          },
+          {
+            "claim": "The collector derives `absolute_error` when both prediction and actual exist. [docs/RUNTIME_MONITORING.md:81:9ced5f0361ba]",
+            "verdict": "supported",
+            "explanation": "The passage describes prediction and actual metrics and explicitly states that the collector derives their absolute error.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:81:9ced5f0361ba",
+                "quote": "The collector derives absolute_error when both numbers exist."
+              }
+            ]
+          },
+          {
+            "claim": "A `mitigated` disposition is an assertion, not automatic verification or independent proof.",
+            "verdict": "supported",
+            "explanation": "The passage explicitly distinguishes asserted mitigation from verification and independent proof.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "\"mitigated\" disposition is asserted, not automatically verified."
+              },
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Owner assignments and mitigation/verification attestations are not independent proof."
+              }
+            ]
+          },
+          {
+            "claim": "Review requires actor, owner, disposition, rationale and `expected_revision`; stale or concurrent edits fail.",
+            "verdict": "supported",
+            "explanation": "The passage explicitly lists these requirements and failure conditions.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Review requires actor, owner,\ndisposition, rationale and expected_revision; stale/concurrent edits fail."
+              }
+            ]
+          },
+          {
+            "claim": "The passages do not establish when mitigation is actually achieved.",
+            "verdict": "insufficient_evidence",
+            "explanation": "The passages describe assertions and their evidentiary limitations, but no exact quote establishes when mitigation is actually achieved or explicitly states that the passages do not establish it.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "\"mitigated\" disposition is asserted, not automatically verified."
+              }
+            ]
+          },
+          {
+            "claim": "Late events also require care because mean-shift windows use arrival order. [docs/RUNTIME_MONITORING.md:161:9ced5f0361ba]",
+            "verdict": "supported",
+            "explanation": "The passage states that mean shift uses arrival order and cautions about late events when interpreting windows.",
+            "evidence": [
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Mean shift uses arrival order and a bounded scan of the previous 1,000 events,\nisolated by task/phase/environment/model/application version."
+              },
+              {
+                "source_id": "docs/RUNTIME_MONITORING.md:161:9ced5f0361ba",
+                "quote": "Late events and changed policies\nneed care when interpreting windows."
+              }
+            ]
+          }
+        ]
+      },
+      "limitation": "One real generated answer judged by the same model, not an independently labeled accuracy sample"
+    },
+    "correction": "Explicit corpus argument was overwritten. Corrected retrieval uses the same frozen eight documents/questions; all real judge outputs and the original natural answer are replayed unchanged, with zero additional requests."
+  },
+  "vision": {
+    "manifest": {
+      "dataset": "UCI handwritten digits, sklearn bundled original-test subset",
+      "dataset_url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "attribution": "Alpaydin and Kaynak (1998), DOI 10.24432/C50P49, CC BY 4.0",
+      "dataset_hash": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+      "splits": {
+        "train": {
+          "count": 1168,
+          "index_hash": "084b4a3f9bf51db1df2796e7c0dece8014fc160e0765073ae304f928649c9941"
+        },
+        "calibration": {
+          "count": 269,
+          "index_hash": "262c5051938f4f98d4f8362e7fc673bb18f0be0ebe0dbad64a9815a6023c4297"
+        },
+        "held_out": {
+          "count": 360,
+          "index_hash": "e2f7446e922c67e73330417670f3e7b7328a6964a4b171a4098b8762d82c7ce1"
+        }
+      },
+      "algorithm": "RandomForestClassifier",
+      "trees": 64,
+      "model_seed": 43,
+      "sklearn_version": "1.9.1",
+      "numpy_version": "2.5.3",
+      "confidence_threshold": 0.59375,
+      "selection": "20th confidence percentile on calibration only",
+      "model_version": "digits-rf-d3eecd4aa4949282"
+    },
+    "gate": {
+      "label_provenance": "Original public UCI benchmark labels; risk means wrong predicted digit",
+      "model_version": "digits-rf-d3eecd4aa4949282",
+      "dataset_sha256": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
+      "calibration_sha256": "4a1eabdfb1735a31ac764854d95e08cc3cfb2163931ec89aa420fc4e10c69d6d",
+      "held_out_sha256": "e3a04c05b7e53e52ed3d98c90920738f76f98a84da04940a6480ac1b5ff9c602",
+      "selection": {
+        "threshold": 0.4375,
+        "comparator": "lt",
+        "false_positive_budget": 0.05,
+        "calibration": {
+          "true_positives": 6,
+          "false_positives": 13,
+          "true_negatives": 248,
+          "false_negatives": 2,
+          "cases": 269,
+          "false_positive_rate": 0.04980842911877394,
+          "risk_capture_rate": 0.75
+        },
+        "method": "Most permissive observed threshold meeting empirical calibration false-positive budget",
+        "limitation": "Empirical calibration only; small/dependent samples and domain shift can violate the held-out or production budget"
+      },
+      "held_out": {
+        "true_positives": 15,
+        "false_positives": 26,
+        "true_negatives": 316,
+        "false_negatives": 3,
+        "cases": 360,
+        "false_positive_rate": 0.07602339181286549,
+        "risk_capture_rate": 0.8333333333333334
+      },
+      "original_percentile_gate": {
+        "threshold": 0.59375,
+        "held_out": {
+          "true_positives": 17,
+          "false_positives": 52,
+          "true_negatives": 290,
+          "false_negatives": 1,
+          "cases": 360,
+          "false_positive_rate": 0.15204678362573099,
+          "risk_capture_rate": 0.9444444444444444
+        }
+      },
+      "split": "Disjoint frozen training/calibration/held-out indices; threshold selected on calibration only"
+    },
+    "scenarios": [
+      {
+        "scenario": "natural",
+        "rows_sha256": "b4cea8234db402f4b49ddcf5737da8f96535caa42036ecad4e312745c5686b21",
+        "overall": {
+          "true_positives": 15,
+          "false_positives": 26,
+          "true_negatives": 316,
+          "false_negatives": 3,
+          "cases": 360,
+          "false_positive_rate": 0.07602339181286549,
+          "risk_capture_rate": 0.8333333333333334
+        },
+        "labels": [
+          {
+            "label": 0,
+            "true_positives": 0,
+            "false_positives": 1,
+            "true_negatives": 34,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": 0.02857142857142857,
+            "risk_capture_rate": null
+          },
+          {
+            "label": 1,
+            "true_positives": 1,
+            "false_positives": 1,
+            "true_negatives": 35,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 0.027777777777777776,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 2,
+            "true_positives": 1,
+            "false_positives": 2,
+            "true_negatives": 32,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": 0.058823529411764705,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 3,
+            "true_positives": 4,
+            "false_positives": 5,
+            "true_negatives": 27,
+            "false_negatives": 1,
+            "cases": 37,
+            "false_positive_rate": 0.15625,
+            "risk_capture_rate": 0.8
+          },
+          {
+            "label": 4,
+            "true_positives": 0,
+            "false_positives": 1,
+            "true_negatives": 35,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 0.027777777777777776,
+            "risk_capture_rate": null
+          },
+          {
+            "label": 5,
+            "true_positives": 3,
+            "false_positives": 3,
+            "true_negatives": 31,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 0.08823529411764706,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 6,
+            "true_positives": 0,
+            "false_positives": 0,
+            "true_negatives": 36,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 0.0,
+            "risk_capture_rate": null
+          },
+          {
+            "label": 7,
+            "true_positives": 1,
+            "false_positives": 2,
+            "true_negatives": 33,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 0.05714285714285714,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 8,
+            "true_positives": 4,
+            "false_positives": 5,
+            "true_negatives": 24,
+            "false_negatives": 2,
+            "cases": 35,
+            "false_positive_rate": 0.1724137931034483,
+            "risk_capture_rate": 0.6666666666666666
+          },
+          {
+            "label": 9,
+            "true_positives": 1,
+            "false_positives": 6,
+            "true_negatives": 29,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 0.17142857142857143,
+            "risk_capture_rate": 1.0
+          }
+        ]
+      },
+      {
+        "scenario": "occlusion",
+        "rows_sha256": "5a2c6d3505fb99db1a3f3efe003bba5cfbb5ba82988042407038264b18b662d6",
+        "overall": {
+          "true_positives": 220,
+          "false_positives": 140,
+          "true_negatives": 0,
+          "false_negatives": 0,
+          "cases": 360,
+          "false_positive_rate": 1.0,
+          "risk_capture_rate": 1.0
+        },
+        "labels": [
+          {
+            "label": 0,
+            "true_positives": 3,
+            "false_positives": 32,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 1,
+            "true_positives": 11,
+            "false_positives": 26,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 2,
+            "true_positives": 35,
+            "false_positives": 0,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": null,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 3,
+            "true_positives": 28,
+            "false_positives": 9,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 4,
+            "true_positives": 32,
+            "false_positives": 4,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 5,
+            "true_positives": 7,
+            "false_positives": 30,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 6,
+            "true_positives": 21,
+            "false_positives": 15,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 7,
+            "true_positives": 13,
+            "false_positives": 23,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 8,
+            "true_positives": 35,
+            "false_positives": 0,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": null,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 9,
+            "true_positives": 35,
+            "false_positives": 1,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          }
+        ]
+      },
+      {
+        "scenario": "noise",
+        "rows_sha256": "ae6e0e0302fc803f8134a8349906bbc1e4d7d5c7ca46f39d93fa41f27d18ec84",
+        "overall": {
+          "true_positives": 325,
+          "false_positives": 33,
+          "true_negatives": 0,
+          "false_negatives": 2,
+          "cases": 360,
+          "false_positive_rate": 1.0,
+          "risk_capture_rate": 0.9938837920489296
+        },
+        "labels": [
+          {
+            "label": 0,
+            "true_positives": 30,
+            "false_positives": 5,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 1,
+            "true_positives": 36,
+            "false_positives": 1,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 2,
+            "true_positives": 32,
+            "false_positives": 2,
+            "true_negatives": 0,
+            "false_negatives": 1,
+            "cases": 35,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 0.9696969696969697
+          },
+          {
+            "label": 3,
+            "true_positives": 33,
+            "false_positives": 3,
+            "true_negatives": 0,
+            "false_negatives": 1,
+            "cases": 37,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 0.9705882352941176
+          },
+          {
+            "label": 4,
+            "true_positives": 34,
+            "false_positives": 2,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 5,
+            "true_positives": 35,
+            "false_positives": 2,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 37,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 6,
+            "true_positives": 35,
+            "false_positives": 1,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 7,
+            "true_positives": 30,
+            "false_positives": 6,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 8,
+            "true_positives": 27,
+            "false_positives": 8,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 35,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          },
+          {
+            "label": 9,
+            "true_positives": 33,
+            "false_positives": 3,
+            "true_negatives": 0,
+            "false_negatives": 0,
+            "cases": 36,
+            "false_positive_rate": 1.0,
+            "risk_capture_rate": 1.0
+          }
+        ]
+      }
+    ],
+    "label_provenance": "Original public UCI labels; transformed-image labels are engineering references, not independently checked recognizability",
+    "limitation": "Small public benchmark and declared corruptions, no new domain/writer population. Per-label rates are descriptive, not fairness certification."
+  },
+  "limits": [
+    "No independent users or human label review",
+    "Tiny authored RAG controls; same-model natural answer/judgment and three remaining retrieval misses",
+    "Dependent revised NOAA replay; block threshold has no nominal coverage guarantee",
+    "Declared vision corruptions retain engineering reference labels",
+    "600-event serial drill and one fresh install do not establish production load/recovery objectives",
+    "No registry publication, hosted deployment or external-recipient notification"
+  ]
+}

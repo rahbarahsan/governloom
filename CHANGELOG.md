@@ -1,5 +1,24 @@
 # Releases
 
+## 0.5.0 — outcome coverage, recovery and distribution
+
+- Opt-in numeric outcome deadlines, persisted expectations, bounded restart-safe
+  watchdog and scoped coverage console. Late actuals resolve coverage while the
+  incident remains available for review.
+- Signing-key rotation with overlapping signatures and emergency revocation;
+  verified database-plus-key recovery bundles and audited, conservative retention
+  of delivered notifications for closed incidents.
+- Chronological forecast block gates, grouped vision analysis and 24 frozen
+  source-support claims with explicit unknowns. Corrected custom RAG corpus
+  retrieval; exact frozen-prompt replay preserves the original capture.
+- Standalone fresh-wheel model consumer, non-root container and CI build/restart
+  checks. Updated runtime GIF includes real forecast deadline/actual scenes.
+
+The block threshold is empirical under dependence. RAG labels are authored;
+the standalone consumer is owned, not independent developer feedback. The 600-event
+drill is bounded, not production scale. See [measurements](docs/V05_EVIDENCE.md).
+No registry publication or hosted deployment occurred.
+
 ## 0.4.0 — incident response and developer onboarding
 
 - Registered host-allowed receivers, Standard Webhooks HMAC signing, transactional

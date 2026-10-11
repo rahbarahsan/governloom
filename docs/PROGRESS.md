@@ -1,5 +1,95 @@
 # Release progress
 
+## Active v0.5: validate connected-system usefulness (2026-10-11)
+
+User authorized proceeding with the recommended next release. No participating
+team is required: use owned standalone consumers and real mini-applications.
+Preserve the original untracked brief. No paid API use, external-recipient
+messages, registry publication or hosted deployment is part of this scope.
+Existing explicitly authorized ChatGPT subscription capture may be used with a
+fixed request cap, tool-free prompts and private artifacts; never API-key fallback.
+
+Delivery sequence:
+1. Forecast vertical slice: explicit outcome deadlines, persisted missing/late
+   evidence, bounded watchdog, incident/webhook delivery and eventual actuals.
+2. Chronological non-overlapping block calibration on the frozen NOAA snapshot;
+   grouped vision and broader source-backed RAG claims/retrieval gaps/judge errors.
+   Freeze engineering labels/splits before inference; do not invent independent
+   human review or theoretical guarantees under serial dependence.
+3. Signing-key rotation with bounded overlap, full database-plus-secret recovery,
+   conservative terminal delivery retention and restart/load/storage failure drills.
+4. Standalone installed-package onboarding and a CI-tested container build path,
+   release documentation/media as needed, meaningful local/remote checks, focused
+   commits/pushes and stopped owned services. External users remain unobserved.
+
+Repository/ancestor instructions inspected; no AGENTS.md found. v0.4 code is
+clean apart from the original brief. Research checks: current official Codex
+non-interactive/authentication docs, Standard Webhooks multi-signature rotation
+and dependent-data conformal research. The four implementation stages are complete;
+the final release push and remote distribution/browser/core checks remain.
+
+Vertical slice implemented: explicit numeric deadlines, transactional expectations,
+bounded restart/concurrent-safe watchdog, scoped coverage API/UI, frozen-policy
+incidents and signed escalation; later actuals resolve coverage without closing
+incidents. Existing event replay hashes remain compatible. Twenty outcome/runtime/
+retention checks passed (5.16 s); temporal boundary checks passed (2, 0.03 s).
+Rotation/incident/outcome boundary suite passed (11, 13.83 s); full bundle recovery/
+retention checks passed (4, 1.15 s). Actual SQLite SQLITE_FULL page-cap rollback,
+capacity recovery and replay passed with rotation/recovery (4, 1.28 s).
+
+Owned NOAA HTTP drill completed in 18.68 s: deadline flagged, old receiver accepted
+dual signatures, lost first receipt retried (2 attempts, 1 notification), receiver
+updated, actual received 4.580 s late, incident remained open. Six hundred controlled
+observation events accepted in 3.996 s; this is a bounded serial software drill,
+not sustained production throughput. Full bundle restored 602 observations,
+30 entities and 2 signing keys with integrity/checksum verification; all services
+stopped. First preparation run rejected a rate above the existing 10000/minute
+policy limit and made zero provider requests; runner corrected.
+
+Forecast block threshold frozen from eight 3-month 2019-2020 blocks is 1.496969
+ppm. Six of 48 held-out months / 5 of 16 blocks exceed it, versus 15 months under
+the original 90th-percentile gate. No missing actuals in this snapshot; revised,
+serially dependent data still has no nominal coverage guarantee. Eight document-
+disjoint RAG groups (24 authored claims plus retrieval-gap/natural-answer checks)
+were frozen before a capped 14-request existing-ChatGPT-login capture. All fourteen
+requests completed; four unknowns in each split remain unresolved. A custom-corpus
+retrieval defect was fixed and the exact frozen prompts/schemas replayed with zero
+new requests. Expected-document retrieval improved from 0/8 to 5/8; three misses
+remain, and the natural answer preserves the original legacy-corpus limitation.
+
+Standalone clean-wheel Windows consumer completed: 130.500 s setup, 148.598 s to
+one real incident; separate copied application, installed public hook, real owned
+classifier, one target call. It captured the development baseline label 0.4.0;
+final packages are 0.5.0 and CI repeats fresh installation. It is not independent
+user feedback. Public whitelisted reports: docs/experiments/v05-2026-10-11.json;
+interpretation and provenance: docs/V05_EVIDENCE.md.
+
+Final local full Python run: 99 passed in 153.19 s; a subsequently added calendar-
+gap calibration/holdout boundary check passed separately (1, 3.38 s). Current
+suite contains 100 checks. All five Chromium workflows passed in 1.1 min, including
+coverage and scoped rotation. A read-only audit request transiently reset after
+Windows keepalive idle; maxRetries=2 applies only to that GET, never mutations.
+Dashboard and Node SDK builds/HTTP contract passed. Final 0.5.0 Python wheel built.
+
+Twelve-frame actual runtime GIF captured and visually inspected: 29.8 s,
+523356 bytes, 1280x900. It adds deliberately overdue NOAA feedback and late actuals
+with review still open. All six capture actors stopped; no new LLM requests.
+The container is implemented with non-root/read-only runtime and named access;
+local Docker daemon is unavailable, so remote distribution CI must establish its
+build/restart result. Next: final package/schema/link checks, focused commits,
+push all changes, inspect/fix all six CI jobs, record verified revision and cleanup.
+
+Final packaging checks passed: installed Python 0.5.0 wheel imports the API,
+deadline/recovery and integration modules without importing NumPy/scikit-learn;
+Node 0.5.0 tarball installed offline into a separate consumer and exports the hook
+and deadline contract. Dependency check, schema drift and compile checks passed;
+all local links across 36 Markdown guides and public-report credential-pattern
+checks passed. npm's default cache was sandbox-restricted; workspace-local cache
+resolved packaging without changing user cache permissions. Focused local commits:
+9ea1fd1 deadlines, 5e81a4a rotation/recovery, e414df5 domain validation, 6a6281a
+calendar gap boundary, 54de8e4 distribution, 986e7c2 runtime GIF. Release docs/evidence
+are next, followed by authorized push and all six remote checks.
+
 ## Delivered v0.4 public developer launch (2026-10-10)
 
 User authorized the launch-readiness work: reliable incident delivery, a quickstart

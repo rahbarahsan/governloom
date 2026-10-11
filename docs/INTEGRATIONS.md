@@ -5,6 +5,12 @@ on the evidence you supply: images/arrays/audio and provider credentials are not
 automatically uploaded. Keep raw-input selection and outage behavior explicit.
 Create the application's policy and ingestion key in the dashboard first.
 
+For numeric forecasts, declare an optional aware `outcome_due_at` on the output
+event and link the eventual numeric `actual` using `related_event_id`. Run the
+collector's `monitor-worker` to flag missing feedback. Deadlines measure feedback
+coverage; missing actuals are neither zero error nor proof of a wrong prediction.
+See [expected outcomes](EXPECTED_OUTCOMES.md) for the complete workflow.
+
 The Python package is installed from this checkout (`pip install -e .`), not an
 assumed PyPI release. Node packaging below is also from source; no npm publication
 has occurred. Use HTTPS for a remote collector and keep its key server-side.

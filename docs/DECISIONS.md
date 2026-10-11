@@ -1,5 +1,25 @@
 # Decisions
 
+- v0.5 numeric deadlines track declared feedback coverage, with collector receipt
+  time for lateness. They do not infer forecast error from missing actuals.
+  The bounded watchdog creates one frozen-policy incident across restart/races;
+  a received actual resolves coverage without silently closing operator review.
+- Forecast gates score maxima in chronological non-overlapping calendar blocks.
+  Missing calibration months are rejected and missing held-out months remain
+  unavailable in their block. Dependence and revised data invalidate nominal
+  probability claims; this is an empirical gate, not formal block randomization.
+- Signing rotation emits both signatures during a bounded overlap; emergency
+  revocation affects future dispatches. Recovery snapshots the database plus its
+  referenced secrets; retention removes only delivered notifications for closed
+  incidents, preserves audit/evidence and supplies no total storage quota.
+- Broader RAG labels require explicit contradiction for unsupported claims and
+  preserve unknowns. Frozen prompt/schema replay corrects a corpus-selection bug
+  without additional model calls or regenerating the natural answer. Authored
+  controls and the same generator/judge model do not establish independent quality.
+- An owned standalone application in a fresh installed-wheel environment proves
+  public integration and packaging. It does not substitute for independent human
+  onboarding feedback. Container CI verifies a separate installed deployment path.
+
 - v0.4 signed notifications use Standard Webhooks 1.0 HMAC-SHA256 (ID, current
   attempt timestamp and immutable raw body). Transactional per-destination
   deliveries retain one ID/body across restart/replay; receivers must persistently

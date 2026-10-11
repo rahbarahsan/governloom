@@ -6,6 +6,10 @@ multi-user service. See [actual-model evidence](TESTBED_EVIDENCE.md).
 
 ## Backup and restore
 
+For configured signed receivers, use [full bundles and delivery retention](RECOVERY.md)
+to preserve separate signing keys as well as SQLite. The commands below copy only
+the database.
+
 Use new destination files from the repository root:
 
 ```powershell
@@ -47,7 +51,8 @@ later pass. Tests prove preview is non-mutating and references/cursors survive.
 
 This does not bound all history or implement customer-specific erasure/legal
 holds. Agree those policies before using sensitive production data; broader
-retention is future work. Freed space is reusable, with no automatic VACUUM.
+retention remains explicit. [Conservative delivered-history retention](RECOVERY.md)
+is now available for closed incidents. Freed space is reusable, with no automatic VACUUM.
 
 ## Measured capacity
 

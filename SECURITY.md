@@ -8,7 +8,7 @@ files, private prompts or customer records.
 
 Private reports should describe affected version, reproduction, prerequisites,
 impact and a sanitized proof. Maintainers assess reports and coordinate fixes;
-there is no guaranteed response-time SLA. Fixes target current 0.4.x; older
+there is no guaranteed response-time SLA. Fixes target current 0.5.x; older
 installations should upgrade and have no promised backport SLA.
 
 GovernLoom supports controlled self-hosted integrations. It has named application
@@ -18,7 +18,10 @@ needs TLS, named accounts, host/origin restrictions and OS access controls; see
 
 Protect SQLite and the separate signing-secret directory. Unix secret creation
 uses owner-only mode; Windows requires explicit NTFS permissions. Full restore
-requires both database and signing secrets. Webhook URLs are host-allowlisted;
+requires both database and signing secrets; [recovery bundles](docs/RECOVERY.md)
+contain credentials and must remain private. [Signing rotation](docs/WEBHOOKS.md)
+supports bounded overlap or immediate revocation for future dispatches.
+Webhook URLs are host-allowlisted;
 validated HTTPS addresses and disabled redirects complement network egress rules.
 
 Collector text/grounding passages are transient; selected metadata and evidence

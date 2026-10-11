@@ -34,6 +34,13 @@ Browser checks own local services; ports 8000/5173 must be free. The Node SDK's
 Python integration requires its build and Node; a dedicated CI job supplies both.
 CI never calls a model provider or subscription login.
 
+The distribution job installs a fresh wheel into a separate environment and
+runs an actual standalone model consumer, then builds the container and checks
+named access, built-dashboard serving, deadlines and exact replay across restart.
+Run `python scripts/check_onboarding.py --directory data/onboarding-check` in a
+new directory; it owns and stops its collector. See [container checks](docs/CONTAINER.md).
+Six CI jobs cover the two core Python versions, browser, examples, SDK and distribution.
+
 Regenerate changed event models with `python -m scripts.export_contracts` and
 review compatibility. Add meaningful boundary checks; documentation edits do not
 need implementation-mirroring tests. Keep raw artifacts in ignored `data/`.

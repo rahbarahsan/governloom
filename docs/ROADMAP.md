@@ -1,6 +1,6 @@
 # Roadmap: govern connected AI systems
 
-Updated 2026-10-10. Connect a developer's existing AI system through explicit
+Updated 2026-10-11. Connect a developer's existing AI system through explicit
 telemetry, monitor task-specific risks and support an evidenced response.
 
 ## v0.4: first public developer launch
@@ -30,7 +30,24 @@ reviewed grounding/distribution profiles. Vision, NOAA forecasting and model-bac
 documentation RAG have actual-model evidence. [Earlier detector evidence](DETECTOR_VALIDATION.md)
 and [three-system results](TESTBED_EVIDENCE.md) preserve the measured limitations.
 
-## Recommended v0.5: validate external usefulness
+## v0.5: outcome coverage and connected-system validation
+
+Implemented; final push and six-job release CI are pending. The release adds:
+
+- Numeric feedback deadlines, persisted missing/late outcome coverage and an
+  incident watchdog, demonstrated against the real forecast mini-application.
+- Chronological block thresholds, per-label vision analysis and frozen grouped
+  RAG source-support/retrieval-gap evaluation with explicit unresolved evidence.
+- Signing rotation, database-plus-secret recovery, conservative delivery retention
+  and real SQLite capacity failure/rollback plus a bounded 600-event HTTP drill.
+- Fresh installed-wheel standalone consumer and a non-root container build/restart
+  CI path, with an updated twelve-frame runtime GIF.
+
+[Measured results](V05_EVIDENCE.md) preserve the retrieval defect and its correction,
+remaining misses, authored labels and empirical forecast limitations. An owned
+consumer verifies packaging; independent developer feedback remains unavailable.
+
+## Recommended v0.6: improve real deployment evidence
 
 1. **Independent onboarding feedback.** Observe developers connecting their own
    services; measure setup completion, integration effort and recurring use.
@@ -39,11 +56,16 @@ and [three-system results](TESTBED_EVIDENCE.md) preserve the measured limitation
    error analysis; independent label review when available. For forecasts use
    temporal/block calibration, outcome lateness and untouched chronological holdouts.
    For vision evaluate additional data/sampling groups and domain label quality.
+   Improve the three remaining grouped retrieval misses without reusing held-out
+   answers as calibration; collect fresh realistic questions and source changes.
 3. **Longer operational drills.** Sustained restart/load/restore testing, disk-space
-   exhaustion, explicit notification/history retention and secret recovery/rotation.
+   exhaustion and backup/rotation during longer runs. Delivered-notification
+   retention exists; audit, dead-letter and resolved-expectation growth still
+   need measured storage budgets.
    Receiver delivery latency and application action evidence need separate budgets.
-4. **Distribution/deployment.** Consider registry publication and a tested container
-   path after native clean setup feedback. Add broader OTel integration, SSO/MFA
+4. **Distribution/deployment.** Consider registry publication after clean setup
+   feedback; validate the container with deployment-specific requirements.
+   Add broader OTel integration, SSO/MFA
    and finer permissions where real deployment/access requirements justify them.
 
 Success means independent users can connect systems, understand coverage gaps
@@ -58,8 +80,9 @@ remains small/authored; NOAA replay is serially dependent and revised. No
 independent human validation or production-scale guarantee is claimed.
 
 Notification receipt is not completed mitigation. Operator verification remains
-an attestation. Terminal webhook/audit history needs a storage policy; signing
-secrets need a separate backup. The metadata outbox cannot replay raw text.
+an attestation. Retention only removes delivered notifications for closed incidents;
+full recovery bundles include signing secrets. Neither supplies a disk quota.
+The metadata outbox cannot replay raw text.
 
 No organization-wide inventory/discovery, tenants, compliance certification,
 universal hallucination/injection detector, automatic fairness computation or
