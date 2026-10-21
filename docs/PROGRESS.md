@@ -1,6 +1,39 @@
 # Release progress
 
-## Active v0.6: explore, confirm and prepare monitoring (2026-10-21)
+## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
+
+Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:
+https://github.com/rahbarahsan/governloom/actions/runs/39559521550.
+Python 3.11/3.13 core: 104 passed with two optional skips each. Actual-model
+examples: ten checks plus the headless quickstart and the new no-prewritten-policy
+digit discovery-to-incident workflow. SDK integration passed; all six Chromium
+workflows passed (28.3 s), including persistent owner corrections after reload.
+Distribution installed 0.6.0 in a fresh standalone Linux consumer (19.862 s to
+actual incident), then built and verified non-root/read-only container creation
+and restart, named access, dashboard, deadline persistence and exact replay.
+
+Final local full run: 114 passed; the subsequently expanded discovery suite passed
+all 15 checks, including equivalent numeric labels. The final rebuilt installed
+wheel also passed all 15 discovery checks (5.70 s). Final wheel SHA-256:
+9ac6c9fc6a9e3ab8e7e846ff036a10d9739ecc9f2dcc42062ec09f382086f9a7.
+Schema, dependency, compile, Node package and 38-guide link checks passed.
+GIF: six verified actual Chromium frames, 24 seconds, 400242 bytes, 1280x900.
+
+Exactly three semantic model requests were made; all replays/captures made zero
+additional requests. Forecast and vision proposals yielded actual flags/incidents;
+the recorded RAG answer correctly leaves calibration unavailable. No independent
+owner study or semantic accuracy guarantee is claimed. All owned services stopped;
+final inspection found zero project processes and zero listeners on 8000/5173.
+
+Focused commits: e544820 vertical slice, 72c4564 UI/actual-model mapping, 34a896b
+cross-client identity/correction persistence, 08a43a4 packages/CI, c139e89 GIF,
+90583e1 numeric-label boundary and 4e58313 docs/evidence. All are pushed. Only the
+original untracked brief remains outside commits. No registry/image publication,
+hosted deployment or external-recipient notification occurred.
+
+No v0.6 implementation work remains. Recommended v0.7 scope is in docs/ROADMAP.md;
+wait for the user's next instruction before starting it. The milestone history
+below records development checks and then-pending steps, now completed.
 
 User authorized implementing the discovery-first workflow discussed after v0.5.
 The owner reviews an evidence-backed application draft and corrects unresolved

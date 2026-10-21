@@ -50,7 +50,8 @@ consumer verifies packaging; independent developer feedback remains unavailable.
 
 ## v0.6: explore, confirm and prepare monitoring
 
-Implemented; final release CI is pending. The owner's role is to review and correct
+Delivered at `4e58313`; all six [release CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/39559521550)
+passed. The owner's role is to review and correct
 an evidence-backed draft rather than supply a prewritten policy or metric design.
 
 1. Bounded local source/OpenAPI/trace inspection with no target execution, optional

@@ -67,7 +67,16 @@ that boundary suite to 15 passing checks; it prevents equivalent 1/1.0 labels
 from manufacturing errors. All six Chromium
 workflows passed, including evidence import, owner correction, proposal review,
 flag-only activation and a live incident. Final release CI/package checks are
-recorded in [progress](PROGRESS.md) when complete.
+recorded in [progress](PROGRESS.md).
+
+All six [release CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/39559521550)
+passed at `4e58313`: Python 3.11/3.13 each passed 104 checks with two optional skips;
+actual-model examples passed ten checks plus quickstart/discovery workflows; SDK
+integration and all six browser workflows passed. The fresh installed 0.6.0 Linux
+consumer reached a real incident in 19.862 seconds and stopped its collector.
+Container build and both non-root/read-only create/restart checks passed. These
+are owned software/distribution measurements, not independent onboarding evidence.
+The final installed wheel separately passed all 15 discovery boundary checks.
 
 The browser-to-Python capture exposed equivalent `100.0`/`100` JSON number
 representations in dataset hashing. The new dataset hash normalizes integral
