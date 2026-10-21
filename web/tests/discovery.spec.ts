@@ -21,6 +21,8 @@ test("explore evidence, correct understanding, calibrate and activate flags", as
   await expect(panel).toContainText("Application understanding confirmed");
   await panel.getByRole("button",{name:"Evaluate monitoring proposal",exact:true}).click();
   await expect(panel).toContainText("30 calibration · 10 held-out");
+  await panel.getByText(/Forecast outcome error · available/).click();
+  await expect(panel.getByRole("row",{name:/Residuals above threshold/})).toContainText("10");
   await expect(panel.getByRole("button",{name:"Activate observation policy",exact:true})).toBeDisabled();
   await panel.getByLabel("I reviewed the measurements and limitations; activate flags only.",{exact:true}).check();
   await panel.getByRole("button",{name:"Activate observation policy",exact:true}).click();
@@ -39,4 +41,6 @@ test("explore evidence, correct understanding, calibrate and activate flags", as
   const downloadable=await request.get(`http://127.0.0.1:8000/api/applications/${app.id}/discovery-plans`);
   expect((await downloadable.json())[0].dataset.sha256).toMatch(/^[a-f0-9]{64}$/);
   expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain("traces");
+  await page.reload();
+  await expect(page.locator(".discovery-panel").getByRole("textbox",{name:"Confirm or correct the application description",exact:true})).toHaveValue("A numeric forecasting process, reviewed as a software browser fixture");
 });

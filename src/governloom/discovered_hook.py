@@ -4,6 +4,7 @@ from uuid import uuid4
 from .discovery import flatten
 from .hook import RuntimeHook
 from .service import checksum
+from .discovery_calibration import dataset_digest
 
 
 class DiscoveredObserver:
@@ -12,7 +13,8 @@ class DiscoveredObserver:
             raise ValueError("Use a ready, reviewed discovery plan")
         dataset = dict(plan["dataset"])
         expected = dataset.pop("sha256")
-        if checksum(dataset) != expected:
+        digest = dataset_digest(dataset) if dataset.get("checksum_method")=="numeric-normalized-json-v1" else checksum(dataset)
+        if digest != expected:
             raise ValueError("Frozen evaluation dataset checksum differs")
         if any(rule["action"] != "flag" for rule in plan["policy"]["rules"]):
             raise ValueError("DiscoveredObserver supports observation flags only")

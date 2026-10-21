@@ -56,6 +56,35 @@ calibration version onto a new model. Frozen zero-request replay completed in
 violations are surfaced as warnings, not silently retuned. Next: package checks,
 actual discovery GIF, public evidence/docs and six-job CI delivery.
 
+Final full Python suite: 114 passed, 159.59 s; existing Starlette/httpx deprecation
+only. Core imports from the installed 0.6.0 wheel passed without NumPy/scikit-learn.
+Wheel SHA-256: e84a97fa11e3b054732a5affc4c4fb0547d8b141e94371f0436e062ac6e20947.
+Node 0.6.0 build, actual HTTP contract and local tarball packaging passed.
+Final frozen public-mapper replay completed in 3.951 s with zero new requests;
+report: data/v06-discovery-2026-10-21-e. Public whitelist:
+docs/experiments/v06-2026-10-21.json. Original semantic request count remains three.
+
+Capture exposed cross-language integral-number representations in dataset hashes;
+numeric normalization and a regression check fix that new format. A separate
+Windows capture stdin decoding issue was fixed with explicit UTF-8. Actual
+browser-to-Python capture now passes. Metrics use readable calibration/held-out
+tables; final media capture is in progress. Next: final links/schema/package
+checks, focused commits/push, inspect/fix six CI jobs and stop owned processes.
+
+Final discovery GIF captured, decoded and visually reviewed: six frames, 24 s,
+400242 bytes at 1280x900. It shows exact evidence, prefilled confirmation, readable
+calibration/held-out results, budget warning, observation activation and an actual
+NOAA forecast incident. All capture services stopped; zero new model requests.
+Current next step: final package/schema/link checks, focused commits and authorized
+push, then inspect/fix all six CI jobs and record the verified release checkpoint.
+
+Package verification: all 14 discovery boundary checks passed against the installed
+wheel (5.51 s), proving packaged behavior as well as imports. Node 0.6.0 tarball
+installed offline into a separate consumer and its exports passed. All local
+links across 38 Markdown guides passed; schema drift, compile, dependency and
+public credential-pattern checks passed. Final review UI preserves confirmed
+description/mappings across reload; history remains inspectable.
+
 ## Delivered v0.5: outcome coverage and connected-system validation (2026-10-11)
 
 Release code/docs/GIF pushed at `aca7c10`; all six CI jobs passed:

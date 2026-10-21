@@ -149,6 +149,16 @@ def test_discovered_mapper_preserves_live_version_and_requires_actual(workbench)
     from governloom.discovered_hook import DiscoveredObserver
     app, service, _, _, confirmation = provision(workbench)
     plan = service.calibrate(app["id"], CalibrationRequest(actor="operator", confirmation_id=confirmation["id"]))
+    # A browser parses 100.0 and serializes it as 100; the mathematical value is unchanged.
+    import json
+    from governloom.discovery_calibration import dataset_digest
+    wire_plan = json.loads(json.dumps(plan))
+    for row in wire_plan["dataset"]["cases"]:
+        for name,value in list(row["values"].items()):
+            if isinstance(value,float) and value.is_integer(): row["values"][name]=int(value)
+    digest_body = {key:value for key,value in wire_plan["dataset"].items() if key!="sha256"}
+    assert dataset_digest(digest_body)==wire_plan["dataset"]["sha256"]
+    DiscoveredObserver("http://127.0.0.1:8000","gl_test.private",wire_plan)
     adapter = DiscoveredObserver("http://127.0.0.1:8000", "gl_test.private", plan)
     events = []
     def transport(event):

@@ -15,6 +15,7 @@ from governloom.explorer import collect, enrich, write_bundle
 from governloom.discovered_hook import DiscoveredObserver
 from governloom.service import Workbench, checksum
 from governloom.storage import Store
+from governloom.schemas import now
 
 
 def vision_data():
@@ -53,8 +54,11 @@ def run(directory, *, forecast_snapshot=None, rag_capture=None, subscription=Fal
     directory.mkdir(parents=True, exist_ok=False)
     if subscription and replay:
         raise ValueError("Choose new semantic capture or frozen replay")
-    report = {"schema_version": 1, "status": "started", "provider_request_cap": 3 if subscription else 0,
+    report = {"schema_version": 1, "status": "started", "created_at":now(), "provider_request_cap": 3 if subscription else 0,
         "provider_requests": 0, "scope": "Owned scripted review, not independent usability or label validation", "applications": {}}
+    report["code_files_sha256"] = {name:checksum((ROOT/name).read_text(encoding="utf-8")) for name in
+        ("src/governloom/discovery.py","src/governloom/discovery_calibration.py","src/governloom/explorer.py",
+         "src/governloom/discovered_hook.py","examples/discovery_testbed.py")}
     sources = {"vision": vision_data()}
     if forecast_snapshot:
         sources["forecasting"] = forecast_data(forecast_snapshot)

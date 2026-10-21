@@ -6,6 +6,19 @@ from .calibration import calibrate_threshold, evaluate_threshold
 from .service import checksum
 
 
+def dataset_digest(dataset):
+    """Normalize equivalent integral JSON numbers across Python/JavaScript clients."""
+    def normalize(value):
+        if isinstance(value, dict):
+            return {key:normalize(item) for key,item in value.items()}
+        if isinstance(value, list):
+            return [normalize(item) for item in value]
+        if isinstance(value, float) and math.isfinite(value) and value.is_integer():
+            return int(value)
+        return value
+    return checksum(normalize(dataset))
+
+
 def number(value):
     return type(value) in (int, float) and math.isfinite(value)
 
@@ -187,11 +200,11 @@ def prepare(discovery, confirmation, fraction):
         **({"cases": len(latency), "p50_ms": quantile(latency,.5), "p95_ms": quantile(latency,.95)} if latency else {"reason": "Emit measured latency_ms; no serving SLA is inferred"})})
     if not rules:
         gaps.append("No quality rule is ready for activation")
-    dataset = {"provenance": "selected application observations; labels/outcomes owner-confirmed, not independently reviewed",
+    dataset = {"checksum_method":"numeric-normalized-json-v1", "provenance": "selected application observations; labels/outcomes owner-confirmed, not independently reviewed",
         "split_method": split_method, "duplicates_removed": duplicate_count, "cases": rows,
         "calibration_cases": len(calibration), "held_out_cases": len(held),
         "synthetic_scenarios": [dict(item, label_status="model_generated_unreviewed_not_evaluation_truth") for item in (discovery.get("semantic") or {}).get("scenarios", [])]}
-    dataset["sha256"] = checksum(dataset)
+    dataset["sha256"] = dataset_digest(dataset)
     policy = {"name": "Discovered observation baseline", "rules": rules,
               "actor": confirmation["actor"], "rationale": "Reviewed discovery evidence; empirical baseline, not a safety certification",
               "outcome_deadline_action": "flag"} if rules else None
