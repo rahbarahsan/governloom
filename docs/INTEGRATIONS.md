@@ -1,5 +1,10 @@
 # Connect an existing AI system
 
+To prepare metrics and policies from the application first, use the
+[discovery workflow](DISCOVERY.md). Its `DiscoveredObserver` applies reviewed field
+mappings and preserves live versions; the direct integrations below remain useful
+when the application already has a monitoring policy.
+
 The collector accepts selected telemetry from any AI system. Risk coverage depends
 on the evidence you supply: images/arrays/audio and provider credentials are not
 automatically uploaded. Keep raw-input selection and outage behavior explicit.

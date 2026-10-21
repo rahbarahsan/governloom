@@ -40,6 +40,9 @@ named access, built-dashboard serving, deadlines and exact replay across restart
 Run `python scripts/check_onboarding.py --directory data/onboarding-check` in a
 new directory; it owns and stops its collector. See [container checks](docs/CONTAINER.md).
 Six CI jobs cover the two core Python versions, browser, examples, SDK and distribution.
+The examples job also derives a policy from actual digit-model traces and verifies
+an incident without a prewritten policy. Discovery's browser workflow covers import,
+owner correction, calibration and observation activation. See [discovery](docs/DISCOVERY.md).
 
 Regenerate changed event models with `python -m scripts.export_contracts` and
 review compatibility. Add meaningful boundary checks; documentation edits do not

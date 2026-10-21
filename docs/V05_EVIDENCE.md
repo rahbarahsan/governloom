@@ -108,8 +108,9 @@ two missed wrong and 33 flagged correct classifications. Original labels under
 corruption are engineering references; recognizability is not independently
 reviewed. These are neither new-domain validation nor a fairness certification.
 
-The twelve-frame GIF now includes actual forecast/late-feedback coverage and
-open incident review. The owned capture makes no new model requests.
+The [v0.5 twelve-frame GIF](https://github.com/rahbarahsan/governloom/blob/aca7c10/docs/media/demo.gif)
+includes actual forecast/late-feedback coverage and open incident review. The
+owned capture makes no new model requests; the current README GIF follows v0.6.
 Container build/restart CI and installed-package checks verify software delivery,
 not production safety. Next evidence should cover independent usability, realistic
 retrieval/answer tasks, actual deployment sampling, longer failure/load studies

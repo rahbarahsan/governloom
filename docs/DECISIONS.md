@@ -1,5 +1,21 @@
 # Decisions
 
+- v0.6 explores one explicitly connected application before asking the owner to
+  confirm its inferred behavior. Local inspection never executes target code;
+  optional semantic analysis is bounded and tool-disabled. Exact source references
+  verify provenance, not interpretation. Generated scenarios remain unreviewed.
+- Evidence, owner corrections and calibration plans are immutable. Dataset hashes
+  normalize equivalent integral JSON numbers so Python/JavaScript round trips
+  preserve mathematical values. Prompt/answer bodies are excluded from stored trace
+  projections; selected source text is retained privately for review.
+- Automatic recipes select only on calibration data. Forecast point residuals are
+  empirical; classification gates require confirmed labels; RAG identity checks
+  never imply semantic support. Held-out budget violations remain visible.
+- Generated policy activation is transactional, idempotent and observation-only.
+  Current-policy and current-understanding checks prevent stale proposals from
+  silently taking effect. Version-bound rules expose insufficient evidence when
+  a different live model/application is observed. Real runtime versions are required
+  by the prepared mapper; historical versions are never stamped onto new outputs.
 - v0.5 numeric deadlines track declared feedback coverage, with collector receipt
   time for lateness. They do not infer forecast error from missing actuals.
   The bounded watchdog creates one frozen-policy incident across restart/races;

@@ -2,13 +2,31 @@
 
 [![checks](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml/badge.svg)](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml)
 
-Connect your existing AI system, flag task-specific risks, deliver incidents and
-record the application's response. Vision, RAG, forecasting, classification and
-custom systems share a provider-independent event contract.
+Explore your AI application, prepare an evidence-backed monitoring policy and
+track risks in operation. Vision, RAG, forecasting, classification and custom
+systems share a provider-independent event contract.
 
 Your model performs inference; GovernLoom evaluates the evidence you select.
 Binary inputs and provider credentials are not automatically uploaded. Missing
 evidence stays visible; a clear check is not a safety certification.
+
+## Start from your application
+
+```sh
+governloom explore ./your-app --traces samples.jsonl --output data/discovery.json
+```
+
+Install from this checkout first. Import the reviewed bundle in the console;
+GovernLoom drafts the application's behavior and telemetry mappings. Confirm or
+correct them, inspect the frozen evaluation dataset and proposed thresholds, then
+activate observation flags. Optional model-assisted analysis supplies referenced
+hypotheses and unreviewed scenarios; code is inspected without execution.
+
+[Discovery workflow](docs/DISCOVERY.md) · [Measured discovery evidence](docs/V06_EVIDENCE.md)
+
+![Application discovery, source evidence, owner confirmation, calibration and an actual forecast incident.](docs/media/demo.gif)
+
+[Still preview](docs/media/demo-poster.png) · [Capture provenance](docs/media/README.md)
 
 ## Try a real incident
 
@@ -29,15 +47,14 @@ example trains and runs a real classifier using bundled public digits.
 [Quickstart](docs/QUICKSTART.md) · [Connect your own system](docs/INTEGRATIONS.md)
 · [Signed incident delivery](docs/WEBHOOKS.md)
 
-![Actual digit inference, signed delivery, overdue forecast feedback and recorded real RAG evidence.](docs/media/demo.gif)
+Operator actions in the GIF are scripted. Its semantic analysis is frozen real
+model output; forecast inference/feedback are actual. No independent owner study
+or new model request is implied by the recording.
 
-[Still preview](docs/media/demo-poster.png) · [Capture provenance](docs/media/README.md)
+## What ships in v0.6
 
-Operator actions are scripted. RAG scenes replay a recorded real model answer
-and judgment; they are labeled, with no new inference or independent validation.
-
-## What ships in v0.5
-
+- Local source/trace exploration, optional model-assisted understanding, owner
+  correction, frozen evaluation sets and calibrated observation proposals.
 - Python, native async Python and Node/TypeScript hooks, explicit observe/enforce
   behavior, linked outcomes, observation batches and selected OpenTelemetry spans.
 - Policies, scoped keys, live alerts, grouped incidents and application action
@@ -70,6 +87,10 @@ and [three-system evidence](docs/TESTBED_EVIDENCE.md) report denominators and li
 per-label vision results, grouped source-support/retrieval gaps and a standalone
 installed-wheel consumer. Its fresh Windows setup reached a real incident in
 148.598 seconds; that is one owned environment, not independent user feedback.
+[v0.6 measurements](docs/V06_EVIDENCE.md) demonstrate policy preparation on owned
+vision/forecasting systems and an explicit RAG evidence gap. Current discovery
+recipes are bounded; arbitrary risks, business tolerances and complete program
+behavior cannot be inferred automatically.
 
 Controlled self-hosted integrations are the demonstrated scope. Production
 scale/availability, tenant isolation and SSO/MFA are not established. Notification

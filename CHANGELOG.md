@@ -1,5 +1,23 @@
 # Releases
 
+## 0.6.0 — discover an application and prepare its monitoring
+
+- Bounded local source/OpenAPI/trace inspection without target execution; optional
+  one-request model-assisted analysis with exact source references and provenance.
+- Review/correct inferred application behavior and telemetry mappings in the console.
+  Preserve immutable evidence, owner confirmations and correction history.
+- Prepare frozen calibration/held-out datasets, metrics, budget warnings and
+  version-scoped forecast/classification/RAG identity observation proposals.
+- Guard policy activation against concurrent requests, replaced policies and newer
+  confirmed understandings. Generated rules flag only; enforcement is not enabled.
+- Reusable `DiscoveredObserver` applies confirmed mappings while preserving actual
+  live versions. Updated GIF shows discovery through an actual forecast incident.
+
+Three owned model-assisted analyses used three bounded subscription requests;
+frozen replays made zero. Generated scenarios are unreviewed, and the single RAG
+answer remains insufficient for calibration. Independent discovery accuracy and
+owner effort are unmeasured. See [evidence](docs/V06_EVIDENCE.md).
+
 ## 0.5.0 — outcome coverage, recovery and distribution
 
 - Opt-in numeric outcome deadlines, persisted expectations, bounded restart-safe

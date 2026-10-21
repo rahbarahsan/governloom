@@ -8,7 +8,7 @@ files, private prompts or customer records.
 
 Private reports should describe affected version, reproduction, prerequisites,
 impact and a sanitized proof. Maintainers assess reports and coordinate fixes;
-there is no guaranteed response-time SLA. Fixes target current 0.5.x; older
+there is no guaranteed response-time SLA. Fixes target current 0.6.x; older
 installations should upgrade and have no promised backport SLA.
 
 GovernLoom supports controlled self-hosted integrations. It has named application
@@ -28,3 +28,10 @@ Collector text/grounding passages are transient; selected metadata and evidence
 hashes persist. Application logs/upstream model captures have separate retention
 rules. Detectors may miss risks or flag benign cases; a clear check cannot establish
 that a system/output is safe.
+
+Discovery evidence differs from runtime text: selected source files and bounded
+scalar/ID telemetry columns are retained for review. Review private bundles before
+import; best-effort credential filters cannot establish absence of sensitive data.
+Optional semantic analysis transmits selected source excerpts only when explicitly
+enabled locally. The explorer does not execute target code or fetch remote files.
+See [discovery access and bounds](docs/DISCOVERY.md).

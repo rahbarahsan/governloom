@@ -1,6 +1,6 @@
 # Roadmap: govern connected AI systems
 
-Updated 2026-10-11. Connect a developer's existing AI system through explicit
+Updated 2026-10-21. Connect a developer's existing AI system through explicit
 telemetry, monitor task-specific risks and support an evidenced response.
 
 ## v0.4: first public developer launch
@@ -48,26 +48,42 @@ passed, including fresh installed-wheel onboarding and container restart. The re
 remaining misses, authored labels and empirical forecast limitations. An owned
 consumer verifies packaging; independent developer feedback remains unavailable.
 
-## Recommended v0.6: improve real deployment evidence
+## v0.6: explore, confirm and prepare monitoring
 
-1. **Independent onboarding feedback.** Observe developers connecting their own
-   services; measure setup completion, integration effort and recurring use.
-   Owned mini applications remain the fallback when participants are unavailable.
-2. **Domain validation.** Broader grouped RAG claims, retrieval failures and judge
-   error analysis; independent label review when available. For forecasts use
-   temporal/block calibration, outcome lateness and untouched chronological holdouts.
-   For vision evaluate additional data/sampling groups and domain label quality.
-   Improve the three remaining grouped retrieval misses without reusing held-out
-   answers as calibration; collect fresh realistic questions and source changes.
-3. **Longer operational drills.** Sustained restart/load/restore testing, disk-space
-   exhaustion and backup/rotation during longer runs. Delivered-notification
-   retention exists; audit, dead-letter and resolved-expectation growth still
-   need measured storage budgets.
-   Receiver delivery latency and application action evidence need separate budgets.
-4. **Distribution/deployment.** Consider registry publication after clean setup
-   feedback; validate the container with deployment-specific requirements.
-   Add broader OTel integration, SSO/MFA
-   and finer permissions where real deployment/access requirements justify them.
+Implemented; final release CI is pending. The owner's role is to review and correct
+an evidence-backed draft rather than supply a prewritten policy or metric design.
+
+1. Bounded local source/OpenAPI/trace inspection with no target execution, optional
+   model-assisted purpose/boundary/scenario analysis and exact source references.
+2. Immutable owner confirmations, corrected telemetry mappings and frozen evaluation
+   datasets with explicit unavailable states, split checks and selected observations.
+3. Calibration-only numeric forecast/classification proposals and RAG citation identity
+   checks; held-out misses, false positives, budget violations and blind spots remain visible.
+4. Guarded observation-only activation and a reusable public mapping adapter that
+   preserves live versions. New understanding or replaced policies invalidate stale activation.
+5. Actual owned digit/NOAA discovery-to-incident workflows, an honest recorded RAG
+   evidence gap, updated browser workflow/GIF and installed-package/CI checks.
+
+[Discovery guide](DISCOVERY.md) · [Measurements](V06_EVIDENCE.md).
+Three source-cued owned task matches do not establish general discovery accuracy.
+Model-generated scenarios are unreviewed and do not become ground truth automatically.
+
+## Recommended v0.7: validate and broaden discovery
+
+1. **Fresh application tests.** Add owned applications with different layouts,
+   field names and missing dependencies; measure wrong inferences, corrections,
+   unresolved questions and telemetry mapping failures without task declarations.
+   Independent developer feedback is useful when available, not a delivery prerequisite.
+2. **Reviewed scenario datasets.** Help owners review model-proposed cases with
+   source evidence; freeze approved labels and new held-out groups. Preserve real,
+   synthetic and unresolved examples separately. Improve actual retrieval misses
+   using fresh evaluation questions rather than tuning to old held-out answers.
+3. **Domain evidence.** Add multi-series/horizon forecast and deployment subgroup
+   recipes, broader source-language/framework adapters and explicit metric prerequisites.
+   Validate recommendations against outcome availability and real response costs.
+4. **Operating budgets.** Longer load/restart/recovery studies, discovery/audit/history
+   storage budgets and deployment requirements. Broader OTel, SSO/MFA and registry
+   publication should follow demonstrated integration/distribution needs.
 
 Success means independent users can connect systems, understand coverage gaps
 and investigate/respond to risks. Stars are not a usage or reliability measure.
