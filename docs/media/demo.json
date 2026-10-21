@@ -1,378 +1,61 @@
 {
   "schema_version": 1,
-  "source": "Actual UCI digit inference and signed incident delivery over HTTP; recorded real documentation RAG output/judgment replay; actual NOAA rolling forecast with deliberately delayed numeric feedback",
-  "demo": "Named scripted operator; live model predictions and local mitigation; RAG replay is labeled, not new inference or independent human validation",
+  "source": "Actual Chromium discovery/confirmation/calibration and public-mapper forecast incident",
+  "demo": "Scripted named operator; replayed real model analysis; actual NOAA model inference; no independent owner study",
   "provenance": {
-    "vision_manifest": {
-      "dataset": "UCI handwritten digits, sklearn bundled original-test subset",
-      "dataset_url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
-      "attribution": "Alpaydin and Kaynak (1998), DOI 10.24432/C50P49, CC BY 4.0",
-      "dataset_hash": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
-      "splits": {
-        "train": {
-          "count": 1168,
-          "index_hash": "084b4a3f9bf51db1df2796e7c0dece8014fc160e0765073ae304f928649c9941"
-        },
-        "calibration": {
-          "count": 269,
-          "index_hash": "262c5051938f4f98d4f8362e7fc673bb18f0be0ebe0dbad64a9815a6023c4297"
-        },
-        "held_out": {
-          "count": 360,
-          "index_hash": "e2f7446e922c67e73330417670f3e7b7328a6964a4b171a4098b8762d82c7ce1"
-        }
-      },
-      "algorithm": "RandomForestClassifier",
-      "trees": 64,
-      "model_seed": 43,
-      "sklearn_version": "1.9.1",
-      "numpy_version": "2.5.3",
-      "confidence_threshold": 0.59375,
-      "selection": "20th confidence percentile on calibration only",
-      "model_version": "digits-rf-d3eecd4aa4949282"
+    "artifact_hashes": {
+      "README.md": "21f54c439bcd93994f6ad42612d079066d36b71a24704dfc375fe56e8d9c378d",
+      "__init__.py": "1aad7e34995dbb25f26c9717fea6626403cf7dc826d7e499fa11de2a1ef42fb2",
+      "app.py": "ab0d1c1f1b4abd43bfe1d5f4c1a94224d4b2ca9e167b209efd6588726fc8c0fd",
+      "calibration.py": "a2c0399584f8f00b67ce91c809e03361c1ff34894d54acfe984aea56a31fcdc0",
+      "download.py": "43b73f2f0fecdf2f2423ce1e5f9363e53c1001f792a26610d5543880dba02b5f",
+      "model.py": "171c8735f2bb55b7b6e14f4fa3f98f9cebdc282fa526b654098cea64a4f184c3"
     },
-    "policy_gate": {
-      "label_provenance": "Original public UCI benchmark labels; risk means wrong predicted digit",
-      "model_version": "digits-rf-d3eecd4aa4949282",
-      "dataset_sha256": "f6d9e39f37dc45d327f6db33428ee58970ccceabb2535a5c179de35886b70443",
-      "calibration_sha256": "4a1eabdfb1735a31ac764854d95e08cc3cfb2163931ec89aa420fc4e10c69d6d",
-      "held_out_sha256": "e3a04c05b7e53e52ed3d98c90920738f76f98a84da04940a6480ac1b5ff9c602",
-      "selection": {
-        "threshold": 0.4375,
-        "comparator": "lt",
-        "false_positive_budget": 0.05,
-        "calibration": {
-          "true_positives": 6,
-          "false_positives": 13,
-          "true_negatives": 248,
-          "false_negatives": 2,
-          "cases": 269,
-          "false_positive_rate": 0.04980842911877394,
-          "risk_capture_rate": 0.75
-        },
-        "method": "Most permissive observed threshold meeting empirical calibration false-positive budget",
-        "limitation": "Empirical calibration only; small/dependent samples and domain shift can violate the held-out or production budget"
-      },
-      "held_out": {
-        "true_positives": 15,
-        "false_positives": 26,
-        "true_negatives": 316,
-        "false_negatives": 3,
-        "cases": 360,
-        "false_positive_rate": 0.07602339181286549,
-        "risk_capture_rate": 0.8333333333333334
-      },
-      "original_percentile_gate": {
-        "threshold": 0.59375,
-        "held_out": {
-          "true_positives": 17,
-          "false_positives": 52,
-          "true_negatives": 290,
-          "false_negatives": 1,
-          "cases": 360,
-          "false_positive_rate": 0.15204678362573099,
-          "risk_capture_rate": 0.9444444444444444
-        }
-      },
-      "split": "Disjoint frozen training/calibration/held-out indices; threshold selected on calibration only"
-    },
-    "forecast_gate": {
-      "manifest": {
-        "source_url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt",
-        "provenance": {
-          "url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_mm_mlo.txt",
-          "sha256": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
-          "retrieved_at": "2026-10-08T01:33:34.494881+00:00",
-          "attribution": "NOAA Global Monitoring Laboratory; monthly CO2 data and source-header contributors"
-        },
-        "dataset_hash": "c9a91a170d09d16afaaad56c4f383ed4fcb7fa0da967998694842d5c8168bcf3",
-        "algorithm": "Quadratic trend plus annual Fourier terms",
-        "fit_window": "last 120 observed months, strictly before forecast date",
-        "first_training_month": "2005-01",
-        "calibration_period": [
-          "2019-01",
-          "2020-12"
-        ],
-        "held_out_period": [
-          "2021-01",
-          "2024-12"
-        ],
-        "calibration_count": 24,
-        "held_out_count": 48,
-        "unit": "ppm",
-        "horizon_months": 1,
-        "absolute_error_threshold": 0.9743297198304673,
-        "selection": "90th calibration absolute-error percentile, frozen",
-        "limitation": "Historical replay; excludes interpolated/missing actuals; source documents a 2022-2023 site change"
-      },
-      "calibration_sha256": "7e33012f729336a577339aa8b3407feb01819ff42f67056cc18c1e554fb9b1b2",
-      "held_out_sha256": "d9036d39591944119186c39269681d7693365ee7917c83830761ee4caded4ff3",
-      "selection": {
-        "threshold": 1.4969686282772159,
-        "comparator": "gt",
-        "alpha": 0.2,
-        "block_size": 3,
-        "blocks": [
-          {
-            "start": "2019-01-01T00:00:00+00:00",
-            "end": "2019-03-01T00:00:00+00:00",
-            "score": 1.4215377100171054,
-            "cases": 3
-          },
-          {
-            "start": "2019-04-01T00:00:00+00:00",
-            "end": "2019-06-01T00:00:00+00:00",
-            "score": 0.92628537723607,
-            "cases": 3
-          },
-          {
-            "start": "2019-07-01T00:00:00+00:00",
-            "end": "2019-09-01T00:00:00+00:00",
-            "score": 0.9949201523709235,
-            "cases": 3
-          },
-          {
-            "start": "2019-10-01T00:00:00+00:00",
-            "end": "2019-12-01T00:00:00+00:00",
-            "score": 0.7277880805072527,
-            "cases": 3
-          },
-          {
-            "start": "2020-01-01T00:00:00+00:00",
-            "end": "2020-03-01T00:00:00+00:00",
-            "score": 1.4969686282772159,
-            "cases": 3
-          },
-          {
-            "start": "2020-04-01T00:00:00+00:00",
-            "end": "2020-06-01T00:00:00+00:00",
-            "score": 0.7952832174917717,
-            "cases": 3
-          },
-          {
-            "start": "2020-07-01T00:00:00+00:00",
-            "end": "2020-09-01T00:00:00+00:00",
-            "score": 0.8070986950303336,
-            "cases": 3
-          },
-          {
-            "start": "2020-10-01T00:00:00+00:00",
-            "end": "2020-12-01T00:00:00+00:00",
-            "score": 0.5504614845590368,
-            "cases": 3
-          }
-        ],
-        "rank": 8,
-        "held_out_start": "2021-01-01T00:00:00+00:00",
-        "method": "Finite-sample order statistic of non-overlapping chronological block maxima",
-        "nominal_probability_valid": false,
-        "limitation": "Empirical replay only: dependence between blocks, nonstationarity and revised data can invalidate nominal coverage"
-      },
-      "held_out_blocks": [
-        {
-          "start": "2021-01",
-          "end": "2021-03",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.9876785626943274,
-          "flagged": false
-        },
-        {
-          "start": "2021-04",
-          "end": "2021-06",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.6999134777357199,
-          "flagged": false
-        },
-        {
-          "start": "2021-07",
-          "end": "2021-09",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.358391799351125,
-          "flagged": false
-        },
-        {
-          "start": "2021-10",
-          "end": "2021-12",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.5462087514623022,
-          "flagged": false
-        },
-        {
-          "start": "2022-01",
-          "end": "2022-03",
-          "cases": 3,
-          "missing": 0,
-          "score": 2.2010310851984514,
-          "flagged": true
-        },
-        {
-          "start": "2022-04",
-          "end": "2022-06",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.284781093276706,
-          "flagged": false
-        },
-        {
-          "start": "2022-07",
-          "end": "2022-09",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.7974783610140435,
-          "flagged": false
-        },
-        {
-          "start": "2022-10",
-          "end": "2022-12",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.7491421367311091,
-          "flagged": false
-        },
-        {
-          "start": "2023-01",
-          "end": "2023-03",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.8559800839067293,
-          "flagged": true
-        },
-        {
-          "start": "2023-04",
-          "end": "2023-06",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.3398262562994887,
-          "flagged": false
-        },
-        {
-          "start": "2023-07",
-          "end": "2023-09",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.7132861547441962,
-          "flagged": false
-        },
-        {
-          "start": "2023-10",
-          "end": "2023-12",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.4269555268090244,
-          "flagged": false
-        },
-        {
-          "start": "2024-01",
-          "end": "2024-03",
-          "cases": 3,
-          "missing": 0,
-          "score": 0.6449790889383848,
-          "flagged": false
-        },
-        {
-          "start": "2024-04",
-          "end": "2024-06",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.8989506772390428,
-          "flagged": true
-        },
-        {
-          "start": "2024-07",
-          "end": "2024-09",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.7262385487371716,
-          "flagged": true
-        },
-        {
-          "start": "2024-10",
-          "end": "2024-12",
-          "cases": 3,
-          "missing": 0,
-          "score": 1.8336328040928151,
-          "flagged": true
-        }
-      ],
-      "held_out": {
-        "observed_months": 48,
-        "missing_actuals": 0,
-        "blocks": 16,
-        "flagged_blocks": 5,
-        "unavailable_blocks": 0,
-        "months_over_block_threshold": 6,
-        "months_over_original_threshold": 15,
-        "mae_ppm": 0.7565399272393165
-      },
-      "interpretation": "Block exceedance is an empirical residual signal, not an independently labeled unsafe forecast. No held-out tuning; rolling models use only prior months from a revised snapshot."
-    },
-    "rag_capture": {
-      "created_at": "2026-10-08T19:52:28.804723+00:00",
-      "corpus_sha256": "6f7acba0df0f190e841c310e9f460401e507164ae404fd104e872c5454457038",
-      "judge_version": "gpt-6.1-sol@codex-cli 0.160.1"
-    },
+    "semantic_model": "gpt-6.1-sol",
+    "semantic_prompt_sha256": "923c6b674ed3f695c5cde530eb121514cad53c810f6666cf4c6db0e517f30aea",
+    "semantic_status": "Frozen real model analysis replay; not new inference",
     "new_subscription_requests": 0,
-    "scripted_operator": "demo-operator"
+    "scripted_operator": "demo-operator",
+    "scope": "Owned NOAA snapshot and actual rolling model; scripted owner acceptance",
+    "dataset_sha256": "1419ad923aadc5b631e47317c6d04f29f7093e41d426648b0927424c72f6d099",
+    "actual_forecast": {
+      "action": "flag",
+      "date": "2021-08-01",
+      "prediction": 415.6398193328313,
+      "actual": 414.42
+    }
   },
   "size": [
     1280,
     900
   ],
-  "frames": 12,
-  "duration_ms": 29800,
-  "bytes": 523356,
+  "frames": 6,
+  "duration_ms": 24000,
+  "bytes": 400242,
   "scenes": [
     {
-      "caption": "Named operator monitors an actual hooked digit service",
-      "duration_ms": 2200
+      "caption": "Explore selected source and traces; review the frozen model-assisted application draft",
+      "duration_ms": 4000
     },
     {
-      "caption": "A real held-out digit prediction passes the frozen confidence gate",
-      "duration_ms": 2400
+      "caption": "Inspect an exact source quote supporting an observed boundary and an explicit hypothesis",
+      "duration_ms": 4000
     },
     {
-      "caption": "A natural low-confidence prediction is withheld and persisted for review",
-      "duration_ms": 2800
+      "caption": "The owner confirms the prefilled understanding and the meaning of actual outcomes",
+      "duration_ms": 4000
     },
     {
-      "caption": "Authenticated incident ownership records who is investigating",
-      "duration_ms": 2400
+      "caption": "Prepare a frozen evaluation set and quantify forecast errors using calibration-only thresholds",
+      "duration_ms": 4000
     },
     {
-      "caption": "The application resolves against the real benchmark label and sends an outcome",
-      "duration_ms": 2400
+      "caption": "Held-out alert-budget warnings remain visible before observation activation",
+      "duration_ms": 4000
     },
     {
-      "caption": "Mitigation follows application resolution and an audited response inspection",
-      "duration_ms": 2400
-    },
-    {
-      "caption": "A signed incident reaches the receiver once after a lost receipt and durable retry",
-      "duration_ms": 2200
-    },
-    {
-      "caption": "A real NOAA forecast with deliberately delayed feedback flags missing actual evidence",
-      "duration_ms": 2800
-    },
-    {
-      "caption": "The actual resolves coverage while incident review remains open",
-      "duration_ms": 2400
-    },
-    {
-      "caption": "Replay of a recorded real RAG answer flags its unsupported enforcement claim",
-      "duration_ms": 2800
-    },
-    {
-      "caption": "Frozen engineering calibration exposes captured risks, misses and false positives",
-      "duration_ms": 2400
-    },
-    {
-      "caption": "The receipt retains coverage, source positions and hashes while text stays transient",
-      "duration_ms": 2600
+      "caption": "An actual NOAA forecast and observed actual produce a flag and open incident through the prepared mapping",
+      "duration_ms": 4000
     }
   ]
 }

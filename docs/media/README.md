@@ -1,49 +1,50 @@
-# Runtime capture
+# Discovery capture
 
-`demo.gif` records twelve actual Chromium states at 1280 × 900 over 29.8 seconds.
-It shows named sign-in, actual held-out UCI digit inference, response withholding,
-application review/outcome, attributed incident mitigation, signed notification
-delivery after receipt loss, an actual NOAA forecast with deliberately delayed
-numeric feedback, and grounding from a recorded real RAG answer/judgment.
-Late actuals resolve coverage while the incident remains open for review.
-Values are not retouched. `demo-poster.png` is a still alternative; `demo.json`
-records timing, model/source provenance and the zero-new-inference replay.
+`demo.gif` records six actual Chromium states at 1280 x 900 over 24 seconds
+(400,242 bytes). It shows a named operator importing application evidence,
+reviewing a frozen real model analysis and exact source quote, confirming the
+meaning of outcomes, evaluating a monitoring proposal, reviewing a held-out
+budget warning and activating observation flags. An actual NOAA forecast and
+linked observed actual then produce an open incident through the prepared mapper.
 
-The digits are illustrative selections from the frozen held-out set, not a
-blind quality evaluation. Quality counts come from the separate complete benchmark.
-RAG is explicitly `recorded-rag-replay`; its passage hashes and judge version
-match the earlier actual-model capture. No generation/judge request is made for
-this recording. Named account `demo-operator` takes scripted actions; this is not
-independent human validation or independently verified mitigation. Credentials
-are generated privately, never recorded in frames or public metadata.
+`demo-poster.png` is a still alternative; `demo.json` records source/model/prompt
+hashes, timing, dataset checksum and the actual forecast/actual values. Pixels
+and measured values are not retouched. The encoder verifies all decoded frames,
+loop metadata, 20-30-second timing, equal dimensions and a size below 5 MB.
+
+Semantic analysis replays the frozen v0.6 capture; the GIF makes **zero new model
+requests**. Account `demo-operator` takes scripted actions. This does not measure
+independent owner effort, semantic interpretation accuracy or production safety.
+The forecast is an illustrative held-out selection above the frozen threshold;
+quality denominators come from the separate [release measurements](../V06_EVIDENCE.md).
+No credentials appear in the frames or public manifest.
 
 ## Reproduce
 
-Complete root setup, optional model requirements and Playwright Chromium install:
+Prepare the optional model/media dependencies, Chromium and built dashboard:
 
 ```powershell
 .venv\Scripts\python.exe -m pip install -r scripts/requirements-media.txt -r examples/requirements.txt
 npm --prefix web run build
-.venv\Scripts\python.exe -m scripts.capture_runtime `
-  --directory data/new-runtime-gif `
-  --evidence data/detectors-2026-10-08-b `
-  --forecast-snapshot data/miniapps/noaa-2026-10-07.txt
+.venv\Scripts\python.exe -m scripts.capture_discovery `
+  --directory data/new-discovery-gif `
+  --evidence data/v06-discovery-2026-10-21-b `
+  --snapshot data/miniapps/noaa-2026-10-07.txt
 ```
 
-The evidence directory needs a completed grounding run, including its private RAG
-database and target/judge captures. Another checkout can generate one via
-[detector validation](../DETECTOR_EVIDENCE.md); that step has a separate explicit
-subscription opt-in. On macOS/Linux use `.venv/bin/python`.
+Use `.venv/bin/python` on macOS/Linux. The evidence directory contains frozen
+discovery bundles from `examples.discovery_testbed`; creating a new semantic
+capture requires its separate explicit subscription opt-in. The NOAA snapshot
+is explicitly downloaded beforehand and retains its source attribution.
 
-The capture owns a collector, actual digit and forecast services, signed receiver,
-delivery worker and outcome watchdog, uses an isolated account database and stops
-every child on browser failure. The NOAA source is a separately frozen snapshot;
-the one-second feedback deadline is a declared integration drill, not a real
-monthly forecast SLA. The GIF itself makes zero new model requests.
-Its gate is frozen at a 5% empirical calibration false-positive budget; held-out
-misses and budget violations are recorded in `demo.json` and launch evidence.
-PNG frames, private configuration, logs and manifests remain in the ignored capture
-directory. The Pillow encoder verifies frame count/looping, 20–30-second timing,
-size under 5 MB and agreement of every decoded frame with its screenshot.
-Pillow is documentation-only. `web/scripts/capture-demo.mjs` remains the fictional
-v0.1 fixture recorder; running it replaces the runtime GIF.
+The capture owns an isolated named-account collector and browser, and executes
+the owned forecast model in a bounded subprocess. Services stop even after browser
+failure. Private bundles, PNG frames, configuration and logs stay under ignored
+`data/`. The Python subprocess decodes JSON as UTF-8; dataset hashing normalizes
+equivalent integral JSON numbers across languages.
+
+The [v0.5 runtime GIF](https://github.com/rahbarahsan/governloom/blob/aca7c10/docs/media/demo.gif)
+preserves the earlier twelve-frame digit, signed-delivery, forecast deadline and
+recorded RAG workflow. `scripts/capture_runtime.py` can reproduce that path;
+`web/scripts/capture-demo.mjs` remains the legacy fictional workbench recorder.
+Both replace the current `demo.gif` when run. Pillow is documentation-only.
