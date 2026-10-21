@@ -167,9 +167,16 @@ def analyze(artifacts, traces):
             except (SyntaxError, ValueError, RecursionError):
                 invalid.append(artifact["path"])
                 continue
+            if sum(1 for _ in ast.walk(tree)) > 10000:
+                invalid.append(artifact["path"])
+                continue
             for node in ast.walk(tree):
                 if isinstance(node, ast.Call):
-                    name = ast.unparse(node.func)
+                    try:
+                        name = ast.unparse(node.func)
+                    except RecursionError:
+                        invalid.append(artifact["path"])
+                        break
                     short = name.rsplit(".", 1)[-1].lower()
                     if short in ("predict", "predict_proba", "forecast", "retrieve", "search", "generate", "emit", "wrap", "wrap_tool"):
                         finding(artifact, node.lineno, f"Call boundary: {name}")
@@ -191,8 +198,32 @@ def analyze(artifacts, traces):
                 schema = json.loads(content)
                 if isinstance(schema, dict) and "openapi" in schema:
                     finding(artifact, 1, f"OpenAPI operations: {', '.join(list(schema.get('paths', {}))[:12])}")
+                    property_names = set()
+                    def properties(value, depth=0):
+                        if depth > 12:
+                            return
+                        if isinstance(value, dict):
+                            if isinstance(value.get("properties"), dict):
+                                property_names.update(value["properties"])
+                            for child in value.values():
+                                properties(child, depth+1)
+                        elif isinstance(value, list):
+                            for child in value:
+                                properties(child, depth+1)
+                    properties(schema)
+                    if property_names.intersection(ALIASES["prediction"]) and property_names.intersection(ALIASES["actual"]):
+                        candidates.add("forecasting")
+                    if property_names.intersection(ALIASES["citations"]):
+                        candidates.add("rag")
             except ValueError:
                 invalid.append(artifact["path"])
+        elif artifact["path"].endswith((".ts", ".tsx", ".js", ".mjs")):
+            for line, text in enumerate(content.splitlines(), 1):
+                match = re.search(r"\.(predict|predictProba|retrieve|generate|wrapTool|emit)\s*\(", text)
+                if match:
+                    finding(artifact, line, f"JavaScript/TypeScript call signature: {match[1]} (heuristic, not execution)")
+                    if match[1] == "retrieve":
+                        candidates.add("rag")
     if "prediction" in mappings and "actual" in mappings:
         candidates.add("forecasting")
     if "confidence" in mappings:
@@ -209,7 +240,7 @@ def analyze(artifacts, traces):
         "rag": "Appears to retrieve sources and produce answers. Confirm which sources are authoritative and what actions it may take.",
         "custom": "The available evidence does not identify one task reliably. Review the candidate tasks and field ambiguities.",
     }[task]
-    return {"method": "bounded-python-ast-and-trace-schema-v1", "task_type": task,
+    return {"method": "bounded-source-signatures-and-trace-schema-v1", "task_type": task,
             "candidate_tasks": sorted(candidates), "summary": summary, "status": "inferred_requires_confirmation",
             "mappings": mappings, "ambiguous_mappings": ambiguities, "available_paths": paths,
             "findings": findings[:100], "unparsed_artifacts": invalid,
@@ -252,7 +283,7 @@ class Discovery:
             raise ValueError("Discovery record belongs to another application")
         return record
 
-    def save(self, application_id, kind, payload, actor):
+    def save(self, application_id, kind, payload, actor, *, make_current=False):
         record = {**payload, "application_id": application_id, "created_at": now()}
         record["checksum"] = checksum(payload)
         record["id"] = checksum([application_id, kind, record["checksum"]])[:32]
@@ -262,6 +293,14 @@ class Discovery:
             if old:
                 return old.payload
             session.add(Entity(id=record["id"], kind=kind, application_id=application_id, payload=record))
+            if make_current:
+                pointer_id = checksum(["discovery_current", application_id])[:32]
+                pointer = session.get(Entity, pointer_id)
+                current = {"id": pointer_id, "application_id": application_id, "confirmation_id": record["id"]}
+                if pointer:
+                    pointer.payload = current
+                else:
+                    session.add(Entity(id=pointer_id, kind="discovery_current", application_id=application_id, payload=current))
             self.workbench.audit(session, application_id, record["id"], 1, kind + "_created", actor, {"checksum": record["checksum"]})
         return record
 
@@ -299,7 +338,7 @@ class Discovery:
         corrections = {key: {"inferred": inferred.get(key), "confirmed": value} for key, value in
                        {"task_type": body.task_type, "mappings": body.mappings}.items() if inferred.get(key) != value}
         return self.save(application_id, "discovery_confirmation", {**body.model_dump(), "discovery_id": identifier,
-            "corrections": corrections, "purpose_is_owner_confirmed": True}, body.actor)
+            "corrections": corrections, "purpose_is_owner_confirmed": True}, body.actor, make_current=True)
 
     def calibrate(self, application_id, body: CalibrationRequest):
         from .discovery_calibration import prepare
@@ -320,11 +359,16 @@ class Discovery:
         activation_id = checksum(["discovery_activation", identifier])[:32]
         with self.store.session() as session:
             session.connection().exec_driver_sql("BEGIN IMMEDIATE")
-            old = session.get(Entity, activation_id)
-            if old:
-                return old.payload
             pointer = session.get(Entity, checksum(["monitor_config", application_id])[:32])
             active = pointer.payload["policy_id"] if pointer else None
+            old = session.get(Entity, activation_id)
+            if old:
+                if old.payload["policy_id"] != active:
+                    raise IngestConflict("This plan was previously activated but its policy was replaced; prepare a new reviewed proposal")
+                return old.payload
+            understanding = session.get(Entity, checksum(["discovery_current", application_id])[:32])
+            if not understanding or understanding.payload["confirmation_id"] != plan["confirmation_id"]:
+                raise IngestConflict("Application understanding changed; prepare a plan from its current confirmation")
             if active != body.expected_policy_id:
                 raise IngestConflict("Active policy changed; review it before replacing it")
             record = Monitor(self.workbench).stage_policy(session, application_id, policy)

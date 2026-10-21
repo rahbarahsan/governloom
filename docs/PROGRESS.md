@@ -33,6 +33,29 @@ Dashboard TypeScript/Vite build passed with normal Windows access for esbuild.
 UI review/import/calibration/activation is implemented; next: browser workflow,
 actual NOAA/vision/RAG captures, discovery adapter boundaries and release evidence.
 
+Owned actual-model runs completed. Numeric NOAA and real digit traces produced
+calibrated policies and incidents with no supplied policy; a single recorded RAG
+answer correctly left calibration unavailable. Optional semantic capture completed
+exactly three requests through the existing ChatGPT login (cap three, no API key):
+21 source-referenced hypotheses and 23 unreviewed scenarios. Source quotes are
+validated; this is not independent semantic accuracy or usability evidence.
+Private capture: data/v06-discovery-2026-10-21-b. Public-mapper replay is in progress
+with frozen bundles and zero new requests. The browser workflow passed (1, 8.7 s)
+after correcting two test selectors to the actual navigation/accessibility names.
+Observer/privacy/ambiguity suite passed (11, 6.78 s). Next: boundary refinements,
+full checks, documentation/version/distribution evidence and CI delivery.
+
+Full local Python suite passed 111 checks (114.28 s) before the final current-
+confirmation/preview/list-bounds refinements. The expanded discovery suite passed
+14 checks (5.41 s), covering current-understanding invalidation, preview without
+publication, secret-free validation errors and RAG identity/semantic distinction.
+All six Chromium workflows passed (45.0 s). The public DiscoveredObserver mapper
+preserves actual live versions and rejects missing actuals; it never stamps a
+calibration version onto a new model. Frozen zero-request replay completed in
+3.568 s with actual digit/forecast flags and one incident each. Held-out budget
+violations are surfaced as warnings, not silently retuned. Next: package checks,
+actual discovery GIF, public evidence/docs and six-job CI delivery.
+
 ## Delivered v0.5: outcome coverage and connected-system validation (2026-10-11)
 
 Release code/docs/GIF pushed at `aca7c10`; all six CI jobs passed:

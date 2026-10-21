@@ -22,7 +22,7 @@ from . import __version__
 from .auth import Operators, UserCreate, Login, PasswordChange, AccessDenied, LoginRequired, public_user
 from .detectors import Profiles, DetectorProfile, ProfileApproval
 from .webhooks import Webhooks, DestinationCreate, DeliveryChange, SecretRotation
-from .discovery import Discovery, DiscoveryImport, Confirmation, CalibrationRequest, Activation
+from .discovery import Discovery, DiscoveryImport, Confirmation, CalibrationRequest, Activation, analyze, validate_semantic
 
 
 class SourceImport(Record):
@@ -299,10 +299,19 @@ def create_app(store=None):
     def replay_webhook_delivery(identifier: str, body: DeliveryChange):
         return webhooks.replay(identifier, body)
 
+    @api.post("/api/discovery-preview")
+    def preview_discovery(body: DiscoveryImport):
+        artifacts = [item.model_dump() for item in body.artifacts]
+        return {"analysis": analyze(artifacts, body.traces), "semantic": validate_semantic(body.semantic, artifacts)}
+
     @api.get("/api/applications/{application_id}/discoveries")
-    def discoveries(application_id: str):
-        workbench.store.get("application", application_id)
-        return workbench.store.list("discovery", application_id)
+    def discoveries(application_id: str, limit: int = Query(default=20, ge=1, le=100)):
+        return [{key: value for key, value in record.items() if key not in ("artifacts", "trace_columns", "trace_hashes")}
+                for record in runtime_records("discovery", application_id, limit)]
+
+    @api.get("/api/applications/{application_id}/discoveries/{identifier}")
+    def discovery_evidence(application_id: str, identifier: str):
+        return discovery.scoped(application_id, "discovery", identifier)
 
     @api.post("/api/applications/{application_id}/discoveries", status_code=201)
     def import_discovery(application_id: str, body: DiscoveryImport):
@@ -313,18 +322,17 @@ def create_app(store=None):
         return discovery.confirm(application_id, identifier, body)
 
     @api.get("/api/applications/{application_id}/discovery-confirmations")
-    def discovery_confirmations(application_id: str):
-        workbench.store.get("application", application_id)
-        return workbench.store.list("discovery_confirmation", application_id)
+    def discovery_confirmations(application_id: str, limit: int = Query(default=50, ge=1, le=100)):
+        return runtime_records("discovery_confirmation", application_id, limit)
 
     @api.post("/api/applications/{application_id}/discovery-plans", status_code=201)
     def prepare_discovery_plan(application_id: str, body: CalibrationRequest):
         return discovery.calibrate(application_id, body)
 
     @api.get("/api/applications/{application_id}/discovery-plans")
-    def discovery_plans(application_id: str):
-        workbench.store.get("application", application_id)
-        return workbench.store.list("discovery_plan", application_id)
+    def discovery_plans(application_id: str, limit: int = Query(default=50, ge=1, le=100)):
+        return [{**record, "dataset": {key: value for key, value in record["dataset"].items() if key != "cases"}}
+                for record in runtime_records("discovery_plan", application_id, limit)]
 
     @api.post("/api/applications/{application_id}/discovery-plans/{identifier}/activate", status_code=201)
     def activate_discovery_plan(application_id: str, identifier: str, body: Activation):

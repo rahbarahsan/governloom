@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import stat
 from pathlib import Path
 
 from .discovery import DiscoveryImport, analyze, redact, validate_semantic
@@ -14,7 +15,8 @@ SENSITIVE_LINE = re.compile(r"(?:api[_-]?key|access[_-]?token|client[_-]?secret|
 
 
 def linked(path):
-    return path.is_symlink() or bool(getattr(path, "is_junction", lambda: False)())
+    attributes = getattr(path.lstat(), "st_file_attributes", 0)
+    return path.is_symlink() or bool(attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0))
 
 
 def read_text(path, limit):

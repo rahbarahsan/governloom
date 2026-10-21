@@ -1042,6 +1042,10 @@ code {
   }
 }
 .login-shell { max-width: 640px; margin: 10vh auto; padding: 24px; }
+.discovery-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 360px; overflow: auto; }
+.discovery-panel details { margin: 12px 0; }
+.discovery-summary, .discovery-calibration, .discovery-plan { margin-top: 20px; padding-top: 16px; border-top: 1px solid #dce3d7; }
+.discovery-panel .row input[type=checkbox] { width: auto; flex: 0 0 auto; }
 .login-shell h1 { font-size: 34px; }
 .identity-bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 12px 24px; border-bottom: 1px solid #dce1dd; background: #f7f9f6; }
 .identity-bar button { margin-left: auto; }

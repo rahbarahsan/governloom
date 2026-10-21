@@ -85,7 +85,7 @@ def prepare(discovery, confirmation, fraction):
             unique[identity] = row
     rows = list(unique.values())
     task = confirmation["task_type"]
-    metrics, rules, gaps = [], [], []
+    metrics, rules, gaps, warnings = [], [], [], []
     limitations = ["Proposals are empirical observation baselines, not acceptable-harm decisions or safety guarantees.",
                   "Trace fields and labels were supplied by the application; owner confirmation is not independent label review.",
                   "Near-duplicate/semantic groups are not inferred automatically; supply group IDs to prevent group leakage.",
@@ -130,12 +130,15 @@ def prepare(discovery, confirmation, fraction):
                 "calibration": report(cal), "held_out": report(evaluation), "missing_actual_or_prediction": missing,
                 "meaning": "Residual exceedance is not an independently labeled harmful forecast",
                 "selection": "Calibration-only empirical residual quantile", "nominal_probability_valid": False})
+            if report(evaluation)["exceedances"] / len(evaluation) > fraction:
+                warnings.append("Held-out forecast exceedances exceed the exploratory calibration alert fraction. Investigate before treating it as a production alert budget.")
             rules.append(rule("discovered_residual", "Forecast error above historical baseline", "absolute_error", threshold, phase="outcome"))
         else:
             gaps.append("Forecast errors need at least 20 numeric calibration pairs and five held-out pairs")
+            metrics.append({"name": "Forecast outcome error", "status": "unavailable", "reason": gaps[-1], "missing_actual_or_prediction": missing})
         metrics.append({"name": "Outcome deadline coverage", "status": "requires_instrumentation",
                         "reason": "Choose a real feedback deadline and emit outcome_due_at plus related_event_id; no deadline is invented from historical dates"})
-        limitations.append("Serial dependence and revised snapshots invalidate nominal false-alert/coverage claims. This is a monthly residual baseline, not block calibration.")
+        limitations.append("Serial dependence and revised snapshots invalidate nominal false-alert/coverage claims. This is a point-residual baseline, not block calibration.")
     elif task in ("classification", "vision"):
         def labeled(items):
             return [row for row in items if number(row["values"].get("confidence")) and 0 <= row["values"]["confidence"] <= 1
@@ -150,11 +153,16 @@ def prepare(discovery, confirmation, fraction):
                 metrics.append({"name": "Confidence error gate", "status": "available", **selected,
                     "held_out": evaluate_threshold(examples(evaluation), selected["threshold"], "low"),
                     "missing_confidence_or_label": len(rows)-len(cal)-len(evaluation)})
+                held_rate = metrics[-1]["held_out"]["false_positive_rate"]
+                if held_rate is not None and held_rate > fraction:
+                    warnings.append("Held-out classification false-positive rate exceeds the calibration budget. The observation proposal is not a production false-alert guarantee.")
                 rules.append(rule("discovered_confidence", "Low classification confidence", "confidence", selected["threshold"], "lt"))
             except ValueError as error:
                 gaps.append(str(error))
         else:
             gaps.append("Confidence calibration needs labeled calibration examples and at least five labeled held-out examples")
+        if not any(metric["name"] == "Confidence error gate" for metric in metrics):
+            metrics.append({"name": "Confidence error gate", "status": "unavailable", "reason": gaps[-1]})
         limitations.append("Confidence can miss confident errors; labels and deployment groups require domain validation.")
     elif task == "rag":
         def citation_report(items):
@@ -174,6 +182,9 @@ def prepare(discovery, confirmation, fraction):
                         {"name": "Retrieval recall", "status": "unavailable", "reason": "Requires relevant-document judgments; retrieved IDs alone are insufficient"}])
     else:
         gaps.append("No quality policy can be inferred for this task; correct the task or collect task-specific outcome evidence")
+    latency = [row["values"]["latency_ms"] for row in rows if number(row["values"].get("latency_ms")) and row["values"]["latency_ms"] >= 0]
+    metrics.append({"name": "Observed latency", "status": "available" if latency else "requires_instrumentation",
+        **({"cases": len(latency), "p50_ms": quantile(latency,.5), "p95_ms": quantile(latency,.95)} if latency else {"reason": "Emit measured latency_ms; no serving SLA is inferred"})})
     if not rules:
         gaps.append("No quality rule is ready for activation")
     dataset = {"provenance": "selected application observations; labels/outcomes owner-confirmed, not independently reviewed",
@@ -184,7 +195,7 @@ def prepare(discovery, confirmation, fraction):
     policy = {"name": "Discovered observation baseline", "rules": rules,
               "actor": confirmation["actor"], "rationale": "Reviewed discovery evidence; empirical baseline, not a safety certification",
               "outcome_deadline_action": "flag"} if rules else None
-    return {"status": "needs_evidence" if gaps else "ready", "metrics": metrics, "gaps": gaps,
+    return {"status": "needs_evidence" if gaps else "ready", "metrics": metrics, "gaps": gaps, "warnings": warnings,
             "limitations": limitations, "dataset": dataset, "policy": policy,
             "instrumentation": {"task_type": task, "fields": mappings, "scope": scope,
                 "recipe": "Emit mapped fields via the public hook with stable event IDs. Forecast actuals must link to their prediction. Observation activation never withholds outputs."},

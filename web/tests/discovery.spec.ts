@@ -1,0 +1,42 @@
+import {createHash} from "node:crypto";
+import {expect,test} from "@playwright/test";
+
+test("explore evidence, correct understanding, calibrate and activate flags", async({page,request})=>{
+  const content="def serve(model, values):\n    return model.predict(values)\n";
+  const traces=Array.from({length:40},(_,index)=>({timestamp:new Date(Date.UTC(2024,0,index+1)).toISOString(),
+    prediction:100+index,actual:100+index+(index<30 ? index%5/10 : 20),split:index<30 ? "calibration":"held_out",
+    model_version:"browser-model-v1",application_version:"browser-service-v1",environment:"browser-test"}));
+  const bundle={actor:"browser-fixture",artifacts:[{path:"service.py",content,sha256:createHash("sha256").update(content).digest("hex")}],traces};
+  await page.goto("/");
+  await page.getByRole("button",{name:/01.*applications/i}).click();
+  await page.locator(".discovery-start").getByLabel("Application name",{exact:true}).fill("Discovered forecast browser fixture");
+  await page.getByLabel("Application evidence bundle",{exact:true}).setInputFiles({name:"discovery.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(bundle))});
+  await page.getByRole("button",{name:"Explore application evidence",exact:true}).click();
+  const panel=page.locator(".discovery-panel");
+  await expect(panel).toContainText("Appears to produce numeric predictions");
+  await page.getByLabel("Monitoring operator",{exact:true}).fill("Browser owner");
+  await panel.getByRole("textbox",{name:"Confirm or correct the application description",exact:true}).fill("A numeric forecasting process, reviewed as a software browser fixture");
+  await panel.getByLabel("The actuals/reference labels represent observed outcomes; I reviewed their meaning.",{exact:true}).check();
+  await panel.getByRole("button",{name:"Confirm application understanding",exact:true}).click();
+  await expect(panel).toContainText("Application understanding confirmed");
+  await panel.getByRole("button",{name:"Evaluate monitoring proposal",exact:true}).click();
+  await expect(panel).toContainText("30 calibration · 10 held-out");
+  await expect(panel.getByRole("button",{name:"Activate observation policy",exact:true})).toBeDisabled();
+  await panel.getByLabel("I reviewed the measurements and limitations; activate flags only.",{exact:true}).check();
+  await panel.getByRole("button",{name:"Activate observation policy",exact:true}).click();
+  await expect(panel).toContainText("Observation policy activated");
+  const applications=await(await request.get("http://127.0.0.1:8000/api/applications")).json();
+  const app=applications.find((item:{name:string})=>item.name==="Discovered forecast browser fixture");
+  const policy=await(await request.get(`http://127.0.0.1:8000/api/applications/${app.id}/monitor-policy`)).json();
+  expect(policy.rules[0].action).toBe("flag"); expect(policy.rules[0].model_version).toBe("browser-model-v1");
+  const key=await(await request.post(`http://127.0.0.1:8000/api/applications/${app.id}/ingest-keys`,{data:{name:"browser-consumer",actor:"Browser owner"}})).json();
+  const headers={Authorization:`Bearer ${key.key}`};
+  const context={trace_id:"browser-forecast",task_type:"forecasting",model_version:"browser-model-v1",application_version:"browser-service-v1",environment:"browser-test",client_mode:"observe"};
+  const output=await(await request.post("http://127.0.0.1:8000/api/runtime/events",{headers,data:{...context,phase:"output",metrics:{prediction:100}}})).json();
+  const outcome=await(await request.post("http://127.0.0.1:8000/api/runtime/events",{headers,data:{...context,phase:"outcome",related_event_id:output.event_id,metrics:{actual:120}}})).json();
+  expect(outcome.action).toBe("flag");
+  await expect(page.locator(".runtime-incident")).toContainText("Forecast error above historical baseline");
+  const downloadable=await request.get(`http://127.0.0.1:8000/api/applications/${app.id}/discovery-plans`);
+  expect((await downloadable.json())[0].dataset.sha256).toMatch(/^[a-f0-9]{64}$/);
+  expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain("traces");
+});

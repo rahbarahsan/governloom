@@ -3,6 +3,7 @@ import { AuthContext } from "./AuthContext";
 import WebhookPanel from "./WebhookPanel";
 import OutcomeCoverage from "./OutcomeCoverage";
 import DetectorProfiles from "./DetectorProfiles";
+import DiscoveryPanel from "./DiscoveryPanel";
 import { api, date, title } from "./api";
 import { Badge } from "./components";
 import type { Application } from "./types";
@@ -23,6 +24,8 @@ type Rule = {
   action: string;
   mitigation: string;
   profile_id?: string;
+  model_version?: string;
+  application_version?: string;
 };
 type Policy = {
   id: string;
@@ -343,6 +346,7 @@ export default function Monitoring({
           {notice}
         </div>
       )}
+      <DiscoveryPanel applicationId={application.id} actor={actor} onActivated={refresh} />
       <section className="stats">
         <div>
           <span>Active policy</span>

@@ -69,9 +69,22 @@ def test_corrections_preserve_inference_and_activation_detects_replacement(workb
     with pytest.raises(ValueError, match="ready"):
         service.activate(app["id"], unavailable["id"], Activation(actor="operator", expected_policy_id=None, acknowledge_limitations=True, rationale="Wrong"))
     ready = service.calibrate(app["id"], CalibrationRequest(actor="owner", confirmation_id=confirmation["id"]))
-    Monitor(workbench).policy(app["id"], MonitorPolicy(**ready["policy"]))
-    with pytest.raises(ValueError, match="changed"):
+    with pytest.raises(ValueError, match="understanding changed"):
         service.activate(app["id"], ready["id"], Activation(actor="operator", expected_policy_id=None, acknowledge_limitations=True, rationale="Stale"))
+
+
+def test_activation_detects_policy_change_after_current_confirmation(workbench):
+    app, service, _, _, confirmation = provision(workbench)
+    ready = service.calibrate(app["id"], CalibrationRequest(actor="owner", confirmation_id=confirmation["id"]))
+    Monitor(workbench).policy(app["id"], MonitorPolicy(**ready["policy"]))
+    with pytest.raises(ValueError, match="Active policy changed"):
+        service.activate(app["id"], ready["id"], Activation(actor="operator", expected_policy_id=None, acknowledge_limitations=True, rationale="Stale"))
+    current = Monitor(workbench).active_policy(app["id"])
+    activation = Activation(actor="operator",expected_policy_id=current["id"],acknowledge_limitations=True,rationale="Reviewed replacement")
+    service.activate(app["id"],ready["id"],activation)
+    Monitor(workbench).policy(app["id"],MonitorPolicy(**ready["policy"]))
+    with pytest.raises(ValueError,match="previously activated"):
+        service.activate(app["id"],ready["id"],activation)
 
 
 def test_missing_actuals_and_unconfirmed_labels_never_become_zero(workbench):
@@ -132,6 +145,40 @@ def test_semantic_quotes_and_artifact_hashes_are_verified(workbench):
         service.create(app["id"], body.model_copy(update={"semantic": semantic}))
 
 
+def test_discovered_mapper_preserves_live_version_and_requires_actual(workbench):
+    from governloom.discovered_hook import DiscoveredObserver
+    app, service, _, _, confirmation = provision(workbench)
+    plan = service.calibrate(app["id"], CalibrationRequest(actor="operator", confirmation_id=confirmation["id"]))
+    adapter = DiscoveredObserver("http://127.0.0.1:8000", "gl_test.private", plan)
+    events = []
+    def transport(event):
+        events.append(event)
+        return {"action":"allow", "event_id":event["event_id"], "trace_id":event["trace_id"]}
+    adapter.hook.transport = transport
+    live = {"prediction": 12, "model_version": "new-model", "application_version": "service-v1", "environment":"test"}
+    prediction = adapter.output(live, trace_id="actual-boundary")
+    assert events[-1]["model_version"] == "new-model" and events[-1]["client_mode"] == "observe"
+    with pytest.raises(ValueError, match="missing"):
+        adapter.outcome(live, prediction)
+    adapter.outcome({**live, "actual": 15},prediction)
+    assert events[-1]["related_event_id"] == prediction["event_id"]
+    with pytest.raises(ValueError, match="versions"):
+        adapter.output({"prediction":12})
+
+
+def test_ambiguous_fields_require_correction_and_private_trace_text_is_discarded(workbench):
+    app, service, body, _, _ = provision(workbench)
+    rows = [{**row, "other": {"prediction": row["prediction"]}, "prompt":"PRIVATE INPUT", "answer":"PRIVATE ANSWER", "estimate": row["prediction"]} for row in evidence()]
+    discovery = service.create(app["id"], body.model_copy(update={"traces": rows}))
+    assert "prediction" not in discovery["analysis"]["mappings"]
+    assert "prediction" in discovery["analysis"]["ambiguous_mappings"]
+    assert "prompt" not in discovery["trace_columns"] and "answer" not in discovery["trace_columns"]
+    corrected = {**discovery["analysis"]["mappings"], "prediction":"estimate"}
+    confirmation = service.confirm(app["id"],discovery["id"],Confirmation(actor="owner",expected_checksum=discovery["checksum"],
+        task_type="forecasting",purpose="Confirmed numeric target",rationale="Resolved duplicate field names",mappings=corrected,outcome_meaning_confirmed=True))
+    assert service.calibrate(app["id"],CalibrationRequest(actor="owner",confirmation_id=confirmation["id"]))["status"] == "ready"
+
+
 def test_discovery_api_named_scope_and_actor_binding(workbench, monkeypatch):
     from governloom.auth import Operators, UserCreate
     app, _, body, discovery, _ = provision(workbench)
@@ -152,3 +199,30 @@ def test_discovery_api_named_scope_and_actor_binding(workbench, monkeypatch):
             assert response.json()["actor"] == "operator"
         assert client.get("/api/applications/not-granted/discoveries", headers=headers).status_code == 403
     assert client.get(f"/api/applications/{app['id']}/discoveries").status_code == 401
+
+
+def test_preview_does_not_publish_and_validation_never_echoes_private_input(workbench):
+    app, _, body, _, _ = provision(workbench)
+    client = TestClient(create_app(workbench.store))
+    before = len(workbench.store.list("discovery"))
+    assert client.post("/api/discovery-preview",json=body.model_dump()).status_code == 200
+    assert len(workbench.store.list("discovery")) == before
+    secret = "sk-" + "private"*8
+    invalid = {**body.model_dump(),"traces":[{"prompt":secret}]}
+    response = client.post(f"/api/applications/{app['id']}/discoveries",json=invalid)
+    assert response.status_code == 422 and secret not in response.text
+    summary = client.get(f"/api/applications/{app['id']}/discoveries").json()[0]
+    assert "trace_columns" not in summary and "artifacts" not in summary
+
+
+def test_rag_plan_uses_identity_checks_and_keeps_semantic_metrics_unavailable(workbench):
+    app = workbench.create_application(Application(name="RAG",purpose="Answer",owner="owner",expected_behavior="Source identity"))
+    service = Discovery(workbench)
+    rows = [{"citations":["source-a"] if index%2 else [], "source_ids":["source-a"], "group_id":str(index),
+        "split":"calibration" if index<2 else "held_out", "model_version":"rag-v1","application_version":"service-v1"} for index in range(4)]
+    draft = service.create(app["id"],DiscoveryImport(actor="operator",traces=rows))
+    confirmation = service.confirm(app["id"],draft["id"],Confirmation(actor="owner",expected_checksum=draft["checksum"],task_type="rag",purpose="Document answers",
+        rationale="Source IDs confirmed",mappings=draft["analysis"]["mappings"]))
+    plan = service.calibrate(app["id"],CalibrationRequest(actor="owner",confirmation_id=confirmation["id"]))
+    assert plan["status"] == "ready" and plan["metrics"][0]["held_out"]["flagged"] == 1
+    assert next(metric for metric in plan["metrics"] if metric["name"]=="Claim support")["status"] == "unavailable"

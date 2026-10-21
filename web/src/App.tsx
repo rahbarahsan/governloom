@@ -9,6 +9,7 @@ import {
   downloadEvidence,
 } from "./api";
 import Monitoring from "./Monitoring";
+import {DiscoveryStart} from "./DiscoveryPanel";
 import {
   ApplicationForm,
   Badge,
@@ -226,7 +227,7 @@ export default function App() {
             <br />
             Hooks · policies · risk alerts
           </p>
-          <span className="version">Release 0.5 · outcomes and recovery</span>
+          <span className="version">Release 0.6 · application discovery</span>
         </div>
       </aside>
       <main>
@@ -363,6 +364,7 @@ export default function App() {
           {(view === "applications" ||
             (view === "monitoring" && !application)) && (
             <>
+              <DiscoveryStart created={async identifier=>{setAppId(identifier);await refresh();setView("monitoring");}} />
               <ApplicationForm
                 create={(body) =>
                   perform(async () => {
