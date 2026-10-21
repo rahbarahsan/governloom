@@ -85,6 +85,12 @@ links across 38 Markdown guides passed; schema drift, compile, dependency and
 public credential-pattern checks passed. Final review UI preserves confirmed
 description/mappings across reload; history remains inspectable.
 
+Final boundary refinement: integral numeric class labels such as 1/1.0 compare
+as the same category rather than manufacturing classification errors. The expanded
+15-check discovery suite passed (7.83 s); final wheel rebuilt to include this fix.
+Earlier full-suite count remains 114 plus this added regression. Release CI will
+collect the final suite. Model-analysis request count remains three.
+
 ## Delivered v0.5: outcome coverage and connected-system validation (2026-10-11)
 
 Release code/docs/GIF pushed at `aca7c10`; all six CI jobs passed:

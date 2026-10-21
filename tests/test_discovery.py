@@ -236,3 +236,17 @@ def test_rag_plan_uses_identity_checks_and_keeps_semantic_metrics_unavailable(wo
     plan = service.calibrate(app["id"],CalibrationRequest(actor="owner",confirmation_id=confirmation["id"]))
     assert plan["status"] == "ready" and plan["metrics"][0]["held_out"]["flagged"] == 1
     assert next(metric for metric in plan["metrics"] if metric["name"]=="Claim support")["status"] == "unavailable"
+
+
+def test_equivalent_numeric_class_labels_do_not_invent_errors(workbench):
+    app = workbench.create_application(Application(name="Classifier",purpose="Classify",owner="owner",expected_behavior="Use observed labels"))
+    service = Discovery(workbench)
+    rows = [{"predicted_label":0 if index==0 else 1,"actual_label":1.0,"confidence":.2 if index==0 else .95,
+        "group_id":str(index),"split":"calibration" if index<25 else "held_out", "model_version":"v1","application_version":"v1"} for index in range(30)]
+    draft = service.create(app["id"],DiscoveryImport(actor="operator",traces=rows))
+    confirmation = service.confirm(app["id"],draft["id"],Confirmation(actor="owner",expected_checksum=draft["checksum"],task_type="classification",purpose="Classify numeric categories",
+        rationale="Observed numeric labels",mappings=draft["analysis"]["mappings"],outcome_meaning_confirmed=True))
+    plan = service.calibrate(app["id"],CalibrationRequest(actor="owner",confirmation_id=confirmation["id"]))
+    assert plan["status"] == "ready"
+    assert plan["metrics"][0]["calibration"]["true_positives"] == 1
+    assert plan["metrics"][0]["held_out"]["true_negatives"] == 5

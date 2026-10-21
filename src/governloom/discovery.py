@@ -146,6 +146,8 @@ def project(traces, mappings):
             elif role in ("citations", "source_ids"):
                 values[role] = [redact(item) for item in value] if isinstance(value, list) and len(value) <= 100 and all(isinstance(item, str) and len(item) <= 128 for item in value) else None
             else:
+                if role in ("predicted_label", "actual_label") and isinstance(value, float) and math.isfinite(value) and value.is_integer():
+                    value = int(value)
                 values[role] = redact(str(value)) if type(value) in (str, int, float, bool) and len(str(value)) <= 200 else None
         rows.append({"case_id": checksum([index, source])[:24], "source_index": index,
                      "source_sha256": checksum(source), "values": values})
