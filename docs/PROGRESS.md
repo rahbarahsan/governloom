@@ -1,5 +1,38 @@
 # Release progress
 
+## Active v0.6: explore, confirm and prepare monitoring (2026-10-21)
+
+User authorized implementing the discovery-first workflow discussed after v0.5.
+The owner reviews an evidence-backed application draft and corrects unresolved
+assumptions; they do not start by inventing metrics, datasets or policy JSON.
+Scope remains one explicitly connected application, with owned forecast/vision/
+RAG mini-applications for verification. Preserve the untracked original brief.
+No paid API use, hosted deployment, registry publication or external messages.
+
+Delivery sequence:
+1. Local bounded read-only artifact/trace explorer; evidence-backed inference,
+   immutable import and owner confirmation; real forecast calibration-to-incident
+   vertical slice with versioned dataset/proposal and guarded observation activation.
+2. Vision/classification and RAG evidence adapters, explicit unavailable states,
+   draft review UI, correction and calibration/activation workflows. Optional
+   semantic analysis uses a bounded trusted adapter; no silent provider calls.
+3. Actual mini-app verification, discovery/error/owner-correction measurements,
+   security/role/concurrency/leakage boundaries, installed package and browser checks.
+4. Update docs/roadmap/version/demo evidence, focused commits and authorized push;
+   inspect/fix CI, stop owned processes, leave a final resume checkpoint.
+
+Repository/ancestor instructions inspected; no AGENTS.md found. Baseline main is
+c64e1f4 with only the original untracked brief. Forecast vertical slice implemented:
+bounded local source inspection without execution; exact artifact/semantic quote
+checks; immutable discovery/owner corrections; calibration-only dataset/proposal;
+transactional idempotent activation with stale-policy conflict and version-bound
+flag-only rules. Forecast/discovery/runtime suite: 26 passed, 8.89 s. Import/actor/
+scope refinements: 9 passed, 5.87 s. Default Windows pytest temp/cache were denied;
+workspace data/ basetemp and no cache provider resolved the environment issue.
+Dashboard TypeScript/Vite build passed with normal Windows access for esbuild.
+UI review/import/calibration/activation is implemented; next: browser workflow,
+actual NOAA/vision/RAG captures, discovery adapter boundaries and release evidence.
+
 ## Delivered v0.5: outcome coverage and connected-system validation (2026-10-11)
 
 Release code/docs/GIF pushed at `aca7c10`; all six CI jobs passed:

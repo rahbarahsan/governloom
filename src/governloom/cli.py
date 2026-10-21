@@ -23,11 +23,30 @@ def main():
     webhook_parser.add_argument("--once", action="store_true")
     monitor_parser = commands.add_parser("monitor-worker", help="Persist alerts for explicit missing numeric outcome deadlines")
     monitor_parser.add_argument("--once", action="store_true")
+    explore = commands.add_parser("explore", help="Inspect one local application's selected source files without executing it")
+    explore.add_argument("root", type=Path)
+    explore.add_argument("--traces", type=Path, help="Local JSONL sample observations; no remote fetch")
+    explore.add_argument("--openapi", type=Path, help="Optional local OpenAPI JSON")
+    explore.add_argument("--output", type=Path, required=True, help="New private evidence bundle to review/import")
+    explore.add_argument("--subscription", action="store_true", help="Opt in to one trusted tool-free request using an existing ChatGPT CLI login")
+    explore.add_argument("--model", help="Explicit model selector for optional semantic analysis")
     export = commands.add_parser("export", help="Export versioned records as UTF-8 JSONL")
     export.add_argument("kind", choices=["case", "source", "dataset", "trace_batch", "review_event", "run"])
     export.add_argument("path", type=Path)
     export.add_argument("--application-id")
     args = parser.parse_args()
+    if args.command == "explore":
+        from .explorer import collect, enrich, write_bundle
+        bundle = collect(args.root, traces_path=args.traces, openapi_path=args.openapi)
+        if args.subscription:
+            if not args.model:
+                parser.error("--subscription requires an explicit --model")
+            from .subscription import SubscriptionSession
+            session = SubscriptionSession(args.output.parent / (args.output.stem + "-capture"), args.model, max_requests=1)
+            bundle = enrich(bundle, session)
+        write_bundle(bundle, args.output)
+        print(f"Collected {len(bundle.artifacts)} artifacts and {len(bundle.traces)} traces. Review {args.output} before import. No target code executed.")
+        return
     workbench = Workbench(Store(args.db))
     if args.command == "bootstrap-admin":
         import getpass

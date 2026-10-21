@@ -72,6 +72,8 @@ class RuntimeRule(MonitorRecord):
     phase: Literal["input", "output", "tool", "error", "outcome", "any"] = "any"
     task_type: Literal["vision", "rag", "forecasting", "classification", "generative", "custom", "any"] = "any"
     environment: str | None = Field(default=None, max_length=64)
+    model_version: str | None = Field(default=None, max_length=200)
+    application_version: str | None = Field(default=None, max_length=200)
     metric: str | None = Field(default=None, max_length=64)
     comparator: Literal["gt", "gte", "lt", "lte"] = "gt"
     threshold: float | None = None
@@ -181,19 +183,24 @@ class Monitor:
 
     def policy(self, application_id, body: MonitorPolicy):
         self.store.get("application", application_id)
-        record = {**body.model_dump(), "id": uid(), "application_id": application_id,
-                  "created_at": now(), "engine_version": "runtime-rules-v1"}
         with self.store.session() as session:
             session.connection().exec_driver_sql("BEGIN IMMEDIATE")
-            pointer_id = checksum(["monitor_config", application_id])[:32]
-            old = session.get(Entity, pointer_id)
-            pointer = {"id": pointer_id, "application_id": application_id, "policy_id": record["id"]}
-            session.add(Entity(id=record["id"], kind="monitor_policy", application_id=application_id, payload=record))
-            if old:
-                old.payload = pointer
-            else:
-                session.add(Entity(id=pointer_id, kind="monitor_config", application_id=application_id, payload=pointer))
-            self.workbench.audit(session, application_id, record["id"], 1, "monitor_policy_activated", body.actor, record)
+            record = self.stage_policy(session, application_id, body)
+        return record
+
+    def stage_policy(self, session, application_id, body: MonitorPolicy):
+        """Stage inside the caller's write transaction, including proposal activation."""
+        record = {**body.model_dump(), "id": uid(), "application_id": application_id,
+                  "created_at": now(), "engine_version": "runtime-rules-v1"}
+        pointer_id = checksum(["monitor_config", application_id])[:32]
+        old = session.get(Entity, pointer_id)
+        pointer = {"id": pointer_id, "application_id": application_id, "policy_id": record["id"]}
+        session.add(Entity(id=record["id"], kind="monitor_policy", application_id=application_id, payload=record))
+        if old:
+            old.payload = pointer
+        else:
+            session.add(Entity(id=pointer_id, kind="monitor_config", application_id=application_id, payload=pointer))
+        self.workbench.audit(session, application_id, record["id"], 1, "monitor_policy_activated", body.actor, record)
         return record
 
     def active_policy(self, application_id):
@@ -474,6 +481,10 @@ class Monitor:
         result = {"rule_id": rule["id"], "name": rule["name"], "severity": rule["severity"], "action": rule["action"],
                   "mitigation": rule["mitigation"], "status": "not_applicable", "evidence": {}}
         if rule["phase"] not in ("any", event.phase) or rule["task_type"] not in ("any", event.task_type) or rule["environment"] not in (None, event.environment):
+            return result
+        if any(rule.get(field) not in (None, getattr(event, field)) for field in ("model_version", "application_version")):
+            result["status"] = "insufficient_evidence"
+            result["evidence"] = {"reason": "Policy baseline belongs to another model/application version; recalibrate before reuse"}
             return result
         detector = rule["detector"]
         evidence, triggered = {}, False

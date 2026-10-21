@@ -22,6 +22,7 @@ from . import __version__
 from .auth import Operators, UserCreate, Login, PasswordChange, AccessDenied, LoginRequired, public_user
 from .detectors import Profiles, DetectorProfile, ProfileApproval
 from .webhooks import Webhooks, DestinationCreate, DeliveryChange, SecretRotation
+from .discovery import Discovery, DiscoveryImport, Confirmation, CalibrationRequest, Activation
 
 
 class SourceImport(Record):
@@ -72,6 +73,7 @@ def create_app(store=None):
     monitor = Monitor(workbench)
     profiles = Profiles(workbench)
     webhooks = Webhooks(workbench)
+    discovery = Discovery(workbench)
     api.state.workbench = workbench
     operators = Operators(workbench)
     has_operators = bool(workbench.store.list("operator_user"))
@@ -159,7 +161,7 @@ def create_app(store=None):
 
     @api.exception_handler(RequestValidationError)
     async def safe_validation_error(request: Request, exc):
-        if request.url.path.startswith(("/api/runtime/", "/api/auth/")):
+        if request.url.path.startswith(("/api/runtime/", "/api/auth/")) or "/discover" in request.url.path:
             return JSONResponse({"detail": [{"loc": error["loc"], "msg": error["msg"]} for error in exc.errors()]}, status_code=422)
         return await request_validation_exception_handler(request, exc)
 
@@ -296,6 +298,43 @@ def create_app(store=None):
     @api.post("/api/webhook-deliveries/{identifier}/replay")
     def replay_webhook_delivery(identifier: str, body: DeliveryChange):
         return webhooks.replay(identifier, body)
+
+    @api.get("/api/applications/{application_id}/discoveries")
+    def discoveries(application_id: str):
+        workbench.store.get("application", application_id)
+        return workbench.store.list("discovery", application_id)
+
+    @api.post("/api/applications/{application_id}/discoveries", status_code=201)
+    def import_discovery(application_id: str, body: DiscoveryImport):
+        return discovery.create(application_id, body)
+
+    @api.post("/api/applications/{application_id}/discoveries/{identifier}/confirm", status_code=201)
+    def confirm_discovery(application_id: str, identifier: str, body: Confirmation):
+        return discovery.confirm(application_id, identifier, body)
+
+    @api.get("/api/applications/{application_id}/discovery-confirmations")
+    def discovery_confirmations(application_id: str):
+        workbench.store.get("application", application_id)
+        return workbench.store.list("discovery_confirmation", application_id)
+
+    @api.post("/api/applications/{application_id}/discovery-plans", status_code=201)
+    def prepare_discovery_plan(application_id: str, body: CalibrationRequest):
+        return discovery.calibrate(application_id, body)
+
+    @api.get("/api/applications/{application_id}/discovery-plans")
+    def discovery_plans(application_id: str):
+        workbench.store.get("application", application_id)
+        return workbench.store.list("discovery_plan", application_id)
+
+    @api.post("/api/applications/{application_id}/discovery-plans/{identifier}/activate", status_code=201)
+    def activate_discovery_plan(application_id: str, identifier: str, body: Activation):
+        return discovery.activate(application_id, identifier, body)
+
+    @api.get("/api/applications/{application_id}/discovery-plans/{identifier}")
+    def download_discovery_plan(application_id: str, identifier: str):
+        record = discovery.scoped(application_id, "discovery_plan", identifier)
+        return Response(json.dumps(record, ensure_ascii=False, indent=2), media_type="application/json",
+                        headers={"Content-Disposition": 'attachment; filename="governloom-monitoring-plan.json"'})
 
     @api.get("/api/applications/{application_id}/outcome-coverage")
     def outcome_coverage(application_id: str, limit: int = Query(default=100, ge=1, le=500)):
