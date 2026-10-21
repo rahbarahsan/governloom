@@ -19,7 +19,7 @@ jobs:
       - run: .venv/bin/python -m scripts.export_contracts --check
       - run: .venv/bin/python -m pip wheel . --no-deps --wheel-dir dist
       - run: .venv/bin/python -m pip install --no-deps --target data/wheel-import dist/governloom-*.whl
-      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations, governloom.webhooks, governloom.calibration, governloom.contract, governloom.otel, governloom.outcomes, governloom.recovery; assert 'wheel-import' in governloom.recovery.__file__; assert governloom.__version__ == '0.5.0'"
+      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations, governloom.webhooks, governloom.calibration, governloom.contract, governloom.otel, governloom.outcomes, governloom.recovery, governloom.discovery, governloom.explorer, governloom.discovered_hook; assert 'wheel-import' in governloom.discovery.__file__; assert governloom.__version__ == '0.6.0'"
   browser:
     runs-on: ubuntu-latest
     steps:
@@ -62,12 +62,15 @@ jobs:
       - run: .venv/bin/python -m pip install --no-deps -e '.[dev]'
       - run: .venv/bin/python -m pytest -q tests/test_examples.py
       - run: .venv/bin/python -m examples.quickstart --check --headless --directory data/ci-quickstart
+      - run: .venv/bin/python -m examples.discovery_testbed --directory data/ci-discovery
       - run: .venv/bin/python -m pip check
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: actual-model-quickstart
-          path: data/ci-quickstart/report.json
+          path: |
+            data/ci-quickstart/report.json
+            data/ci-discovery/report.json
   sdk:
     runs-on: ubuntu-latest
     steps:
