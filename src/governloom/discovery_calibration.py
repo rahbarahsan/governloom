@@ -82,9 +82,15 @@ def quantile(values, fraction):
 
 
 def prepare(discovery, confirmation, fraction):
+    from .discovery import project
     mappings = confirmation["mappings"]
+    # Corrected paths need the same role-specific validation/label normalization
+    # as inferred aliases. Raw retained metadata is not itself a typed mapping.
+    selected = [{role: discovery["trace_columns"][path][index] for role, path in mappings.items()}
+                for index in range(len(discovery["trace_hashes"]))]
+    projected = project(selected, {role: role for role in mappings})
     rows = [{"case_id": checksum([index, sha])[:24], "source_index": index, "source_sha256": sha,
-             "values": {role: discovery["trace_columns"][path][index] for role, path in mappings.items()}}
+             "values": projected[index]["values"]}
             for index, sha in enumerate(discovery["trace_hashes"])]
     # Exact duplicate selected observations must not inflate denominators or cross splits.
     unique, duplicate_count = {}, 0

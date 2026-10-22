@@ -60,6 +60,15 @@ measurements, zero new model requests. Private capture data/v07-gif-final record
 cleanup. All 59 Markdown local-link checks pass; public aggregate evidence has no
 credential patterns and its catalogue hash matches the final installed consumer.
 
+Final full Python suite passed: 131 checks in 153.84 s. Review then found a
+corrected-field edge case: numeric category values on non-alias paths needed
+the same normalization as inferred fields. Fixed by revalidating selected role
+projections before evaluation; padded tool permissions are rejected to keep
+offline metrics identical to runtime permission checks. Expanded discovery/
+guidance suite: 31 passed (13.09 s). Rebuilding final wheel for installed checks;
+the no-isolation build attempt lacked setuptools, so use the standard isolated
+build already used by distribution CI. No application test failure remains.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:

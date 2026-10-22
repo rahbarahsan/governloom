@@ -90,7 +90,7 @@ class Confirmation(Record):
 
     @model_validator(mode="after")
     def valid(self):
-        if self.allowed_tools is not None and (not self.allowed_tools or any(not item.strip() or len(item) > 200 for item in self.allowed_tools) or len(set(self.allowed_tools)) != len(self.allowed_tools)):
+        if self.allowed_tools is not None and (not self.allowed_tools or any(not item.strip() or item != item.strip() or len(item) > 200 for item in self.allowed_tools) or len(set(self.allowed_tools)) != len(self.allowed_tools)):
             raise ValueError("Confirm a nonempty, unique list of permitted tool names")
         if not set(self.mappings) <= ALIASES.keys() or any(not value or len(value) > 200 for value in self.mappings.values()):
             raise ValueError("Use supported telemetry roles and existing dot-separated field paths")

@@ -204,3 +204,16 @@ def test_large_label_cardinality_is_explicitly_bounded(workbench):
     assert metric(plan, "classification_accuracy")["value"] == 1
     assert metric(plan, "class_confusion")["value"] is None
     assert "100 distinct labels" in metric(plan, "class_confusion")["reason"]
+
+
+def test_corrected_numeric_labels_use_identical_role_normalization(workbench):
+    rows = [{**context(index), "decision": 1.0, "reference": 1} for index in range(40)]
+    app, service, initial = prepare(workbench, rows, "classification", outcome_meaning_confirmed=True)
+    draft = service.scoped(app["id"], "discovery", initial["discovery_id"])
+    confirmation = service.confirm(app["id"], draft["id"], Confirmation(actor="owner", expected_checksum=draft["checksum"], task_type="classification",
+        purpose="Correct categorical mappings", rationale="Numeric categories have identical meaning", outcome_meaning_confirmed=True,
+        mappings={**initial["mappings"], "predicted_label": "decision", "actual_label": "reference"}))
+    plan = service.calibrate(app["id"], CalibrationRequest(actor="owner", confirmation_id=confirmation["id"]))
+    assert metric(plan, "classification_accuracy")["value"] == 1
+    with pytest.raises(ValueError, match="permitted"):
+        Confirmation(actor="owner", expected_checksum=draft["checksum"], task_type="custom", purpose="Tools", rationale="Review", allowed_tools=[" search "])
