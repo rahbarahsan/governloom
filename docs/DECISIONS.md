@@ -1,5 +1,17 @@
 # Decisions
 
+- v0.7 maintains trusted versioned starter definitions separately from application
+  source/model suggestions. Selected NIST/OWASP references explain objectives,
+  not full framework coverage or certification. Frozen plans retain definitions.
+- Metric computation, applicability and runtime-rule readiness are separate.
+  Ready selected controls may activate while other risks remain unmeasured;
+  explicitly selected unready controls block activation. Deferrals need reasons.
+- Permissions, latency SLAs and relevance meaning require owner confirmation;
+  observed tools are not permissions. Forecast/classification budgets are distinct.
+  Live outcome counts retain their own timestamp outside frozen discovery data.
+- Per-class reports are bounded to 100 labels. Metrics use stable error arithmetic,
+  undefined denominators remain unavailable, and authored scenarios are not truth.
+
 - v0.6 explores one explicitly connected application before asking the owner to
   confirm its inferred behavior. Local inspection never executes target code;
   optional semantic analysis is bounded and tool-disabled. Exact source references

@@ -1,5 +1,24 @@
 # Releases
 
+## 0.7.0 — guided starter policies and measurable coverage
+
+- Versioned five-pack/nine-control catalogue with selected NIST AI RMF 1.0 and
+  OWASP LLM Top 10 2025 references; authenticated read API and frozen plan sources.
+- Compose application recommendations, calculate explicit metrics/denominators,
+  select ready controls and record reasoned deferrals before observation activation.
+- Confirm tool permissions, optional latency SLA and relevance judgments; use
+  separate forecast/classification budgets. Missing evidence never becomes a pass.
+- Per-class quality, confidence gate precision/recall, forecast errors, citation
+  identity, retrieval recall@k and tool attempt rates with evaluation provenance.
+- Carry control references into live incidents. Preserve v0.6 plans and the v1
+  runtime event contract; add a Python discovery tool mapper.
+- Owned four-application checks, local trained tool router, fresh-wheel discovery
+  consumer, browser workflow and CI coverage. No new provider calls are required.
+
+Reference mappings are guidance, not certification. Flags do not prove completed
+mitigation. Read the [catalogue guide](docs/POLICY_CATALOGUE.md) and
+[measured limits](docs/V07_EVIDENCE.md).
+
 ## 0.6.0 — discover an application and prepare its monitoring
 
 - Bounded local source/OpenAPI/trace inspection without target execution; optional

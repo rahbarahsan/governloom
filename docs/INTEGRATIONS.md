@@ -5,6 +5,11 @@ To prepare metrics and policies from the application first, use the
 mappings and preserves live versions; the direct integrations below remain useful
 when the application already has a monitoring policy.
 
+[Guided starter policies](POLICY_CATALOGUE.md) add confirmed tool permissions and
+`DiscoveredObserver.tool(observation)`. Node callers use the existing
+`RuntimeHook.emit({phase: "tool", tool_name, ...scope})` or `wrapTool` boundary.
+The v1 event contract is unchanged; checks/alerts may include frozen control sources.
+
 The collector accepts selected telemetry from any AI system. Risk coverage depends
 on the evidence you supply: images/arrays/audio and provider credentials are not
 automatically uploaded. Keep raw-input selection and outage behavior explicit.

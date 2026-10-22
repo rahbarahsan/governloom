@@ -10,6 +10,7 @@ from examples.tools.model import observations
 from governloom.discovered_hook import DiscoveredObserver
 from governloom.explorer import collect, write_bundle
 from governloom.schemas import now
+from governloom.service import checksum
 
 
 def retrieval_observations():
@@ -21,7 +22,6 @@ def retrieval_observations():
     from examples.rag.model import Retriever
     from examples.rag.grouped_validation import SPECS
     retriever = Retriever(documents=[item[2] for item in SPECS])
-    from governloom.service import checksum
     version = "policy-retrieval-" + checksum(retriever.manifest["documents"])[:16]
     rows = []
     for index, (split, group, document, question, *_) in enumerate(SPECS):
@@ -45,6 +45,9 @@ def run(directory, forecast_snapshot=None):
         sources["forecasting"] = forecast_data(forecast_snapshot)
     report = {"status": "started", "created_at": now(), "provider_requests": 0,
               "scope": "Owned scripted applications; no independent discovery or label validation", "applications": {}}
+    report["code_sha256"] = {name: checksum((ROOT/name).read_text(encoding="utf-8")) for name in (
+        "src/governloom/policy_catalogue.py", "src/governloom/policy_guidance.py", "src/governloom/discovery.py",
+        "src/governloom/discovery_calibration.py", "examples/policy_testbed.py", "examples/tools/model.py")}
     with Processes(directory/"logs") as processes:
         endpoint = processes.start("governloom.api:app", {"GOVERNLOOM_DB": f"sqlite:///{(directory/'collector.db').as_posix()}", "GOVERNLOOM_AUTH_MODE": "local"}, readiness="/api/health")
         catalogue = http(endpoint, "/api/policy-catalogue")
@@ -91,6 +94,7 @@ def run(directory, forecast_snapshot=None):
                 receipt = observer.output(control, trace_id="deliberate-citation-control")
                 assert receipt["action"] == "flag"
                 observed = {"retrieval": "actual local TF-IDF ranked passages", "relevance_labels": "repository-authored relevant document per question; no independent human review",
+                            "corpus_manifest": model.manifest,
                             "new_answer_generations": 0, "citation_flags": "deliberate empty-citation engineering control"}
             elif name == "vision":
                 chosen = min((row for row in rows if row["split"] == "held_out" and row["predicted_label"] != row["actual_label"]), key=lambda row: row["confidence"])

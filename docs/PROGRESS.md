@@ -69,6 +69,15 @@ guidance suite: 31 passed (13.09 s). Rebuilding final wheel for installed checks
 the no-isolation build attempt lacked setuptools, so use the standard isolated
 build already used by distribution CI. No application test failure remains.
 
+Final rebuilt wheel installed under data/v07-wheel-final/installed; import location
+verified and all 31 discovery/guidance checks passed (11.24 s). Final wheel SHA-256:
+1658d3d8613622a3ab2a63ad0e3b50a451c4e9f13f67e684752364e0a74e6ba4.
+Supersedes the pre-correction candidate hash above. Final four-app run was repeated
+against current documentation under data/v07-policy-release and public aggregates
+were refreshed with implementation hashes and the RAG corpus manifest. Retrieval
+recall remains 50% on four held-out authored queries. Source and artifact checks
+are complete; push the focused release commits and inspect GitHub Actions next.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:

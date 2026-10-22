@@ -2,7 +2,7 @@
 
 [![checks](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml/badge.svg)](https://github.com/rahbarahsan/governloom/actions/workflows/checks.yml)
 
-Explore your AI application, prepare an evidence-backed monitoring policy and
+Explore your AI application, choose reference-backed starter policies and
 track risks in operation. Vision, RAG, forecasting, classification and custom
 systems share a provider-independent event contract.
 
@@ -51,10 +51,12 @@ Operator actions in the GIF are scripted. Its semantic analysis is frozen real
 model output; forecast inference/feedback are actual. No independent owner study
 or new model request is implied by the recording.
 
-## What ships in v0.6
+## What ships in v0.7
 
 - Local source/trace exploration, optional model-assisted understanding, owner
   correction, frozen evaluation sets and calibrated observation proposals.
+- Reference-backed starter policies across five packs, explicit metrics and gaps,
+  confirmed tool permissions, reviewable selection and documented deferrals.
 - Python, native async Python and Node/TypeScript hooks, explicit observe/enforce
   behavior, linked outcomes, observation batches and selected OpenTelemetry spans.
 - Policies, scoped keys, live alerts, grouped incidents and application action
@@ -69,6 +71,7 @@ or new model request is implied by the recording.
   distribution profiles with immutable provenance and explicit evidence gaps.
 
 [Release notes](CHANGELOG.md) · [Roadmap](docs/ROADMAP.md)
+· [Starter policies and metrics](docs/POLICY_CATALOGUE.md)
 · [Forecast outcomes](docs/EXPECTED_OUTCOMES.md) · [Container](docs/CONTAINER.md)
 · [Earlier evaluation workbench](docs/LEGACY_WORKBENCH.md)
 
@@ -91,6 +94,11 @@ installed-wheel consumer. Its fresh Windows setup reached a real incident in
 vision/forecasting systems and an explicit RAG evidence gap. Current discovery
 recipes are bounded; arbitrary risks, business tolerances and complete program
 behavior cannot be inferred automatically.
+
+[v0.7](docs/V07_EVIDENCE.md) adds reference-backed starter policies, per-control
+readiness and explicit metric denominators. Owners review suggested coverage,
+confirm tool permissions and select observation controls. NIST/OWASP mappings are
+guidance, not certification; unavailable evaluations stay visible.
 
 Controlled self-hosted integrations are the demonstrated scope. Production
 scale/availability, tenant isolation and SSO/MFA are not established. Notification

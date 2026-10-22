@@ -69,7 +69,21 @@ an evidence-backed draft rather than supply a prewritten policy or metric design
 Three source-cued owned task matches do not establish general discovery accuracy.
 Model-generated scenarios are unreviewed and do not become ground truth automatically.
 
-## Recommended v0.7: validate and broaden discovery
+## v0.7: guided starter policies and measurable coverage
+
+Implemented: versioned source-backed starter catalogue, automatic recommendations
+from confirmed capabilities, metric definitions/results with denominators, owner
+permissions/SLA/relevance decisions, selected observation controls and recorded
+deferrals. Runtime incidents preserve frozen control sources. Existing actual
+vision/forecasting and retrieval plus a new local trained tool router verify the
+workflow; package/browser/CI delivery checks are tracked in [progress](PROGRESS.md).
+See [catalogue guide](POLICY_CATALOGUE.md) and [release evidence](V07_EVIDENCE.md).
+
+## Recommended v0.8: validate and deepen guided monitoring
+
+First, test discovery and policy recommendations on fresh layouts/field names,
+then build reviewed scenario datasets and improve the demonstrated retrieval miss.
+Keep the following work incremental rather than promising universal evaluation:
 
 1. **Fresh application tests.** Add owned applications with different layouts,
    field names and missing dependencies; measure wrong inferences, corrections,

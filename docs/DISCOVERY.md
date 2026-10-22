@@ -1,5 +1,9 @@
 # Explore an application and prepare its monitoring
 
+v0.7 adds [guided starter policies](POLICY_CATALOGUE.md), reference mappings,
+explicit metric denominators and per-control selection/deferral. The original
+v0.6 workflow below remains available; new plans include the frozen catalogue.
+
 GovernLoom v0.6 inspects one explicitly selected application, drafts its likely
 behavior and suggests measurements from available evidence. The owner confirms
 or corrects that draft. A frozen evaluation dataset and an observation policy
