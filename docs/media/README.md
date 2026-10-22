@@ -1,14 +1,17 @@
 # Discovery capture
 
-`demo.gif` records six actual Chromium states at 1280 x 900 over 24 seconds
-(400,242 bytes). It shows a named operator importing application evidence,
+`demo.gif` records seven actual Chromium states at 1280 x 900 over 28 seconds
+(443,777 bytes).
+It shows a named operator importing application evidence,
 reviewing a frozen real model analysis and exact source quote, confirming the
-meaning of outcomes, evaluating a monitoring proposal, reviewing a held-out
+meaning of outcomes, reviewing a versioned starter control and NIST reference,
+inspecting metric denominators, evaluating a proposal, reviewing a held-out
 budget warning and activating observation flags. An actual NOAA forecast and
 linked observed actual then produce an open incident through the prepared mapper.
 
 `demo-poster.png` is a still alternative; `demo.json` records source/model/prompt
-hashes, timing, dataset checksum and the actual forecast/actual values. Pixels
+hashes, timing, catalogue version/checksum, selected controls, dataset checksum
+and the actual forecast/actual values. Pixels
 and measured values are not retouched. The encoder verifies all decoded frames,
 loop metadata, 20-30-second timing, equal dimensions and a size below 5 MB.
 
@@ -16,7 +19,7 @@ Semantic analysis replays the frozen v0.6 capture; the GIF makes **zero new mode
 requests**. Account `demo-operator` takes scripted actions. This does not measure
 independent owner effort, semantic interpretation accuracy or production safety.
 The forecast is an illustrative held-out selection above the frozen threshold;
-quality denominators come from the separate [release measurements](../V06_EVIDENCE.md).
+quality denominators come from the separate [release measurements](../V07_EVIDENCE.md).
 No credentials appear in the frames or public manifest.
 
 ## Reproduce

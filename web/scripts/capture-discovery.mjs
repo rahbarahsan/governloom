@@ -38,6 +38,12 @@ try {
   await panel.getByRole("button",{name:"Evaluate monitoring proposal",exact:true}).click();
   await expect(panel).toContainText("24 calibration · 48 held-out");
   const proposal=panel.locator(".discovery-plan");
+  const starter=proposal.locator('[data-control="forecast.error"]');
+  await starter.getByText("Evidence, measurements and response",{exact:true}).click();
+  await starter.getByText("Policy reference: forecast.error",{exact:true}).click();
+  await expect(starter).toContainText("NIST AI RMF 1.0");
+  await capture("Review a versioned starter objective, explicit metric denominators and its NIST source mapping",starter);
+  await starter.getByText("Evidence, measurements and response",{exact:true}).click();
   await proposal.getByText(/Forecast outcome error · available/).click();
   await capture("Prepare a frozen evaluation set and quantify forecast errors using calibration-only thresholds",proposal);
   await proposal.getByText(/Forecast outcome error · available/).click();
@@ -61,5 +67,5 @@ try {
   if(errors.length) throw new Error(errors.join("\n"));
   await writeFile(resolve(directory,"manifest.json"),JSON.stringify({schema_version:1,source:"Actual Chromium discovery/confirmation/calibration and public-mapper forecast incident",
     demo:"Scripted named operator; replayed real model analysis; actual NOAA model inference; no independent owner study",
-    provenance:{...config.provenance,dataset_sha256:plan.dataset.sha256,actual_forecast:result},scenes},null,2));
+    provenance:{...config.provenance,catalogue_version:plan.catalogue.version,catalogue_sha256:plan.catalogue.sha256,selected_controls:plan.control_decisions.selected,dataset_sha256:plan.dataset.sha256,actual_forecast:result},scenes},null,2));
 } finally {await browser.close();}

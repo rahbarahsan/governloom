@@ -17,6 +17,11 @@
     "new_subscription_requests": 0,
     "scripted_operator": "demo-operator",
     "scope": "Owned NOAA snapshot and actual rolling model; scripted owner acceptance",
+    "catalogue_version": "2026-10-21.1",
+    "catalogue_sha256": "4e1413e3b827537e9c43d832a3819f43f90454a3e486684143b6bb0aa363e0e8",
+    "selected_controls": [
+      "forecast.error"
+    ],
     "dataset_sha256": "1419ad923aadc5b631e47317c6d04f29f7093e41d426648b0927424c72f6d099",
     "actual_forecast": {
       "action": "flag",
@@ -29,9 +34,9 @@
     1280,
     900
   ],
-  "frames": 6,
-  "duration_ms": 24000,
-  "bytes": 400242,
+  "frames": 7,
+  "duration_ms": 28000,
+  "bytes": 443777,
   "scenes": [
     {
       "caption": "Explore selected source and traces; review the frozen model-assisted application draft",
@@ -43,6 +48,10 @@
     },
     {
       "caption": "The owner confirms the prefilled understanding and the meaning of actual outcomes",
+      "duration_ms": 4000
+    },
+    {
+      "caption": "Review a versioned starter objective, explicit metric denominators and its NIST source mapping",
       "duration_ms": 4000
     },
     {

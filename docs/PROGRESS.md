@@ -54,6 +54,12 @@ Final full Python regression and source-visible GIF capture are running; docs
 and sanitized aggregate evidence prepared. Next: finish these checks, link-check,
 focused commits/push, inspect all release CI jobs and final process cleanup.
 
+Final GIF captured/decoded successfully: seven actual Chromium frames, 28 seconds,
+443777 bytes at 1280x900; catalogue/NIST reference visible alongside forecast
+measurements, zero new model requests. Private capture data/v07-gif-final records
+cleanup. All 59 Markdown local-link checks pass; public aggregate evidence has no
+credential patterns and its catalogue hash matches the final installed consumer.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:
