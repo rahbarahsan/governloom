@@ -4,6 +4,7 @@ import WebhookPanel from "./WebhookPanel";
 import OutcomeCoverage from "./OutcomeCoverage";
 import DetectorProfiles from "./DetectorProfiles";
 import DiscoveryPanel from "./DiscoveryPanel";
+import {ControlSources, type ControlReference} from "./PolicyRecommendations";
 import { api, date, title } from "./api";
 import { Badge } from "./components";
 import type { Application } from "./types";
@@ -69,6 +70,7 @@ type RuntimeRow = {
   };
 };
 type Alert = {
+  control_reference?: ControlReference;
   id: string;
   event_id: string;
   trace_id: string;
@@ -86,6 +88,7 @@ type Alert = {
   environment: string;
 };
 type Incident = {
+  control_reference?: ControlReference;
   id: string;
   name: string;
   environment: string;
@@ -1003,6 +1006,7 @@ function IncidentCard({
   const [rationale, setRationale] = useState("");
   return (
     <article className="runtime-incident">
+      <ControlSources reference={incident.control_reference}/>
       <h3>
         {incident.name} · {incident.count} events
       </h3>
@@ -1095,6 +1099,7 @@ function AlertCard({
         {alert.requested_action}
       </p>
       <p>{alert.mitigation}</p>
+      <ControlSources reference={alert.control_reference}/>
       <EvidenceSummary evidence={alert.evidence} />
       <details>
         <summary>Risk evidence</summary>

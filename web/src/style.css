@@ -1056,3 +1056,8 @@ code {
 @media (min-width: 1600px) { #root > .identity-bar { margin-left: 250px; } }
 @media (max-width: 1100px) { #root > .identity-bar { margin-left: 190px; } }
 @media (max-width: 760px) { #root > .identity-bar { margin-left: 0; } }
+.starter-control {border:1px solid var(--border, #cbd5e1);border-radius:10px;padding:16px;margin:12px 0;}
+.starter-control h4 {margin:0 0 8px;}
+.starter-control .measurement-table {font-size:.85rem;}
+.starter-control .measurement-table td {max-width:360px;overflow-wrap:anywhere;}
+.control-sources {font-size:.85rem;margin:10px 0;}

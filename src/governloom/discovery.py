@@ -159,7 +159,7 @@ def project(traces, mappings):
             else:
                 if role in ("predicted_label", "actual_label") and isinstance(value, float) and math.isfinite(value) and value.is_integer():
                     value = int(value)
-                values[role] = redact(str(value)) if type(value) in (str, int, float, bool) and len(str(value)) <= 200 else None
+                values[role] = redact(str(value)) if type(value) in (str, int, float, bool) and str(value).strip() and len(str(value)) <= 200 else None
         rows.append({"case_id": checksum([index, source])[:24], "source_index": index,
                      "source_sha256": checksum(source), "values": values})
     return rows
@@ -335,7 +335,8 @@ class Discovery:
                 columns[path] = [row["values"][role] for row in project(body.traces, {role: path})]
             else:
                 values = [flatten(row).get(path) for row in body.traces]
-                columns[path] = [value if type(value) in (int, float) and math.isfinite(value) else
+                columns[path] = [value if isinstance(value, list) and len(value) <= 100 and all(isinstance(item, str) and 0 < len(item) <= 128 for item in value) else
+                    value if type(value) in (int, float) and math.isfinite(value) else
                     redact(value) if isinstance(value, str) and len(value) <= 128 else None for value in values]
         analysis["available_paths"] = sorted(columns)
         return self.save(application_id, "discovery", {"analysis": analysis, "semantic": semantic, "artifacts": artifacts,

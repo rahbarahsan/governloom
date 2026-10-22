@@ -24,7 +24,18 @@ v0.6 records/event contracts remain readable. Python tool observation mapper add
 25 discovery/guidance checks passed (8.24 s), including arithmetic, no labels,
 undefined denominators, scopes, group leakage, permissions and catalogue auth.
 One test setup initially omitted the viewer's required application grant; fixed.
-Next: dashboard review/selection, owned applications and expanded release checks.
+Dashboard review/selection and source references implemented, including owner
+permissions/SLA/relevance decisions, persisted deferrals and unsaved-change guards.
+Forecast browser workflow passed; new composite RAG/tools workflow passed (8.2 s).
+Initial composite fixture lacked the required operator identity; fixture fixed.
+Production dashboard build passed with normal Windows access for esbuild.
+All 125 Python checks passed (136.08 s), including actual-model examples and SDK.
+Four-app HTTP run data/v07-policy-b completed: actual digits, NOAA, local retrieval
+and trained local intent router. Tool attempts flag while independent application
+authorization denies deletion. Citation controls are deliberately authored; no new
+AI answers or provider calls. Raw runs private under data/, services cleaned up.
+Next: compatibility/security refinements, installed distribution/Node consumers,
+full browser suite, v0.7 docs/version/GIF and release CI.
 
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 

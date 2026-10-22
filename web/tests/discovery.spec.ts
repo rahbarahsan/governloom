@@ -21,6 +21,10 @@ test("explore evidence, correct understanding, calibrate and activate flags", as
   await expect(panel).toContainText("Application understanding confirmed");
   await panel.getByRole("button",{name:"Evaluate monitoring proposal",exact:true}).click();
   await expect(panel).toContainText("30 calibration · 10 held-out");
+  await expect(panel.locator('[data-control="forecast.error"]')).toContainText("Flag unusual forecast error");
+  await panel.locator('[data-control="forecast.error"]').getByText("Evidence, measurements and response",{exact:true}).click();
+  await expect(panel.locator('[data-control="forecast.error"]')).toContainText("forecast mae");
+  await panel.locator('[data-control="forecast.error"]').getByText("Evidence, measurements and response",{exact:true}).click();
   await panel.getByText(/Forecast outcome error · available/).click();
   await expect(panel.getByRole("row",{name:/Residuals above threshold/})).toContainText("10");
   await expect(panel.getByRole("button",{name:"Activate observation policy",exact:true})).toBeDisabled();
@@ -37,6 +41,7 @@ test("explore evidence, correct understanding, calibrate and activate flags", as
   const output=await(await request.post("http://127.0.0.1:8000/api/runtime/events",{headers,data:{...context,phase:"output",metrics:{prediction:100}}})).json();
   const outcome=await(await request.post("http://127.0.0.1:8000/api/runtime/events",{headers,data:{...context,phase:"outcome",related_event_id:output.event_id,metrics:{actual:120}}})).json();
   expect(outcome.action).toBe("flag");
+  expect(outcome.checks[0].control_reference.control_id).toBe("forecast.error");
   await expect(page.locator(".runtime-incident")).toContainText("Forecast error above historical baseline");
   const downloadable=await request.get(`http://127.0.0.1:8000/api/applications/${app.id}/discovery-plans`);
   expect((await downloadable.json())[0].dataset.sha256).toMatch(/^[a-f0-9]{64}$/);
