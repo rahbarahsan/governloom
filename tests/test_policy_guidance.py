@@ -39,9 +39,9 @@ def test_forecast_controls_metrics_and_incident_keep_frozen_references(workbench
     plan = service.calibrate(app["id"], request)
     assert plan["control_decisions"]["selected"] == ["forecast.error"]
     for identifier in ("forecast_mae", "forecast_rmse"):
-        assert metric(plan, identifier)["value"] == 2
+        assert metric(plan, identifier)["value"] == pytest.approx(2)
         assert metric(plan, identifier)["denominator"] == 10
-    assert metric(plan, "forecast_bias")["value"] == -2
+    assert metric(plan, "forecast_bias")["value"] == pytest.approx(-2)
     assert metric(plan, "forecast_exceedance_rate")["value"] == 1
     assert plan["calibration_settings"]["forecast_alert_fraction"] == .05
     assert service.calibrate(app["id"], request)["id"] == plan["id"]

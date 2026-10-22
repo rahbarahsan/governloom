@@ -78,6 +78,14 @@ were refreshed with implementation hashes and the RAG corpus manifest. Retrieval
 recall remains 50% on four held-out authored queries. Source and artifact checks
 are complete; push the focused release commits and inspect GitHub Actions next.
 
+Release pushed at 1ab40b6; CI run 39719619487 passed examples, SDK, distribution
+(including non-root/read-only container/restart) and Python 3.13. Python 3.11
+exposed an exact floating-point test assertion (1.9999999999999998 versus 2),
+not a metric failure. Use pytest.approx for forecast means/RMSE/bias and push
+the test fix, then wait for the full final matrix. Browser job still running
+at this checkpoint. All local project Python/Node processes and listeners on
+8000/5173 were confirmed zero. No registry/hosted publication occurred.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:
