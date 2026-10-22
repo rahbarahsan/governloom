@@ -86,6 +86,15 @@ the test fix, then wait for the full final matrix. Browser job still running
 at this checkpoint. All local project Python/Node processes and listeners on
 8000/5173 were confirmed zero. No registry/hosted publication occurred.
 
+Floating-point test fix pushed at eeef6e1; all six jobs in run 39719842529 passed.
+First-run browser trace independently exposed a real startup race: a delayed
+initial /applications response could restore the first application after explicit
+selection, causing a policy operation against that selected-back application.
+App refresh now rejects responses for superseded selections before setting lists
+or scoped state. A deterministic held-response browser regression plus composite
+policy workflow passed locally (2 checks, 25.2 s). Push this UI fix and verify
+the final eight-workflow browser/full CI run before marking delivery complete.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:

@@ -36,6 +36,9 @@ model outputs are not evidence of general discovery accuracy or owner usability.
 - **Seven Chromium workflows passed** in 47.2 seconds, including source-backed
   proposal activation, confirmed tool permissions, reasoned deferral persistence
   and incident control references. Production dashboard build passed.
+  CI subsequently exposed a startup application-selection race. The fix discards
+  stale refresh responses; a new delayed-response regression and the composite
+  policy workflow passed locally (25.2 seconds). Final CI includes eight workflows.
 - Node SDK build and HTTP contract passed. A fresh tarball installed offline in a
   separate consumer passed clear/flag checks against a real collector and retained
   the OWASP tool-control reference. Both Node collector checks passed in 7.03 seconds.

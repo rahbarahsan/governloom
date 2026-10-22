@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useContext } from "react";
+import { useCallback, useEffect, useState, useContext, useRef } from "react";
 import { AuthContext } from "./AuthContext";
 import {
   api,
@@ -45,9 +45,14 @@ export default function App() {
   const [view, setView] = useState<View>("monitoring");
   const [accessToken, setAccessToken] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
-  const [appId, setAppId] = useState(
+  const [appId, setAppIdState] = useState(
     localStorage.getItem("governloom-app") ?? "",
   );
+  const activeApplicationId = useRef(appId);
+  const setAppId = useCallback((identifier:string)=>{
+    activeApplicationId.current=identifier;
+    setAppIdState(identifier);
+  },[]);
   const [sources, setSources] = useState<Source[]>([]);
   const [cases, setCases] = useState<Case[]>([]);
   const [datasets, setDatasets] = useState<Dataset[]>([]);
@@ -82,6 +87,7 @@ export default function App() {
 
   const refresh = useCallback(async () => {
     const apps = await api<Application[]>("/applications");
+    if(activeApplicationId.current!==appId) return;
     setApplications(apps);
     if (appId && !apps.some(app => app.id === appId) || !appId && apps.length) {
       setAppId(apps[0]?.id ?? "");
@@ -97,6 +103,7 @@ export default function App() {
       api<ReviewEvent[]>(`/applications/${appId}/review-events`),
       api<TraceBatch[]>(`/applications/${appId}/trace-batches`),
     ]);
+    if(activeApplicationId.current!==appId) return;
     setSources(s);
     setCases(c);
     setDatasets(d.sort((a, b) => b.version - a.version));
@@ -110,7 +117,7 @@ export default function App() {
         ? { ...previous, ...latest, snapshot: previous.snapshot }
         : previous;
     });
-  }, [appId]);
+  }, [appId,setAppId]);
 
   useEffect(() => {
     void refresh().catch((e) => setError(String(e.message)));

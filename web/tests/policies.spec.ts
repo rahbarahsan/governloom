@@ -1,5 +1,33 @@
 import {expect,test} from "@playwright/test";
 
+test("late initial application response preserves the owner's selection",async({page,request})=>{
+  const apps=[];
+  for(const name of ["Initial application", "Owner selected application"]) {
+    const response=await request.post("http://127.0.0.1:8000/api/applications",{data:{name,purpose:"Selection race regression",owner:"Owner",expected_behavior:"Preserve explicit selection"}});
+    apps.push(await response.json());
+  }
+  let release!:()=>void; let delivered!:()=>void; let arrivals=0;
+  const gate=new Promise<void>(resolve=>{release=resolve;});
+  const staleDelivered=new Promise<void>(resolve=>{delivered=resolve;});
+  await page.route("**/api/applications",async route=>{
+    if(route.request().method()!=="GET") return route.continue();
+    const number=++arrivals;
+    if(number===2) await gate;
+    await route.fulfill({json:apps});
+    if(number===2) delivered();
+  });
+  await page.goto("/");
+  await expect.poll(()=>arrivals).toBeGreaterThanOrEqual(2);
+  await page.getByLabel("Active application").selectOption(apps[1].id);
+  await expect(page.locator(".topbar")).toContainText("Owner selected application");
+  release(); await staleDelivered;
+  // Let the delivered JSON continuation and its React render finish.
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  await expect(page.getByLabel("Active application")).toHaveValue(apps[1].id);
+  await page.getByRole("button",{name:"Refresh",exact:true}).click();
+  await expect(page.locator(".topbar")).toContainText("Owner selected application");
+});
+
 test("compose tool and citation policies, confirm permissions and retain a deferral",async({page,request})=>{
   const traces=Array.from({length:8},(_,index)=>({tool_name:index%2 ? "search":"delete",citations:["doc"],source_ids:["doc"],latency_ms:index+10,
     group_id:`g-${index}`,split:index<4 ? "calibration":"held_out",model_version:"tools-model",application_version:"tools-service"}));
