@@ -1,6 +1,41 @@
 # Release progress
 
-## In progress: v0.7 guided policies and measurable coverage
+## Delivered v0.7: guided policies and measurable coverage (2026-10-22)
+
+Release source/docs/GIF pushed at 3042ea2. All six final CI jobs passed:
+https://github.com/rahbarahsan/governloom/actions/runs/39720294790.
+Python 3.11/3.13: 120 passed, three optional skips each. Eight Chromium workflows
+passed (35.6 s), including the deterministic application-selection race regression.
+Actual-model examples: ten checks plus quickstart, discovery and policy testbeds.
+SDK integration: four checks including an installed Node tarball consumer.
+Distribution passed fresh installed 0.7.0 legacy/discovery consumers (35.947 s to
+first legacy model incident on this CI host), then non-root/read-only container
+creation/restart, access, dashboard, deadline persistence and replay checks.
+
+Shipped five packs/nine trusted source-backed starter controls, per-control
+recommendations/selection/deferrals, explicit metrics/denominators, confirmed
+permissions/SLA/relevance meanings and immutable runtime control references.
+Historical plans and the v1 runtime event contract remain compatible. Source/model
+suggestions cannot authorize tools or rewrite the trusted catalogue. Startup
+refreshes cannot overwrite a later explicit application selection.
+
+Local full regression: 131 passed before the final corrected-role regression;
+31 expanded discovery/guidance checks passed from both source and final installed
+wheel. Final wheel SHA-256:
+1658d3d8613622a3ab2a63ad0e3b50a451c4e9f13f67e684752364e0a74e6ba4.
+Four owned applications completed with zero provider requests. Public aggregate
+implementation/corpus hashes and all 59 Markdown local links verified. GIF:
+seven actual Chromium frames, 28 seconds, 443777 bytes, 1280x900, zero new requests.
+
+All owned services stopped; final inspection found zero project Python/Node
+processes and zero listeners on 8000/5173. Only the original untracked brief
+remains outside commits. No registry/image publication, hosted deployment or
+external-recipient notifications occurred. No v0.7 implementation work remains.
+Recommended v0.8 is in docs/ROADMAP.md; wait for the user's next instruction.
+The documentation-only completion checkpoint skips redundant CI; the verified
+release code is 3042ea2. The earlier intermediate checkpoints below are history.
+
+### v0.7 implementation checkpoints
 
 User approved implementation of the guided policy/metric plan. Deliver in order:
 1. Versioned source-backed catalogue and forecast discovery-to-incident slice.

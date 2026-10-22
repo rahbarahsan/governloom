@@ -27,9 +27,16 @@ model outputs are not evidence of general discovery accuracy or owner usability.
 
 ## Verification
 
+All six [final release CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/39720294790)
+passed at `3042ea2`: Python 3.11/3.13 each 120 passed with three optional skips;
+eight browser workflows passed in 35.6 seconds; actual-model examples and SDK
+consumers passed; fresh wheel and non-root/read-only container/restart checks
+passed. Fresh CI setup reached the legacy consumer's first model incident in
+35.947 seconds. It also verified discovery without prewritten policy.
+
 - Complete Python regression: **131 passed** in 153.84 seconds. A subsequent
   corrected-field normalization fix passed **31 discovery/guidance checks** in
-  13.09 seconds; release CI reruns the full final tree.
+  13.09 seconds; the final CI matrix above verifies the full final source tree.
   This includes known-value metrics, absent labels, zero denominators, large finite
   residuals, label-cardinality bounds, corrected list mappings, mixed versions,
   split leakage, source instructions, scoped catalogue access and historical plans.

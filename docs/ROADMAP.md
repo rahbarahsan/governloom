@@ -1,6 +1,6 @@
 # Roadmap: govern connected AI systems
 
-Updated 2026-10-21. Connect a developer's existing AI system through explicit
+Updated 2026-10-22. Connect a developer's existing AI system through explicit
 telemetry, monitor task-specific risks and support an evidenced response.
 
 ## v0.4: first public developer launch
@@ -71,7 +71,8 @@ Model-generated scenarios are unreviewed and do not become ground truth automati
 
 ## v0.7: guided starter policies and measurable coverage
 
-Implemented: versioned source-backed starter catalogue, automatic recommendations
+Delivered at `3042ea2`; all six [CI jobs](https://github.com/rahbarahsan/governloom/actions/runs/39720294790)
+passed. Versioned source-backed starter catalogue, automatic recommendations
 from confirmed capabilities, metric definitions/results with denominators, owner
 permissions/SLA/relevance decisions, selected observation controls and recorded
 deferrals. Runtime incidents preserve frozen control sources. Existing actual
