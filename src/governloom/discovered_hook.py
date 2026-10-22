@@ -41,6 +41,15 @@ class DiscoveredObserver:
         return self.hook.emit(trace_id=prediction_receipt["trace_id"], **identity, related_event_id=prediction_receipt["event_id"],
             phase="outcome", task_type=self.task, **self._scope(values), metrics={"actual": values["actual"]})
 
+    def tool(self, observation, *, trace_id=None, event_id=None):
+        """Observe an attempt; the application remains responsible for authorization."""
+        values = self._values(observation)
+        if not isinstance(values.get("tool_name"), str) or not values["tool_name"].strip():
+            raise ValueError("A mapped tool name is required")
+        identity = {"event_id": event_id} if event_id is not None else {}
+        return self.hook.emit(trace_id=trace_id or uuid4().hex, **identity, phase="tool", task_type=self.task,
+                              **self._scope(values), tool_name=values["tool_name"])
+
     def _values(self, observation):
         flat = flatten(observation)
         return {role: flat.get(path) for role, path in self.mapping.items()}

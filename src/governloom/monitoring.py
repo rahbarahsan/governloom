@@ -64,6 +64,14 @@ class RuntimeEvent(MonitorRecord):
         return self
 
 
+class ControlReference(MonitorRecord):
+    catalogue_version: str = Field(min_length=1, max_length=64)
+    catalogue_sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    control_id: str = Field(min_length=1, max_length=100)
+    control_version: int = Field(ge=1)
+    references: list[dict[str, str]] = Field(max_length=5)
+
+
 class RuntimeRule(MonitorRecord):
     id: str = Field(min_length=1, max_length=64, pattern=r"^[a-zA-Z][a-zA-Z0-9_.-]*$")
     name: str = Field(min_length=1, max_length=200)
@@ -83,6 +91,7 @@ class RuntimeRule(MonitorRecord):
     severity: Literal["low", "medium", "high", "critical"] = "medium"
     action: Literal["flag", "review", "block"] = "flag"
     mitigation: str = Field(min_length=1, max_length=2000)
+    control_reference: ControlReference | None = None
 
     @model_validator(mode="after")
     def validate_detector(self):
@@ -364,6 +373,8 @@ class Monitor:
                          "requested_action": check["action"], "mitigation": check["mitigation"], "evidence": check["evidence"],
                          "status": "open", "owner": None, "revision": 1, "created_at": now(), "updated_at": now(),
                          "environment": event.environment, "task_type": event.task_type}
+                if check.get("control_reference"):
+                    alert["control_reference"] = check["control_reference"]
                 incident = self.group_alert(session, alert, event, policy)
                 alert["incident_id"] = incident["id"]
                 if incident["id"] not in receipt["incident_ids"]:
@@ -397,6 +408,8 @@ class Monitor:
                 "count": 1, "first_seen": alert["created_at"], "last_seen": alert["created_at"],
                 "first_alert_id": alert["id"], "latest_alert_id": alert["id"], "window_seconds": window,
                 "status": "open", "owner": None, "revision": 1, "last_escalation_at": 0, "escalations_queued": 0}
+            if alert.get("control_reference"):
+                record["control_reference"] = alert["control_reference"]
             row = Entity(id=identifier, kind="runtime_incident", application_id=alert["application_id"], payload=record)
         if record["count"] >= policy.get("escalate_after_count", 3) and instant - record["last_escalation_at"] >= policy.get("escalation_cooldown_seconds", 300):
             pending = session.scalar(select(func.count()).select_from(Entity).where(Entity.kind == "runtime_escalation",
@@ -480,6 +493,8 @@ class Monitor:
     def evaluate_rule(self, rule, event, metrics, application_id, session):
         result = {"rule_id": rule["id"], "name": rule["name"], "severity": rule["severity"], "action": rule["action"],
                   "mitigation": rule["mitigation"], "status": "not_applicable", "evidence": {}}
+        if rule.get("control_reference"):
+            result["control_reference"] = rule["control_reference"]
         if rule["phase"] not in ("any", event.phase) or rule["task_type"] not in ("any", event.task_type) or rule["environment"] not in (None, event.environment):
             return result
         if any(rule.get(field) not in (None, getattr(event, field)) for field in ("model_version", "application_version")):

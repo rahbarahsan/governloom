@@ -304,6 +304,11 @@ def create_app(store=None):
         artifacts = [item.model_dump() for item in body.artifacts]
         return {"analysis": analyze(artifacts, body.traces), "semantic": validate_semantic(body.semantic, artifacts)}
 
+    @api.get("/api/policy-catalogue")
+    def policy_catalogue():
+        from .policy_catalogue import catalogue
+        return catalogue()
+
     @api.get("/api/applications/{application_id}/discoveries")
     def discoveries(application_id: str, limit: int = Query(default=20, ge=1, le=100)):
         return [{key: value for key, value in record.items() if key not in ("artifacts", "trace_columns", "trace_hashes")}

@@ -26,6 +26,7 @@ ALIASES = {
     "source_ids": ("source_ids", "retrieved_ids"),
     "latency_ms": ("latency_ms",), "model_version": ("model_version",),
     "application_version": ("application_version",), "environment": ("environment",),
+    "tool_name": ("tool_name",), "relevant_source_ids": ("relevant_source_ids",),
 }
 SECRET = re.compile(r"(?:sk-[A-Za-z0-9_-]{16,}|(?:gl|go)_[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{16,}|whsec_[A-Za-z0-9+/=_-]{16,}|Bearer\s+[A-Za-z0-9._-]{16,})", re.I)
 
@@ -80,12 +81,17 @@ class Confirmation(Record):
     expected_checksum: str = Field(pattern=r"^[a-f0-9]{64}$")
     task_type: Task
     purpose: str = Field(min_length=1, max_length=2000)
-    mappings: dict[str, str] = Field(default_factory=dict, max_length=20)
+    mappings: dict[str, str] = Field(default_factory=dict, max_length=28)
     rationale: str = Field(min_length=1, max_length=2000)
     outcome_meaning_confirmed: bool = False
+    relevance_meaning_confirmed: bool = False
+    allowed_tools: list[str] | None = Field(default=None, max_length=100)
+    latency_sla_ms: float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def valid(self):
+        if self.allowed_tools is not None and (not self.allowed_tools or any(not item.strip() or len(item) > 200 for item in self.allowed_tools) or len(set(self.allowed_tools)) != len(self.allowed_tools)):
+            raise ValueError("Confirm a nonempty, unique list of permitted tool names")
         if not set(self.mappings) <= ALIASES.keys() or any(not value or len(value) > 200 for value in self.mappings.values()):
             raise ValueError("Use supported telemetry roles and existing dot-separated field paths")
         return self
@@ -95,6 +101,11 @@ class CalibrationRequest(Record):
     actor: str = Field(min_length=1, max_length=200)
     confirmation_id: str = Field(min_length=1, max_length=64)
     alert_fraction: float = Field(default=.1, ge=.01, le=.5)
+    forecast_alert_fraction: float | None = Field(default=None, ge=.01, le=.5)
+    classification_false_positive_budget: float | None = Field(default=None, ge=.01, le=.5)
+    retrieval_k: int = Field(default=5, ge=1, le=100)
+    selected_controls: list[str] | None = Field(default=None, max_length=30)
+    dismissed_controls: dict[str, str] = Field(default_factory=dict, max_length=30)
 
 
 class Activation(Record):
@@ -143,7 +154,7 @@ def project(traces, mappings):
             value = flat.get(path)
             if role in ("prediction", "actual", "confidence", "latency_ms"):
                 values[role] = value if type(value) in (int, float) and math.isfinite(value) else None
-            elif role in ("citations", "source_ids"):
+            elif role in ("citations", "source_ids", "relevant_source_ids"):
                 values[role] = [redact(item) for item in value] if isinstance(value, list) and len(value) <= 100 and all(isinstance(item, str) and len(item) <= 128 for item in value) else None
             else:
                 if role in ("predicted_label", "actual_label") and isinstance(value, float) and math.isfinite(value) and value.is_integer():
@@ -243,6 +254,7 @@ def analyze(artifacts, traces):
         "custom": "The available evidence does not identify one task reliably. Review the candidate tasks and field ambiguities.",
     }[task]
     return {"method": "bounded-source-signatures-and-trace-schema-v1", "task_type": task,
+            "capabilities": sorted(({"tools"} if "tool_name" in mappings else set()) | ({"rag"} if "citations" in mappings or "source_ids" in mappings else set())),
             "candidate_tasks": sorted(candidates), "summary": summary, "status": "inferred_requires_confirmation",
             "mappings": mappings, "ambiguous_mappings": ambiguities, "available_paths": paths,
             "findings": findings[:100], "unparsed_artifacts": invalid,
@@ -338,7 +350,8 @@ class Discovery:
             raise ValueError("Mapping is unavailable; collect that field in a new discovery bundle")
         inferred = discovery["analysis"]
         corrections = {key: {"inferred": inferred.get(key), "confirmed": value} for key, value in
-                       {"task_type": body.task_type, "mappings": body.mappings}.items() if inferred.get(key) != value}
+                       {"task_type": body.task_type, "mappings": body.mappings, "allowed_tools": body.allowed_tools,
+                        "latency_sla_ms": body.latency_sla_ms, "relevance_meaning_confirmed": body.relevance_meaning_confirmed}.items() if inferred.get(key) != value}
         return self.save(application_id, "discovery_confirmation", {**body.model_dump(), "discovery_id": identifier,
             "corrections": corrections, "purpose_is_owner_confirmed": True}, body.actor, make_current=True)
 
@@ -346,7 +359,11 @@ class Discovery:
         from .discovery_calibration import prepare
         confirmation = self.scoped(application_id, "discovery_confirmation", body.confirmation_id)
         discovery = self.scoped(application_id, "discovery", confirmation["discovery_id"])
-        result = prepare(discovery, confirmation, body.alert_fraction)
+        fraction = (body.forecast_alert_fraction if confirmation["task_type"] == "forecasting" else body.classification_false_positive_budget)
+        result = prepare(discovery, confirmation, fraction if fraction is not None else body.alert_fraction)
+        from .policy_guidance import guide
+        result = guide(result, confirmation, body)
+        result["live_metric_sources"] = {"common.outcomes": f"/api/applications/{application_id}/outcome-coverage"}
         return self.save(application_id, "discovery_plan", {"confirmation_id": confirmation["id"], "discovery_id": discovery["id"],
             "actor": body.actor, "alert_fraction": body.alert_fraction, **result}, body.actor)
 

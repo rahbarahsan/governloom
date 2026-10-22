@@ -176,6 +176,8 @@ class Operators:
     def authorize(self, user, method, path, query, body):
         if user["role"] == "admin":
             return
+        if path == "/api/policy-catalogue" and method in ("GET", "HEAD"):
+            return  # Trusted public definitions contain no application evidence.
         # Every supported non-admin route has an application binding. Everything
         # else (bootstrap, account management, demo, dispatch, future routes) denies.
         application_ids = []

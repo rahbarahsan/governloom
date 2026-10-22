@@ -1,5 +1,31 @@
 # Release progress
 
+## In progress: v0.7 guided policies and measurable coverage
+
+User approved implementation of the guided policy/metric plan. Deliver in order:
+1. Versioned source-backed catalogue and forecast discovery-to-incident slice.
+2. Common, classification, RAG and tool-permission packs; explicit metric
+   denominators, missing evidence, owner decisions and immutable rule references.
+3. Dashboard selection/review, owned mini-applications, correctness/security,
+   browser, installed-package and CI checks; fix failures before delivery.
+4. Version/docs/roadmap/GIF, focused commits and push; verify CI and stop services.
+
+Defaults: NIST AI RMF 1.0 plus applicable OWASP LLM Top 10 2025 references;
+observation-only proposals, task-specific 10% exploratory calibration settings,
+no invented SLAs/permissions, no paid provider dependency. Preserve original
+untracked governloom-build-brief.md. No repository/ancestor AGENTS.md found.
+v0.6 remains historical evidence; new catalogue versions do not rewrite plans.
+Checkpoint: trusted versioned five-pack catalogue, authenticated read API,
+per-control recommendations/selection/dismissals and explicit metric results are
+implemented. Forecast slice verifies confirmation -> activation -> linked actual
+-> incident with frozen catalogue references. Composition supports tool/citation
+checks; permissions/SLA/relevance meanings require owner confirmation. Existing
+v0.6 records/event contracts remain readable. Python tool observation mapper added.
+25 discovery/guidance checks passed (8.24 s), including arithmetic, no labels,
+undefined denominators, scopes, group leakage, permissions and catalogue auth.
+One test setup initially omitted the viewer's required application grant; fixed.
+Next: dashboard review/selection, owned applications and expanded release checks.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:
