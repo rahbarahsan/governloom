@@ -1,5 +1,6 @@
 """Compose trusted controls and explicit measurements on a frozen discovery dataset."""
 import math
+from collections import Counter
 
 from .discovery_calibration import number, quantile
 from .policy_catalogue import catalogue
@@ -53,11 +54,11 @@ def guide(plan, confirmation, request):
         subset = [row["values"] for row in rows if row.get("split") == split]
         total = len(subset)
         if "forecasting" in capabilities:
-            valid = [row for row in subset if confirmation["outcome_meaning_confirmed"] and number(row.get("prediction")) and number(row.get("actual"))]
+            valid = [row for row in subset if confirmation["outcome_meaning_confirmed"] and number(row.get("prediction")) and number(row.get("actual")) and math.isfinite(row["prediction"]-row["actual"])]
             errors = [row["prediction"]-row["actual"] for row in valid]
-            for metric, value in (("forecast_mae", sum(abs(error) for error in errors)/len(errors) if errors else None),
-                                  ("forecast_rmse", math.sqrt(sum(error*error for error in errors)/len(errors)) if errors else None),
-                                  ("forecast_bias", sum(errors)/len(errors) if errors else None)):
+            for metric, value in (("forecast_mae", sum(abs(error)/len(errors) for error in errors) if errors else None),
+                                  ("forecast_rmse", math.hypot(*(error/math.sqrt(len(errors)) for error in errors)) if errors else None),
+                                  ("forecast_bias", sum(error/len(errors) for error in errors) if errors else None)):
                 measurement(metric, value, len(valid), total, split, unit="target_units", reason="Need predictions and owner-confirmed observed actuals")
             gate = next((item for item in plan["metrics"] if item["name"] == "Forecast outcome error" and item["status"] == "available"), None)
             count = sum(abs(error) > gate["threshold"] for error in errors) if gate else 0
@@ -65,14 +66,20 @@ def guide(plan, confirmation, request):
         if "classification" in capabilities:
             valid = [row for row in subset if confirmation["outcome_meaning_confirmed"] and row.get("predicted_label") is not None and row.get("actual_label") is not None]
             ratio("classification_accuracy", sum(row["predicted_label"] == row["actual_label"] for row in valid), len(valid), total, split)
-            labels = sorted({str(row[key]) for row in valid for key in ("predicted_label", "actual_label")})
-            confusion = {}
-            for predicted in labels:
-                confusion[predicted] = {actual: sum(row["predicted_label"] == predicted and row["actual_label"] == actual for row in valid) for actual in labels}
-                tp = confusion[predicted][predicted]
-                ratio("class_precision", tp, sum(row["predicted_label"] == predicted for row in valid), total, split, label=predicted)
-                ratio("class_recall", tp, sum(row["actual_label"] == predicted for row in valid), total, split, label=predicted)
-            measurement("class_confusion", confusion if valid else None, len(valid), total, split, unit="counts", reason="Need owner-confirmed labels; rows are predicted classes and columns actual classes")
+            labels = sorted({str(row["values"][key]) for row in rows for key in ("predicted_label", "actual_label")
+                             if confirmation["outcome_meaning_confirmed"] and row["values"].get(key) is not None})
+            if len(labels) <= 100:
+                pairs = Counter((row["predicted_label"], row["actual_label"]) for row in valid)
+                predicted_counts = Counter(row["predicted_label"] for row in valid)
+                actual_counts = Counter(row["actual_label"] for row in valid)
+                confusion = {predicted: {actual: pairs[predicted, actual] for actual in labels} for predicted in labels}
+                for label in labels:
+                    ratio("class_precision", pairs[label, label], predicted_counts[label], total, split, label=label)
+                    ratio("class_recall", pairs[label, label], actual_counts[label], total, split, label=label)
+                measurement("class_confusion", confusion if valid else None, len(valid), total, split, unit="counts", reason="Need owner-confirmed labels; rows are predicted classes and columns actual classes")
+            else:
+                for identifier in ("class_precision", "class_recall", "class_confusion"):
+                    measurement(identifier, None, 0, total, split, reason="Per-class reports support at most 100 distinct labels; select a bounded task-specific evaluation scope")
             gate = next((item for item in plan["metrics"] if item["name"] == "Confidence error gate" and item["status"] == "available"), None)
             if gate:
                 counts = gate[split]

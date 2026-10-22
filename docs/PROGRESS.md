@@ -37,6 +37,23 @@ AI answers or provider calls. Raw runs private under data/, services cleaned up.
 Next: compatibility/security refinements, installed distribution/Node consumers,
 full browser suite, v0.7 docs/version/GIF and release CI.
 
+Release refinement checkpoint: historical plan activation, adversarial source
+instructions, corrected list mappings and large finite residual arithmetic pass.
+Per-class reports are bounded to 100 labels; accuracy remains measurable beyond
+that bound. All 30 final discovery/guidance checks passed (10.52 s). Seven full
+Chromium workflows passed (47.2 s); final dashboard build passed after moving
+source links beside threshold explanations. Node SDK build/contract passed; two
+real collector checks passed (7.03 s), including an offline fresh tarball consumer.
+
+Final four-app run: data/v07-policy-final (zero provider calls, all services stopped).
+Final fresh installed 0.7.0 wheel: data/v07-onboarding-final; setup 91.571 s,
+first legacy actual-model incident 103.395 s; additional discovery consumer used
+360 held-out cases, no supplied policy, one incident. Wheel SHA-256:
+441dc947675eb9d80becc5856ff1fedca5874003f06890b8eeff8e7d6bd7b7fa.
+Final full Python regression and source-visible GIF capture are running; docs
+and sanitized aggregate evidence prepared. Next: finish these checks, link-check,
+focused commits/push, inspect all release CI jobs and final process cleanup.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:

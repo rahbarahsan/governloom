@@ -30,6 +30,7 @@ def run(directory):
     consumer = directory / "consumer"
     consumer.mkdir()
     shutil.copyfile(root / "examples/standalone/consumer.py", consumer / "consumer.py")
+    shutil.copyfile(root / "examples/standalone/policy_consumer.py", consumer / "policy_consumer.py")
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0)); port = listener.getsockname()[1]
     endpoint = f"http://127.0.0.1:{port}"
@@ -67,6 +68,9 @@ def run(directory):
             assert Path(outcome["installed_package"]).is_relative_to(directory / "venv")
             assert call(prefix + "/runtime-alerts", token=token)
             report.update(status="completed", consumer=outcome, setup_to_first_incident_seconds=round(time.perf_counter() - began, 3))
+            policies = execute([python, "policy_consumer.py"], cwd=consumer,
+                env={**environment, "GOVERNLOOM_ENDPOINT": endpoint, "GOVERNLOOM_OPERATOR_TOKEN": token}, capture_output=True, text=True)
+            report["policy_discovery_consumer"] = json.loads(policies.stdout)
         except BaseException:
             report["status"] = "failed"
             raise

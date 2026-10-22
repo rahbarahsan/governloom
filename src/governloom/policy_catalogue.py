@@ -66,7 +66,7 @@ CONTROLS = [
 ]
 
 METHODS = {
-    "field_coverage": "Rows with a non-null, validated selected field / all selected rows, per field",
+    "field_coverage": "Rows with a non-null selected field / all selected rows, per field; metric-specific type validity is separate",
     "missing_version_rate": "Rows missing the version field / all selected rows, per version field",
     "latency_p50": "Nearest-rank empirical 50th percentile of finite nonnegative milliseconds",
     "latency_p95": "Nearest-rank empirical 95th percentile of finite nonnegative milliseconds",

@@ -123,7 +123,8 @@ def prepare(discovery, confirmation, fraction):
                 "severity": "medium", "action": "flag", **scope,
                 "mitigation": "Inspect the linked evidence and actual outcomes; select a response after review."}
     def numeric_rows(items, fields):
-        return [row for row in items if all(number(row["values"].get(field)) for field in fields)]
+        return [row for row in items if all(number(row["values"].get(field)) for field in fields)
+                and math.isfinite(row["values"][fields[0]]-row["values"][fields[1]])]
     if task == "forecasting":
         cal = numeric_rows(calibration, ("prediction", "actual"))
         evaluation = numeric_rows(held, ("prediction", "actual"))
@@ -135,9 +136,9 @@ def prepare(discovery, confirmation, fraction):
             threshold = quantile(residuals, 1-fraction)
             def report(items):
                 errors = [row["values"]["prediction"] - row["values"]["actual"] for row in items]
-                return {"cases": len(errors), "mae": sum(abs(error) for error in errors)/len(errors),
-                        "rmse": math.sqrt(sum(error*error for error in errors)/len(errors)),
-                        "bias_prediction_minus_actual": sum(errors)/len(errors),
+                return {"cases": len(errors), "mae": sum(abs(error)/len(errors) for error in errors),
+                        "rmse": math.hypot(*(error/math.sqrt(len(errors)) for error in errors)),
+                        "bias_prediction_minus_actual": sum(error/len(errors) for error in errors),
                         "exceedances": sum(abs(error) > threshold for error in errors)}
             metrics.append({"name": "Forecast outcome error", "status": "available", "threshold": threshold,
                 "calibration": report(cal), "held_out": report(evaluation), "missing_actual_or_prediction": missing,

@@ -19,7 +19,7 @@ jobs:
       - run: .venv/bin/python -m scripts.export_contracts --check
       - run: .venv/bin/python -m pip wheel . --no-deps --wheel-dir dist
       - run: .venv/bin/python -m pip install --no-deps --target data/wheel-import dist/governloom-*.whl
-      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations, governloom.webhooks, governloom.calibration, governloom.contract, governloom.otel, governloom.outcomes, governloom.recovery, governloom.discovery, governloom.explorer, governloom.discovered_hook; assert 'wheel-import' in governloom.discovery.__file__; assert governloom.__version__ == '0.6.0'"
+      - run: PYTHONPATH=data/wheel-import .venv/bin/python -c "import governloom.policy_catalogue, governloom.policy_guidance, governloom.delivery, governloom.outbox, governloom.auth, governloom.detectors, governloom.operations, governloom.webhooks, governloom.calibration, governloom.contract, governloom.otel, governloom.outcomes, governloom.recovery, governloom.discovery, governloom.explorer, governloom.discovered_hook; assert 'wheel-import' in governloom.discovery.__file__; assert governloom.__version__ == '0.7.0'"
   browser:
     runs-on: ubuntu-latest
     steps:

@@ -44,6 +44,7 @@ export default function PolicyRecommendations({plan,disabled,onDirty,onPrepare}:
         <p>Required: {control.required_inputs.join(", ")}</p>
         {control.evidence.map(item=><p className="small" key={item.role}>{title(item.role)} ← {item.path}</p>)}
         <p>{control.threshold_selection}</p>
+        <ControlSources reference={{catalogue_version:plan.catalogue!.version,control_id:control.id,references:control.references}}/>
         <table className="measurement-table"><thead><tr><th>Metric / split</th><th>Value</th><th>Denominator</th><th>Excluded</th></tr></thead>
           <tbody>{plan.metric_results?.filter(item=>control.metric_ids.includes(item.metric_id)).map((item,index)=><tr key={index}><th>{title(item.metric_id)}{item.label ? ` · ${item.label}` : ""}<br/><small>{title(item.split)}</small></th>
             <td>{valueText(item)}{item.reason && <p className="small">{item.reason}</p>}</td><td>{item.denominator}</td><td>{item.excluded_cases}</td></tr>)}</tbody></table>
@@ -52,7 +53,6 @@ export default function PolicyRecommendations({plan,disabled,onDirty,onPrepare}:
         {control.id==="common.outcomes" && live && <div className="live-outcome-counts"><p>Live tracked outcomes: {Object.entries(live.counts).map(([key,value])=>`${key}: ${value}`).join(" · ")}</p><p className="small">Checked {new Date(live.checked_at).toLocaleString()}. {live.limitation}</p></div>}
         <ul>{control.missing_prerequisites.map(item=><li key={item}>{item}</li>)}</ul>
         <p><strong>Suggested response:</strong> {control.suggested_response}</p><p>{control.limitations}</p>
-        <ControlSources reference={{catalogue_version:plan.catalogue!.version,control_id:control.id,references:control.references}}/>
       </details>
       {control.status==="ready" && <label className="row"><input type="checkbox" aria-label={`Monitor ${control.name}`} disabled={disabled || control.id in dismissed} checked={selected.includes(control.id)} onChange={event=>{setSelected(current=>event.target.checked ? [...current,control.id] : current.filter(id=>id!==control.id));onDirty();}}/>Include in observation policy</label>}
       <details><summary>Record why this recommendation is deferred</summary><label className="row"><input type="checkbox" disabled={disabled} checked={control.id in dismissed} onChange={event=>{setDismissed(current=>{const next={...current};if(event.target.checked) next[control.id]="";else delete next[control.id];return next;});setSelected(current=>current.filter(id=>id!==control.id));onDirty();}}/>Defer {control.name}</label>
