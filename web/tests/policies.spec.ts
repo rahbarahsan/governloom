@@ -1,7 +1,7 @@
 import {expect,test} from "@playwright/test";
 
 test("late initial application response preserves the owner's selection",async({page,request})=>{
-  const apps=[];
+  const apps:{id:string;name:string}[]=[];
   for(const name of ["Initial application", "Owner selected application"]) {
     const response=await request.post("http://127.0.0.1:8000/api/applications",{data:{name,purpose:"Selection race regression",owner:"Owner",expected_behavior:"Preserve explicit selection"}});
     apps.push(await response.json());

@@ -95,6 +95,10 @@ or scoped state. A deterministic held-response browser regression plus composite
 policy workflow passed locally (2 checks, 25.2 s). Push this UI fix and verify
 the final eight-workflow browser/full CI run before marking delivery complete.
 
+The new delayed-response fixture needed an explicit array type under strict
+TypeScript compilation. Added it; production tsc/Vite build passed (2.99 s).
+No backend/wheel or catalogue changes followed the verified final wheel.
+
 ## Delivered v0.6: explore, confirm and prepare monitoring (2026-10-21)
 
 Release code/docs/GIF pushed at `4e58313`; all six CI jobs passed:
